@@ -128,6 +128,13 @@ module OS
       def share
         prefix/"share"
       end
+
+      def message_missing_dependency; <<-EOS.undent
+        Unsatisfied dependency: XQuartz #{@min_version}
+        Homebrew does not package XQuartz. Installers may be found at:
+          https://xquartz.macosforge.org
+        EOS
+      end
     end
   end
 end
