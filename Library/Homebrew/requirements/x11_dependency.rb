@@ -1,6 +1,6 @@
 require 'requirement'
 require 'extend/set'
-require 'os/linux/x11'
+require 'os/x11'
 
 class X11Dependency < Requirement
   include Comparable
@@ -8,9 +8,7 @@ class X11Dependency < Requirement
 
   fatal true
 
-  if OS.mac?
-    env { ENV.x11 }
-  end
+  env { ENV.x11 }
 
   def initialize(name="x11", tags=[])
     @name = name
@@ -22,7 +20,7 @@ class X11Dependency < Requirement
     if OS.mac?
       OS.MacOS::XQuartz.installed? && (@min_version.nil? || @min_version <= MacOS::XQuartz.version)
     elsif OS.linux?
-      OS::Linux::X11.installed?
+      OS::X11.installed? && (@min_version.nil? || @min_version <= OS::X11.version)
     else
       true
     end
@@ -30,11 +28,17 @@ class X11Dependency < Requirement
 
   def message
     if OS.mac?
-      OS::MacOS::XQuartz.message_missing_dependency
-    elsif OS.linux?
-      OS::Linux::X11.message_missing_dependency
+      <<-EOS.undent
+        Unsatisfied dependency: XQuartz #{@min_version}
+        Homebrew does not package XQuartz. Installers may be found at:
+          https://xquartz.macosforge.org
+      EOS
     else
-      "Unsatisfied dependency: X11 #{@min_version}"
+      <<-EOS.undent
+        Unsatisfied dependency: X11 #{@min_version}
+        Homebrew does not package X11.
+        Consult your distribution's manual on how to install X11.
+      EOS
     end
   end
 
