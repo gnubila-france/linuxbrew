@@ -11,6 +11,8 @@ class Bzip2 < Formula
     # Compilation will not complete without deparallelize
     ENV.deparallelize
 
+    system "make -f Makefile-libbz2_so"
     system "make install PREFIX=#{prefix}"
+    system "cp -a libbz2.so.* #{prefix}/lib/"
   end
 end
