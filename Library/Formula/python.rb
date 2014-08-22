@@ -114,6 +114,10 @@ class Python < Formula
       ENV.append "LDFLAGS", "-L#{tcl_tk}/lib"
     end
 
+    unless OS.mac?
+      args << "--enable-shared"
+    end
+
     system "./configure", *args
 
     # HAVE_POLL is "broken" on OS X. See:
