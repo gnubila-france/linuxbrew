@@ -57,6 +57,18 @@ module Stdenv
 
     append 'LDFLAGS', '-Wl,-headerpad_max_install_names' if OS.mac?
 
+    if OS.linux?
+      # Set the dynamic library search path
+      append "LDFLAGS", "-Wl,-rpath,#{HOMEBREW_PREFIX}/lib"
+      self["LD_RUN_PATH"] = "#{HOMEBREW_PREFIX}/lib"
+      # Set the dynamic linker
+      glibc = Formula["glibc"]
+      if glibc.installed? &&
+          (ldso = glibc.opt_lib/"ld-linux-x86-64.so.2").readable?
+        append "LDFLAGS", "-Wl,--dynamic-linker=#{ldso}"
+      end
+    end
+
     if inherit?
       # Inherit CC, CXX and compiler flags from the parent environment.
     elsif respond_to?(compiler)
@@ -145,7 +157,9 @@ module Stdenv
     super
     replace_in_cflags(/-Xarch_#{Hardware::CPU.arch_32_bit} (-march=\S*)/, '\1')
     # Clang mistakenly enables AES-NI on plain Nehalem
-    set_cpu_cflags '-march=native', :nehalem => '-march=native -Xclang -target-feature -Xclang -aes'
+    map = Hardware::CPU.optimization_flags
+    map = map.merge(:nehalem => "-march=native -Xclang -target-feature -Xclang -aes")
+    set_cpu_cflags "-march=native", map
   end
 
   def remove_macosxsdk version=MacOS.version

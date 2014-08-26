@@ -7,6 +7,7 @@ require 'build_options'
 require 'dependency_collector'
 require 'bottles'
 require 'patch'
+require 'compilers'
 
 class SoftwareSpec
   extend Forwardable
@@ -21,6 +22,7 @@ class SoftwareSpec
   attr_reader :build, :resources, :patches, :options
   attr_reader :dependency_collector
   attr_reader :bottle_specification
+  attr_reader :compiler_failures
 
   def_delegators :@resource, :stage, :fetch, :verify_download_integrity
   def_delegators :@resource, :cached_download, :clear_cache
@@ -34,7 +36,8 @@ class SoftwareSpec
     @bottle_specification = BottleSpecification.new
     @patches = []
     @options = Options.new
-    @build = BuildOptions.new(ARGV.options_only, options)
+    @build = BuildOptions.new(Options.create(ARGV.options_only), options)
+    @compiler_failures = []
   end
 
   def owner= owner
@@ -110,6 +113,20 @@ class SoftwareSpec
 
   def patch strip=:p1, src=nil, &block
     patches << Patch.create(strip, src, &block)
+  end
+
+  def fails_with? compiler
+    compiler_failures.any? { |failure| failure === compiler }
+  end
+
+  def fails_with compiler, &block
+    compiler_failures << CompilerFailure.create(compiler, &block)
+  end
+
+  def needs *standards
+    standards.each do |standard|
+      compiler_failures.concat CompilerFailure.for_standard(standard)
+    end
   end
 
   def add_legacy_patches(list)
@@ -245,7 +262,7 @@ class BottleSpecification
   def checksums
     checksums = {}
     os_versions = collector.keys
-    os_versions.map! {|osx| MacOS::Version.from_symbol osx rescue nil }.compact!
+    os_versions.map! {|osx| MacOS::Version.from_symbol osx rescue osx.to_s }
     os_versions.sort.reverse_each do |os_version|
       osx = os_version.to_sym
       checksum = collector[osx]
