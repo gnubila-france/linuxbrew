@@ -32,7 +32,6 @@ class Wxmac < Formula
       "--enable-std_string",
       "--enable-display",
       "--with-opengl",
-      "--with-osx_cocoa",
       "--with-libjpeg",
       "--with-libtiff",
       # Otherwise, even in superenv, the internal libtiff can pick
@@ -56,6 +55,10 @@ class Wxmac < Formula
       # This is the default option, but be explicit
       "--disable-monolithic"
     ]
+
+    if OS.mac?
+      args << "-with-osx_cocoa" << "--with-macosx-version-min=#{MacOS.version}"
+    end
 
     system "./configure", *args
     system "make install"
