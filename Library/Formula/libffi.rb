@@ -29,6 +29,7 @@ class Libffi < Formula
     system "./configure", "--disable-debug", "--disable-dependency-tracking",
                           "--prefix=#{prefix}"
     system "make install"
+    mv Dir.glob("#{prefix}/lib64/*"), "#{prefix}/lib"
   end
 
   test do
