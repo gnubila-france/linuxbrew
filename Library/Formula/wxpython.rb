@@ -34,7 +34,6 @@ class Wxpython < Formula
     ENV["WXWIN"] = buildpath
 
     args = [
-      "WXPORT=osx_cocoa",
       # Reference our wx-config
       "WX_CONFIG=#{Formula["wxmac"].opt_bin}/wx-config",
       # At this time Wxmac is installed Unicode only
@@ -47,6 +46,8 @@ class Wxpython < Formula
       "BUILD_GIZMOS=1",
       "BUILD_STC=1"
     ]
+
+    args << "WXPORT=osx_cocoa" if OS.mac?
 
     cd "wxPython" do
       ENV.append_to_cflags "-arch #{MacOS.preferred_arch}"
