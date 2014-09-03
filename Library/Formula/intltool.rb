@@ -11,6 +11,8 @@ class Intltool < Formula
     sha1 "b2736b5eb60c9d346ef6f041f3fd66b220daca29" => :lion
   end
 
+  depends_on 'XML::Parser' => :perl
+
   def install
     system "./configure", "--prefix=#{prefix}"
     system "make install"
