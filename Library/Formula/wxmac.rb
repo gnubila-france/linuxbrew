@@ -15,6 +15,8 @@ class Wxmac < Formula
   depends_on "libpng"
   depends_on "libtiff"
 
+  option 'without-mediactrl', 'Install the components which depends on gstreamer'
+
   def install
     # need to set with-macosx-version-min to avoid configure defaulting to 10.5
     # need to enable universal binary build in order to build all x86_64
@@ -44,7 +46,6 @@ class Wxmac < Formula
       "--enable-clipboard",
       "--enable-webkit",
       "--enable-svg",
-      "--enable-mediactrl",
       "--enable-graphics_ctx",
       "--enable-controls",
       "--enable-dataviewctrl",
@@ -57,6 +58,12 @@ class Wxmac < Formula
 
     if OS.mac?
       args << "-with-osx_cocoa" << "--with-macosx-version-min=#{MacOS.version}"
+    end
+
+    if build.with? "mediactrl"
+      args << "--enable-mediactrl"
+    else
+      args << "--disable-mediactrl"
     end
 
     system "./configure", *args
