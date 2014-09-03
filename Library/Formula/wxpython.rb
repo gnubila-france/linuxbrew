@@ -50,7 +50,7 @@ class Wxpython < Formula
     args << "WXPORT=osx_cocoa" if OS.mac?
 
     cd "wxPython" do
-      ENV.append_to_cflags "-arch #{MacOS.preferred_arch}"
+      ENV.append_to_cflags "-arch #{MacOS.preferred_arch}" if OS.mac?
 
       system "python", "setup.py",
                      "build_ext",
