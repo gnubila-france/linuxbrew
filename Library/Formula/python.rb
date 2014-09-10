@@ -233,12 +233,18 @@ class Python < Formula
     args << cflags
     args << ldflags
     # Avoid linking to libgcc http://code.activestate.com/lists/python-dev/112195/
-    args << "MACOSX_DEPLOYMENT_TARGET=#{MacOS.version}"
+    args << "MACOSX_DEPLOYMENT_TARGET=#{MacOS.version}" if OS.mac?
     # We want our readline! This is just to outsmart the detection code,
     # superenv handles that cc finds includes/libs!
-    inreplace "setup.py",
+    if OS.mac?
+      inreplace "setup.py",
               "do_readline = self.compiler.find_library_file(lib_dirs, 'readline')",
               "do_readline = '#{HOMEBREW_PREFIX}/opt/readline/lib/libhistory.dylib'"
+    else
+      inreplace "setup.py",
+              "do_readline = self.compiler.find_library_file(lib_dirs, 'readline')",
+              "do_readline = '#{HOMEBREW_PREFIX}/opt/readline/lib/libhistory.so'"
+    end
   end
 
   def distutils_fix_stdenv
