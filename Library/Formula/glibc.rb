@@ -43,6 +43,9 @@ class Glibc < Formula
     locales.uniq.each { |locale|
       lang, charmap = locale.split(".", 2)
       if charmap != nil
+        if ["utf8", "utf-8"].include? charmap.downcase
+          charmap = "UTF-8"
+        end
         system bin/"localedef", "-i", lang, "-f", charmap, locale
       else
         system bin/"localedef", "-i", lang, locale
