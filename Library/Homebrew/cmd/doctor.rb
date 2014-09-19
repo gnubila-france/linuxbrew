@@ -413,6 +413,7 @@ def check_access_logs
 end
 
 def check_ruby_version
+  return unless OS.mac?
   ruby_version = MacOS.version >= "10.9" ? "2.0" : "1.8"
   if RUBY_VERSION[/\d\.\d/] != ruby_version then <<-EOS.undent
     Ruby version #{RUBY_VERSION} is unsupported on #{MacOS.version}. Homebrew
@@ -424,6 +425,7 @@ def check_ruby_version
 end
 
 def check_homebrew_prefix
+  return unless OS.mac?
   unless HOMEBREW_PREFIX.to_s == '/usr/local'
     <<-EOS.undent
       Your Homebrew is not installed to /usr/local
@@ -457,6 +459,7 @@ def check_xcode_prefix_exists
 end
 
 def check_xcode_select_path
+  return unless OS.mac?
   if not MacOS::CLT.installed? and not File.file? "#{MacOS.active_developer_dir}/usr/bin/xcodebuild"
     path = MacOS::Xcode.bundle_path
     path = '/Developer' if path.nil? or not path.directory?
@@ -569,6 +572,7 @@ def check_which_pkg_config
 end
 
 def check_for_gettext
+  return unless OS.mac?
   find_relative_paths("lib/libgettextlib.dylib",
                       "lib/libintl.dylib",
                       "include/libintl.h")
@@ -590,6 +594,7 @@ def check_for_gettext
 end
 
 def check_for_iconv
+  return unless OS.mac?
   unless find_relative_paths("lib/libiconv.dylib", "include/iconv.h").empty?
     if (f = Formulary.factory("libiconv") rescue nil) and f.linked_keg.directory?
       if not f.keg_only? then <<-EOS.undent
@@ -660,9 +665,7 @@ def check_DYLD_vars
     Setting DYLD_* vars can break dynamic linking.
     Set variables:
     EOS
-    found.each do |e|
-      s << "    #{e}\n"
-    end
+    s << found.map { |e| "    #{e}: #{ENV.fetch(e)}\n" }.join
     if found.include? 'DYLD_INSERT_LIBRARIES'
       s += <<-EOS.undent
 
@@ -695,6 +698,7 @@ def check_for_symlinked_cellar
 end
 
 def check_for_multiple_volumes
+  return unless OS.mac?
   return unless HOMEBREW_CELLAR.exist?
   volumes = Volumes.new
 
@@ -721,6 +725,7 @@ def check_for_multiple_volumes
 end
 
 def check_filesystem_case_sensitive
+  return unless OS.mac?
   volumes = Volumes.new
   case_sensitive_vols = [HOMEBREW_PREFIX, HOMEBREW_REPOSITORY, HOMEBREW_CELLAR, HOMEBREW_TEMP].select do |dir|
     # We select the dir as being case-sensitive if either the UPCASED or the
@@ -795,9 +800,9 @@ def check_git_origin
       Without a correctly configured origin, Homebrew won't update
       properly. You can solve this by adding the Homebrew remote:
         cd #{HOMEBREW_REPOSITORY}
-        git remote add origin https://github.com/Homebrew/homebrew.git
+        git remote add origin https://github.com/Homebrew/#{OS::GITHUB_REPOSITORY}.git
       EOS
-    elsif origin !~ /(mxcl|Homebrew)\/homebrew(\.git)?$/ then <<-EOS.undent
+    elsif origin !~ /(mxcl|Homebrew)\/#{OS::GITHUB_REPOSITORY}(\.git)?$/ then <<-EOS.undent
       Suspicious git origin remote found.
 
       With a non-standard origin, Homebrew won't pull updates from
@@ -806,7 +811,7 @@ def check_git_origin
 
       Unless you have compelling reasons, consider setting the
       origin remote to point at the main repository, located at:
-        https://github.com/Homebrew/homebrew.git
+        https://github.com/Homebrew/#{OS::GITHUB_REPOSITORY}.git
       EOS
     end
   end
@@ -929,6 +934,7 @@ def check_git_status
 end
 
 def check_git_ssl_verify
+  return unless OS.mac?
   if MacOS.version <= :leopard && !ENV['GIT_SSL_NO_VERIFY'] then <<-EOS.undent
     The version of libcurl provided with Mac OS X #{MacOS.version} has outdated
     SSL certificates.
@@ -1007,6 +1013,7 @@ def check_for_non_prefixed_coreutils
 end
 
 def check_for_non_prefixed_findutils
+  return unless OS.mac?
   default_names = Tab.for_name('findutils').include? 'default-names'
   if default_names then <<-EOS.undent
     Putting non-prefixed findutils in your path can cause python builds to fail.
@@ -1043,7 +1050,7 @@ def check_for_outdated_homebrew
 
     if Time.now.to_i - timestamp > 60 * 60 * 24 then <<-EOS.undent
       Your Homebrew is outdated.
-      You haven't updated for at least 24 hours, this is a long time in brewland!
+      You haven't updated for at least 24 hours. This is a long time in brewland!
       To update Homebrew, run `brew update`.
       EOS
     end
@@ -1112,6 +1119,10 @@ end
       EOS
     end
   end
+
+  def all
+    methods.map(&:to_s).grep(/^check_/)
+  end
 end # end class Checks
 
 module Homebrew
@@ -1119,18 +1130,19 @@ module Homebrew
     checks = Checks.new
 
     if ARGV.include? '--list-checks'
-      puts checks.methods.grep(/^check_/).sort
+      puts checks.all.sort
       exit
     end
 
     inject_dump_stats(checks) if ARGV.switch? 'D'
 
-    methods = if ARGV.named.empty?
-      # put slowest methods last
-      checks.methods.sort << "check_for_linked_keg_only_brews" << "check_for_outdated_homebrew"
+    if ARGV.named.empty?
+      methods = checks.all.sort
+      methods << "check_for_linked_keg_only_brews" << "check_for_outdated_homebrew"
+      methods = methods.reverse.uniq.reverse
     else
-      ARGV.named
-    end.grep(/^check_/).reverse.uniq.reverse
+      methods = ARGV.named
+    end
 
     first_warning = true
     methods.each do |method|

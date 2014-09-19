@@ -27,9 +27,10 @@ class Gcc < Formula
   sha1 "3f303f403053f0ce79530dae832811ecef91197e"
 
   bottle do
-    sha1 "89de135be44e3877374f184b3bd15c0ba40a1d18" => :mavericks
-    sha1 "d3694bd528baca3b8329a826058af22049135dee" => :mountain_lion
-    sha1 "fde241e4f212ef1c8a282ab695b726774792e04b" => :lion
+    revision 2
+    sha1 "4a7fc491b6487da16089c218f9dda8d23e8656b5" => :mavericks
+    sha1 "9e826e179f7f679d1423b8d92d9a647860bd27ae" => :mountain_lion
+    sha1 "81d02ad2e353ed804927ee166a1090ebf057c4b3" => :lion
   end
 
   option "with-java", "Build the gcj compiler"
@@ -37,8 +38,14 @@ class Gcc < Formula
   option "with-nls", "Build with native language support (localization)"
   option "without-fortran", "Build without the gfortran compiler"
   # enabling multilib on a host that can't run 64-bit results in build failures
-  option "without-multilib", "Build without multilib support" if MacOS.prefer_64_bit?
+  if OS.mac?
+    option "without-multilib", "Build without multilib support" if MacOS.prefer_64_bit?
+  else
+    option "with-multilib", "Build with multilib support"
+  end
 
+  depends_on "binutils" if build.with? "glibc"
+  depends_on "glibc" => :optional
   depends_on "gmp"
   depends_on "libmpc"
   depends_on "mpfr"
@@ -67,6 +74,12 @@ class Gcc < Formula
     version.to_s.slice(/\d\.\d/)
   end
 
+  # Fix 10.10 issues: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=61407
+  patch do
+    url "https://gcc.gnu.org/bugzilla/attachment.cgi?id=33180"
+    sha1 "def0cb036a255175db86f106e2bb9dd66d19b702"
+  end
+
   def install
     # GCC will suffer build errors if forced to use a particular linker.
     ENV.delete "LD"
@@ -86,6 +99,14 @@ class Gcc < Formula
 
     args = []
     args << "--build=#{arch}-apple-darwin#{osmajor}" if OS.mac?
+    if build.with? "glibc"
+      binutils = Formula["binutils"].prefix/"x86_64-unknown-linux-gnu/bin"
+      args += [
+        "--with-native-system-header-dir=#{HOMEBREW_PREFIX}/include",
+        "--with-build-time-tools=#{binutils}",
+        "--with-boot-ldflags=-static-libstdc++ -static-libgcc #{ENV["LDFLAGS"]}",
+      ]
+    end
     args += [
       "--prefix=#{prefix}",
       "--enable-languages=#{languages.join(",")}",
@@ -96,12 +117,14 @@ class Gcc < Formula
       "--with-mpc=#{Formula["libmpc"].opt_prefix}",
       "--with-cloog=#{Formula["cloog"].opt_prefix}",
       "--with-isl=#{Formula["isl"].opt_prefix}",
-      "--with-system-zlib",
     ]
+    args += [
+      "--with-system-zlib",
       # This ensures lib, libexec, include are sandboxed so that they
       # don't wander around telling little children there is no Santa
       # Claus.
-    args << "--enable-version-specific-runtime-libs" if OS.mac?
+      "--enable-version-specific-runtime-libs",
+    ] if OS.mac?
     args += [
       "--enable-libstdcxx-time=yes",
       "--enable-stage1-checking",
@@ -149,6 +172,12 @@ class Gcc < Formula
       if build.with?("fortran") || build.with?("all-languages")
         bin.install_symlink bin/"gfortran-#{version_suffix}" => "gfortran"
       end
+
+      if OS.linux?
+        # Create gcc and g++ symlinks
+        bin.install_symlink "gcc-#{version_suffix}" => "gcc"
+        bin.install_symlink "g++-#{version_suffix}" => "g++"
+      end
     end
 
     # Handle conflicts between GCC formulae and avoid interfering
@@ -174,6 +203,14 @@ class Gcc < Formula
         add_suffix file, version_suffix if File.exist? file
       end
     end
+
+    # Move lib64/* to lib/ on Linuxbrew
+    lib64 = Pathname.new "#{lib}64"
+    if lib64.directory?
+      system "mv #{lib64}/* #{lib}/"
+      rmdir lib64
+      prefix.install_symlink "lib" => "lib64"
+    end
   end
 
   def add_suffix file, suffix
@@ -181,6 +218,57 @@ class Gcc < Formula
     ext = File.extname(file)
     base = File.basename(file, ext)
     File.rename file, "#{dir}/#{base}-#{suffix}#{ext}"
+  end
+
+  def post_install
+    if OS.linux?
+      # Create cc and c++ symlinks, unless they already exist
+      homebrew_bin = Pathname.new "#{HOMEBREW_PREFIX}/bin"
+      homebrew_bin.install_symlink "gcc" => "cc" unless (homebrew_bin/"cc").exist?
+      homebrew_bin.install_symlink "g++" => "c++" unless (homebrew_bin/"c++").exist?
+
+      # Create the GCC specs file
+      # See https://gcc.gnu.org/onlinedocs/gcc/Spec-Files.html
+
+      # Locate the specs file
+      gcc = "gcc-#{version_suffix}"
+      specs = Pathname.new(`#{bin}/#{gcc} -print-libgcc-file-name`).dirname/"specs"
+      ohai "Creating the GCC specs file: #{specs}"
+      raise "command failed: #{gcc} -print-libgcc-file-name" if $?.exitstatus != 0
+      specs_orig = Pathname.new("#{specs}.orig")
+      rm_f [specs_orig, specs]
+
+      # Save a backup of the default specs file
+      s = `#{bin}/#{gcc} -dumpspecs`
+      raise "command failed: #{gcc} -dumpspecs" if $?.exitstatus != 0
+      specs_orig.write s
+
+      # Set the library search path
+      if build.with?("glibc")
+        s += "*link_libgcc:\n-nostdlib -L#{lib}/gcc/x86_64-unknown-linux-gnu/#{version} -L#{HOMEBREW_PREFIX}/lib\n\n"
+      else
+        s += "*link_libgcc:\n+ -L#{HOMEBREW_PREFIX}/lib\n\n"
+      end
+      s += "*link:\n+ -rpath #{HOMEBREW_PREFIX}/lib"
+
+      # Set the dynamic linker
+      glibc = Formula["glibc"]
+      if glibc.installed?
+        s += " --dynamic-linker #{glibc.opt_lib}/ld-linux-x86-64.so.2"
+      end
+      s += "\n\n"
+      specs.write s
+    end
+  end
+
+  def caveats
+    if build.with?("multilib") then <<-EOS.undent
+      GCC has been built with multilib support. Notably, OpenMP may not work:
+        https://gcc.gnu.org/bugzilla/show_bug.cgi?id=60670
+      If you need OpenMP support you may want to
+        brew reinstall gcc --without-multilib
+      EOS
+    end
   end
 
   test do
