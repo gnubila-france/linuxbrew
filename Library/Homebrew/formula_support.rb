@@ -14,7 +14,7 @@ class KegOnlyReason
     when :provided_by_osx, :shadowed_by_osx
       OS.mac?
     when :provided_pre_mountain_lion
-      MacOS.version < :mountain_lion
+      MacOS.version < :mountain_lion && OS.mac?
     when :provided_until_xcode43
       MacOS::Xcode.version < "4.3"
     when :provided_until_xcode5
