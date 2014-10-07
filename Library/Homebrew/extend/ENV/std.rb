@@ -15,12 +15,8 @@ module Stdenv
     end
   end
 
-  def inherit?
-    ARGV.include? "--env=inherit"
-  end
-
   def setup_build_environment(formula=nil)
-    reset unless inherit?
+    super
 
     if MacOS.version >= :mountain_lion
       # Mountain Lion's sed is stricter, and errors out when
@@ -58,15 +54,20 @@ module Stdenv
 
     append 'LDFLAGS', '-Wl,-headerpad_max_install_names' if OS.mac?
 
-    if OS.linux? && (formula && formula.name) != "glibc"
-      # Set the dynamic library search path
-      append "LDFLAGS", "-Wl,-rpath,#{HOMEBREW_PREFIX}/lib"
+    if OS.linux? && !["glibc", "glibc25"].include?(formula && formula.name)
       # Set the dynamic linker
       glibc = Formula["glibc"]
-      if glibc.installed? &&
-          (ldso = glibc.opt_lib/"ld-linux-x86-64.so.2").readable?
-        append "LDFLAGS", "-Wl,--dynamic-linker=#{ldso}"
+      if glibc.installed?
+        ldso = glibc.opt_lib/"ld-linux-x86-64.so.2"
+        if ldso.readable?
+          append "LDFLAGS", "-Wl,--dynamic-linker=#{ldso}"
+        end
+      else
+        # Set the dynamic library search path
+        self["LD_RUN_PATH"] = "#{HOMEBREW_PREFIX}/lib"
       end
+      # Set the dynamic library search path
+      append "LDFLAGS", "-Wl,-rpath,#{HOMEBREW_PREFIX}/lib"
     end
 
     if inherit?
@@ -78,10 +79,8 @@ module Stdenv
       self.cxx = determine_cxx
       set_cpu_cflags
     end
-    validate_cc!(formula) unless formula.nil?
 
-    if !inherit? && cc =~ GNU_GCC_REGEXP
-      warn_about_non_apple_gcc($1)
+    if cc =~ GNU_GCC_REGEXP && !inherit?
       gcc_formula = gcc_version_formula($1)
       append_path "PATH", gcc_formula.opt_bin.to_s
     end

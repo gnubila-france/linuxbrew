@@ -12,6 +12,7 @@ require 'formula_cellar_checks'
 require 'install_renamed'
 require 'cmd/tap'
 require 'hooks/bottles'
+require 'debrew'
 
 class FormulaInstaller
   include FormulaCellarChecks
@@ -254,9 +255,9 @@ class FormulaInstaller
 
         if (req.optional? || req.recommended?) && build.without?(req)
           Requirement.prune
-        elsif req.build? && dependent == f && pour_bottle?
+        elsif req.build? && dependent == self.f && pour_bottle?
           Requirement.prune
-        elsif req.build? && dependent != f && install_bottle_for_dep?(dependent, build)
+        elsif req.build? && dependent != self.f && install_bottle_for_dep?(dependent, build)
           Requirement.prune
         elsif install_requirement_default_formula?(req, build)
           dep = req.to_dependency
@@ -504,10 +505,9 @@ class FormulaInstaller
 
     ignore_interrupts(:quietly) do # the child will receive the interrupt and marshal it back
       write.close
-      thr = Thread.new { read.read }
-      Process.wait(pid)
-      data = thr.value
+      data = read.read
       read.close
+      Process.wait(pid)
       raise Marshal.load(data) unless data.nil? or data.empty?
       raise Interrupt if $?.exitstatus == 130
       raise "Suspicious installation failure" unless $?.success?

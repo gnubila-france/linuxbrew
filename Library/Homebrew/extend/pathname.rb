@@ -7,7 +7,7 @@ require 'metafiles'
 class Pathname
   include MachO
 
-  BOTTLE_EXTNAME_RX = /(\.[a-z_]+(32)?\.bottle\.(\d+\.)?tar\.gz)$/
+  BOTTLE_EXTNAME_RX = /(\.[-a-z0-9_]+\.bottle\.(\d+\.)?tar\.gz)$/
 
   def install *sources
     sources.each do |src|
@@ -105,10 +105,9 @@ class Pathname
   # NOTE always overwrites
   def atomic_write content
     require "tempfile"
-    tf = Tempfile.new(basename.to_s)
+    tf = Tempfile.new(basename.to_s, dirname)
     tf.binmode
     tf.write(content)
-    tf.close
 
     begin
       old_stat = stat
@@ -116,16 +115,18 @@ class Pathname
       old_stat = default_stat
     end
 
-    FileUtils.mv tf.path, self
-
     uid = Process.uid
     gid = Process.groups.delete(old_stat.gid) { Process.gid }
 
     begin
-      chown(uid, gid)
-      chmod(old_stat.mode)
+      tf.chown(uid, gid)
+      tf.chmod(old_stat.mode)
     rescue Errno::EPERM
     end
+
+    File.rename(tf.path, self)
+  ensure
+    tf.close!
   end
 
   def default_stat

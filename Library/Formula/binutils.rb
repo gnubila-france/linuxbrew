@@ -19,6 +19,7 @@ class Binutils < Formula
     system "./configure", "--disable-debug",
                           "--disable-dependency-tracking",
                           ("--program-prefix=g" unless build.include? 'default-names'),
+                          ("--with-sysroot=/" if OS.linux?),
                           "--prefix=#{prefix}",
                           "--infodir=#{info}",
                           "--mandir=#{man}",

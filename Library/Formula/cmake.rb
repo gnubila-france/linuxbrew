@@ -34,7 +34,7 @@ class Cmake < Formula
     sha1 "842240c9febb4123918cf62a3cea5ca4207ad860" => :lion
   end
 
-  depends_on :python => :build if MacOS.version <= :snow_leopard
+  depends_on :python => :build if OS.mac? && MacOS.version <= :snow_leopard
 
   resource "sphinx" do
     url "https://pypi.python.org/packages/source/S/Sphinx/Sphinx-1.2.3.tar.gz"
@@ -49,6 +49,10 @@ class Cmake < Formula
       system "python", "setup.py", "install", "--prefix=#{buildpath}/sphinx"
     end
     ENV.prepend_path "PATH", "#{buildpath}/sphinx/bin"
+
+    # There is an existing issue around OS X & Python locale setting
+    # See http://bugs.python.org/issue18378#msg215215 for explanation
+    ENV["LC_ALL"] = "en_US.UTF-8"
 
     args = %W[
       --prefix=#{prefix}
