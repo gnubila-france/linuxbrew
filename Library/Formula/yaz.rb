@@ -3,25 +3,26 @@ require "formula"
 
 class Yaz < Formula
   homepage "http://www.indexdata.com/yaz"
-  url "http://ftp.indexdata.dk/pub/yaz/yaz-5.4.2.tar.gz"
-  sha1 "2d64a212481ffaa1afbb15b9fbdc7cc7c9068ca7"
+  url "http://ftp.indexdata.dk/pub/yaz/yaz-5.5.0.tar.gz"
+  sha1 "0b13d9ca372aab1a40d73977b6430c8f7bf19544"
 
   bottle do
     cellar :any
-    sha1 "0d4921722468b8b87d2d13af1d240861affcb45f" => :mavericks
-    sha1 "610de58b0121cbfa88ef44ca61ef4236c059d42f" => :mountain_lion
-    sha1 "94cb13782dbfeceda17ac213a9e5d5c5de723edf" => :lion
+    sha1 "a035b9847ea01c2c9d25d0927e8aa503194d837b" => :yosemite
+    sha1 "54bb58306eb3bdc6e9450e3e516bfd0191d2f7a0" => :mavericks
+    sha1 "6e302cad8cffcd79671da697d5eea0ec05031ea7" => :mountain_lion
   end
 
   depends_on "pkg-config" => :build
   depends_on "icu4c" => :recommended
   depends_on "gnutls" => :optional
+  depends_on "libgcrypt" if build.with? "gnutls"
 
   def install
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
                           "--with-xml2"
-    system "make install"
+    system "make", "install"
   end
 
   test do

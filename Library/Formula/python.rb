@@ -1,17 +1,17 @@
 require "formula"
 
 class Python < Formula
-  homepage "http://www.python.org"
-  head "http://hg.python.org/cpython", :using => :hg, :branch => "2.7"
-  url "http://www.python.org/ftp/python/2.7.8/Python-2.7.8.tgz"
+  homepage "https://www.python.org"
+  head "https://hg.python.org/cpython", :using => :hg, :branch => "2.7"
+  url "https://www.python.org/ftp/python/2.7.8/Python-2.7.8.tgz"
   sha1 "511960dd78451a06c9df76509635aeec05b2051a"
-  revision 1
+  revision 2
 
   bottle do
-    revision 2
-    sha1 "f1244c117036a733742f128f8a168dcb0568675d" => :mavericks
-    sha1 "41f27fc515410ff728316e994be6f471520e5c90" => :mountain_lion
-    sha1 "cab018e86b60e5a8a8115581a2aa3390b18b3080" => :lion
+    revision 3
+    sha1 "9f8d1d3bf62e78c0918822517a041a845b6703d8" => :yosemite
+    sha1 "307042fc8dd7f736b450ee5fc631197290483cf7" => :mavericks
+    sha1 "f3708ea1d1f736527c428f0026aa42499c489fe2" => :mountain_lion
   end
 
   option :universal
@@ -54,7 +54,7 @@ class Python < Formula
   patch :DATA if build.with? "brewed-tk"
 
   def lib_cellar
-    prefix / (if OS.mac? then "Frameworks/Python.framework/Versions/2.7" end) /
+    prefix / (OS.mac? ? "Frameworks/Python.framework/Versions/2.7" : "") /
       "lib/python2.7"
   end
 
@@ -152,7 +152,7 @@ class Python < Formula
     inreplace lib_cellar/"config/Makefile" do |s|
       s.change_make_var! "LINKFORSHARED",
         "-u _PyMac_Error $(PYTHONFRAMEWORKINSTALLDIR)/Versions/$(VERSION)/$(PYTHONFRAMEWORK)"
-    end
+    end if OS.mac?
 
     # Remove the site-packages that Python created in its Cellar.
     site_packages_cellar.rmtree
@@ -239,11 +239,11 @@ class Python < Formula
     if OS.mac?
       inreplace "setup.py",
               "do_readline = self.compiler.find_library_file(lib_dirs, 'readline')",
-              "do_readline = '#{HOMEBREW_PREFIX}/opt/readline/lib/libhistory.dylib'"
+              "do_readline = '#{Formula["readline"].opt_lib}/libhistory.dylib'"
     else
       inreplace "setup.py",
               "do_readline = self.compiler.find_library_file(lib_dirs, 'readline')",
-              "do_readline = '#{HOMEBREW_PREFIX}/opt/readline/lib/libhistory.so'"
+              "do_readline = '#{Formula["readline"].opt_lib}/libhistory.so'"
     end
   end
 
@@ -331,7 +331,7 @@ class Python < Formula
     They will install into the site-package directory
       #{site_packages}
 
-    See: https://github.com/Homebrew/homebrew/wiki/Homebrew-and-Python
+    See: https://github.com/Homebrew/homebrew/blob/master/share/doc/homebrew/Homebrew-and-Python.md
     EOS
   end
 

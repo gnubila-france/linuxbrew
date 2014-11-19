@@ -6,6 +6,7 @@ class W3m < Formula
   sha1 '444b6c8cf7094ee95f8e9de96b37f814b9d83237'
 
   depends_on 'bdw-gc'
+  depends_on 'openssl'
 
   fails_with :llvm do
     build 2334
@@ -14,6 +15,10 @@ class W3m < Formula
   patch :DATA
 
   def install
+    # Fix istream.h:23:8: error: redefinition of 'struct file_handle'
+    # See https://sourceforge.net/p/w3m/patches/62/
+    inreplace Dir["istream.[ch]"], "file_handle", "io_file_handle"
+
     system "./configure", "--prefix=#{prefix}", "--disable-image"
     # Race condition in build reported in:
     # https://github.com/Homebrew/homebrew/issues/12854

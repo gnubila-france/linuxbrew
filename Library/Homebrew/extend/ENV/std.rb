@@ -232,7 +232,6 @@ module Stdenv
 
   def x11
     return unless OS.mac?
-
     # There are some config scripts here that should go in the PATH
     append_path "PATH", MacOS::X11.bin.to_s
 

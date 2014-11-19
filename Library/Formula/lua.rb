@@ -1,9 +1,16 @@
-require 'formula'
+require "formula"
 
 class Lua < Formula
-  homepage 'http://www.lua.org/'
-  url 'http://www.lua.org/ftp/lua-5.2.3.tar.gz'
-  sha1 '926b7907bc8d274e063d42804666b40a3f3c124c'
+  homepage "http://www.lua.org/"
+  url "http://www.lua.org/ftp/lua-5.2.3.tar.gz"
+  mirror "https://mirrors.kernel.org/debian/pool/main/l/lua5.2/lua5.2_5.2.3.orig.tar.gz"
+  sha1 "926b7907bc8d274e063d42804666b40a3f3c124c"
+  bottle do
+    sha1 "febde5bb25ed1a6d7cdf2b1a9ed798f29587f7f4" => :yosemite
+    sha1 "10d2bc30697656e6deb6fde98a8fafbd1385681c" => :mavericks
+    sha1 "ced438f2c14b0c7e26b356e4e13fb5a47c3c60fc" => :mountain_lion
+  end
+
   revision 1
 
   fails_with :llvm do
@@ -12,8 +19,8 @@ class Lua < Formula
   end
 
   option :universal
-  option 'with-completion', 'Enables advanced readline support'
-  option 'without-sigaction', 'Revert to ANSI signal instead of improved POSIX sigaction'
+  option "with-completion", "Enables advanced readline support"
+  option "without-sigaction", "Revert to ANSI signal instead of improved POSIX sigaction"
 
   # Be sure to build a dylib, or else runtime modules will pull in another static copy of liblua = crashy
   # See: https://github.com/Homebrew/homebrew/pull/5043
@@ -36,19 +43,25 @@ class Lua < Formula
     ENV.universal_binary if build.universal?
 
     # Use our CC/CFLAGS to compile.
-    inreplace 'src/Makefile' do |s|
-      s.remove_make_var! 'CC'
-      s.change_make_var! 'CFLAGS', "#{ENV.cflags} -DLUA_COMPAT_ALL $(SYSCFLAGS) $(MYCFLAGS)"
-      s.change_make_var! 'MYLDFLAGS', ENV.ldflags
+    inreplace "src/Makefile" do |s|
+      s.remove_make_var! "CC"
+      s.change_make_var! "CFLAGS", "#{ENV.cflags} -DLUA_COMPAT_ALL $(SYSCFLAGS) $(MYCFLAGS)"
+      s.change_make_var! "MYLDFLAGS", ENV.ldflags
     end
 
     # Fix path in the config header
-    inreplace 'src/luaconf.h', '/usr/local', HOMEBREW_PREFIX
+    inreplace "src/luaconf.h", "/usr/local", HOMEBREW_PREFIX
+
+    # Fix the error libreadline.so: undefined reference to `tputs'
+    # See http://lua-users.org/lists/lua-l/2013-02/msg00488.html
+    args = []
+    args << "MYLIBS=-lncurses" if OS.linux?
+
+    arch = if OS.mac? then "macosx" elsif OS.linux? then "linux" else "posix" end
+    system "make", arch, "INSTALL_TOP=#{prefix}", "INSTALL_MAN=#{man1}", *args
+    system "make", "install", "INSTALL_TOP=#{prefix}", "INSTALL_MAN=#{man1}"
 
     # We ship our own pkg-config file as Lua no longer provide them upstream.
-    arch = if OS.mac? then "macosx" elsif OS.linux? then "linux" else "posix" end
-    system "make", arch, "INSTALL_TOP=#{prefix}", "INSTALL_MAN=#{man1}"
-    system "make", "install", "INSTALL_TOP=#{prefix}", "INSTALL_MAN=#{man1}"
     (lib+"pkgconfig/lua.pc").write pc_file
 
     # Fix some software potentially hunting for different pc names.
@@ -82,6 +95,10 @@ class Lua < Formula
     Libs: -L${libdir} -llua -lm
     Cflags: -I${includedir}
     EOS
+  end
+
+  test do
+    system "#{bin}/lua", "-e", "print ('Ducks are cool')"
   end
 end
 

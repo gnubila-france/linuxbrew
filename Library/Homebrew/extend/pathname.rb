@@ -7,7 +7,7 @@ require 'metafiles'
 class Pathname
   include MachO
 
-  BOTTLE_EXTNAME_RX = /(\.[-a-z0-9_]+\.bottle\.(\d+\.)?tar\.gz)$/
+  BOTTLE_EXTNAME_RX = /(\.[a-z0-9_]+\.bottle\.(\d+\.)?tar\.gz)$/
 
   def install *sources
     sources.each do |src|
@@ -106,27 +106,29 @@ class Pathname
   def atomic_write content
     require "tempfile"
     tf = Tempfile.new(basename.to_s, dirname)
-    tf.binmode
-    tf.write(content)
-
     begin
-      old_stat = stat
-    rescue Errno::ENOENT
-      old_stat = default_stat
+      tf.binmode
+      tf.write(content)
+
+      begin
+        old_stat = stat
+      rescue Errno::ENOENT
+        old_stat = default_stat
+      end
+
+      uid = Process.uid
+      gid = Process.groups.delete(old_stat.gid) { Process.gid }
+
+      begin
+        tf.chown(uid, gid)
+        tf.chmod(old_stat.mode)
+      rescue Errno::EPERM
+      end
+
+      File.rename(tf.path, self)
+    ensure
+      tf.close!
     end
-
-    uid = Process.uid
-    gid = Process.groups.delete(old_stat.gid) { Process.gid }
-
-    begin
-      tf.chown(uid, gid)
-      tf.chmod(old_stat.mode)
-    rescue Errno::EPERM
-    end
-
-    File.rename(tf.path, self)
-  ensure
-    tf.close!
   end
 
   def default_stat
@@ -321,7 +323,7 @@ class Pathname
     saved_perms = nil
     unless writable_real?
       saved_perms = stat.mode
-      chmod 0644
+      chmod 0644 | saved_perms
     end
     yield
   ensure

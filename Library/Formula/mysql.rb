@@ -6,6 +6,7 @@ class Mysql < Formula
   sha1 "be068ba90953aecdb3f448b4ba1d35796eb799eb"
 
   bottle do
+    sha1 "d75de4e9ba9420fb24054382a17421811117ef23" => :yosemite
     sha1 "487c5c441bc4d4907e65e49816bf460a63e0626f" => :mavericks
     sha1 "6fcaefaa998e2398893b970200ae33b8baf04794" => :mountain_lion
     sha1 "770d21fb57e4f4740e076349958ea8698627788c" => :lion
@@ -21,7 +22,7 @@ class Mysql < Formula
   option 'enable-debug', 'Build with debug support'
 
   depends_on 'cmake' => :build
-  depends_on 'pidof' unless MacOS.version >= :mountain_lion
+  depends_on 'pidof' unless MacOS.version >= :mountain_lion || !OS.mac?
   depends_on 'openssl'
 
   conflicts_with 'mysql-cluster', 'mariadb', 'percona-server',
@@ -112,7 +113,7 @@ class Mysql < Formula
     inreplace "#{prefix}/support-files/mysql.server" do |s|
       s.gsub!(/^(PATH=".*)(")/, "\\1:#{HOMEBREW_PREFIX}/bin\\2")
       # pidof can be replaced with pgrep from proctools on Mountain Lion
-      s.gsub!(/pidof/, 'pgrep') if MacOS.version >= :mountain_lion
+      s.gsub!(/pidof/, 'pgrep') if MacOS.version >= :mountain_lion || !OS.mac?
     end
 
     bin.install_symlink prefix/"support-files/mysql.server"

@@ -2,12 +2,11 @@ require "formula"
 
 class Wireshark < Formula
   homepage "http://www.wireshark.org"
-  revision 1
 
   stable do
-    url "http://wiresharkdownloads.riverbed.com/wireshark/src/all-versions/wireshark-1.12.0.tar.bz2"
-    mirror "http://www.wireshark.org/download/src/all-versions/wireshark-1.12.0.tar.bz2"
-    sha1 "c7a94a9ec90c1ff9be2a7d7b813276e433509df9"
+    url "http://wiresharkdownloads.riverbed.com/wireshark/src/all-versions/wireshark-1.12.1.tar.bz2"
+    mirror "http://www.wireshark.org/download/src/all-versions/wireshark-1.12.1.tar.bz2"
+    sha1 "e1508ea25ccf077c5a7fa2af3b88f3ae199f77fb"
 
     # Removes SDK checks that prevent the build from working on CLT-only systems
     # Reported upstream: https://bugs.wireshark.org/bugzilla/show_bug.cgi?id=9290
@@ -15,9 +14,10 @@ class Wireshark < Formula
   end
 
   bottle do
-    sha1 "c358f63d065e79c1bc95d9743686a0ba2ffb56d2" => :mavericks
-    sha1 "3beac5fc1a4ad062a29a105bd2f30fb7761cf698" => :mountain_lion
-    sha1 "e7b9eb2d8fefaf9c88fa23edf232a836794bfb11" => :lion
+    revision 1
+    sha1 "0741f042871428c47a45163178d292110a49b45b" => :yosemite
+    sha1 "a4805838b3bee1b9a51410fbf3f5960b022bf8e9" => :mavericks
+    sha1 "b73a69bcfc89a7c58c82a5f16fb3e733de3bc57c" => :mountain_lion
   end
 
   head do
@@ -40,10 +40,10 @@ class Wireshark < Formula
   depends_on "libgcrypt"
 
   depends_on "geoip" => :recommended
+  depends_on "c-ares" => :recommended
 
-  depends_on "c-ares" => :optional
+  depends_on "libsmi" => :optional
   depends_on "lua" => :optional
-  depends_on "pcre" => :optional
   depends_on "portaudio" => :optional
   depends_on "qt" => :optional
   depends_on "gtk+3" => :optional
@@ -52,8 +52,7 @@ class Wireshark < Formula
   def install
     args = ["--disable-dependency-tracking",
             "--prefix=#{prefix}",
-            "--with-gnutls",
-            "--with-ssl"]
+            "--with-gnutls"]
 
     args << "--disable-wireshark" if build.without?("gtk+3") && build.without?("qt") && build.without?("gtk+")
     args << "--disable-gtktest" if build.without?("gtk+3") && build.without?("gtk+")
