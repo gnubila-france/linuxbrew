@@ -166,10 +166,10 @@ class Gcc < Formula
         args << "--with-sysroot=#{MacOS.sdk_path}"
       end
 
-      system = prefix + "x86_64-unknown-linux-gnu"
-      system.mkdir
-      system_bin = system + 'bin'
-      system_bin.make_symlink "#{HOMEBREW_PREFIX}/lib"
+      if OS.linux?
+        link = Pathname.new "#{prefix}/x86_64-unknown-linux-gnu/bin"
+        link.make_symlink "#{HOMEBREW_PREFIX}/lib"
+      end
 
       system "../configure", *args
       system "make", "bootstrap"
@@ -216,12 +216,14 @@ class Gcc < Formula
       prefix.install_symlink "lib" => "lib64"
     end
     
-    system_bin.delete
-    system.delete
-    crts = Pathname.new "#{lib}/gcc/x86_64-unknown-linux-gnu/#{version}"
-    Formula['glibc'].lib.children.select {|p| p.basename.to_s =~ /^crt.\.o$/ }.collect {|p| p.relative_path_from crts}.each do |p|
-      crts.install_symlink p 
+    if OS.linux?
+      link.delete
+      crts = Pathname.new "#{lib}/gcc/x86_64-unknown-linux-gnu/#{version}"
+      Formula['glibc'].lib.children.select {|p| p.basename.to_s =~ /^crt.\.o$/ }.collect {|p| p.relative_path_from crts}.each do |p|
+        crts.install_symlink p 
+      end
     end
+
   end
 
   def add_suffix file, suffix
