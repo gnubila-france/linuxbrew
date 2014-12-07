@@ -166,6 +166,11 @@ class Gcc < Formula
         args << "--with-sysroot=#{MacOS.sdk_path}"
       end
 
+      system = prefix + "x86_64-unknown-linux-gnu"
+      system.mkdir
+      system_bin = system + 'bin'
+      system_bin.make_symlink "#{HOMEBREW_PREFIX}/lib"
+
       system "../configure", *args
       system "make", "bootstrap"
       system "make", "install"
