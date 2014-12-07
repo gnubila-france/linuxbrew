@@ -215,6 +215,13 @@ class Gcc < Formula
       rmdir lib64
       prefix.install_symlink "lib" => "lib64"
     end
+    
+    system_bin.delete
+    system.delete
+    crts = Pathname.new "#{lib}/gcc/x86_64-unknown-linux-gnu/#{version}"
+    Formula['glibc'].lib.children.select {|p| p.basename.to_s =~ /^crt.\.o$/ }.collect {|p| p.relative_path_from crts}.each do |p|
+      crts.install_symlink p 
+    end
   end
 
   def add_suffix file, suffix
