@@ -168,6 +168,7 @@ class Gcc < Formula
 
       if OS.linux?
         link = Pathname.new "#{prefix}/x86_64-unknown-linux-gnu/bin"
+        link.parent.mkpath
         link.make_symlink "#{HOMEBREW_PREFIX}/lib"
       end
 
