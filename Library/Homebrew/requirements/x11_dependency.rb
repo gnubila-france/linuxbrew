@@ -1,5 +1,4 @@
-require 'requirement'
-require 'os/x11'
+require "requirement"
 
 class X11Dependency < Requirement
   include Comparable
@@ -20,29 +19,15 @@ class X11Dependency < Requirement
   end
 
   satisfy :build_env => false do
-    if OS.mac?
-      OS.MacOS::XQuartz.installed? && min_version <= Version.new(MacOS::XQuartz.version)
-    elsif OS.linux?
-      OS::X11.installed? && min_version <= Version.new(OS::X11.version)
-    else
-      true
-    end
+    OS.linux? ||
+    MacOS::XQuartz.installed? && min_version <= Version.new(MacOS::XQuartz.version)
   end
 
-  def message
-    if OS.mac?
-      <<-EOS.undent
-        Unsatisfied dependency: XQuartz #{@min_version}
-        Homebrew does not package XQuartz. Installers may be found at:
-          https://xquartz.macosforge.org
-      EOS
-    else
-      <<-EOS.undent
-        Unsatisfied dependency: X11 #{@min_version}
-        Homebrew does not package X11.
-        Consult your distribution's manual on how to install X11.
-      EOS
-    end
+  def message; <<-EOS.undent
+    Unsatisfied dependency: XQuartz #{@min_version}
+    Homebrew does not package XQuartz. Installers may be found at:
+      https://xquartz.macosforge.org
+    EOS
   end
 
   def <=> other
