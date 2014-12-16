@@ -50,8 +50,12 @@ if not defined? HOMEBREW_BREW_FILE
   HOMEBREW_BREW_FILE = ENV['HOMEBREW_BREW_FILE'] || which('brew').to_s
 end
 
-HOMEBREW_PREFIX = Pathname.new(HOMEBREW_BREW_FILE).dirname.parent # Where we link under
-HOMEBREW_REPOSITORY = Pathname.new(HOMEBREW_BREW_FILE).realpath.dirname.parent # Where .git is found
+# Where we link under
+HOMEBREW_PREFIX = Pathname.new(HOMEBREW_BREW_FILE).dirname.parent
+
+# Where .git is found
+HOMEBREW_REPOSITORY = Pathname.new(HOMEBREW_BREW_FILE).realpath.dirname.parent
+
 HOMEBREW_LIBRARY = HOMEBREW_REPOSITORY/"Library"
 HOMEBREW_CONTRIB = HOMEBREW_REPOSITORY/"Library/Contributions"
 
@@ -100,7 +104,7 @@ module Homebrew
   alias_method :failed?, :failed
 end
 
-HOMEBREW_PULL_OR_COMMIT_URL_REGEX = %r[https://github\.com/([\w-]+)/homebrew(-[\w-]+)?/(?:pull/(\d+)|commit/[0-9a-fA-F]{4,40})]
+HOMEBREW_PULL_OR_COMMIT_URL_REGEX = %r[https://github\.com/([\w-]+)/(?:homebrew|linuxbrew)(-[\w-]+)?/(?:pull/(\d+)|commit/[0-9a-fA-F]{4,40})]
 
 require 'compat' unless ARGV.include? "--no-compat" or ENV['HOMEBREW_NO_COMPAT']
 

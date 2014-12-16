@@ -953,6 +953,24 @@ def check_tmpdir
   "TMPDIR #{tmpdir.inspect} doesn't exist." unless tmpdir.nil? or File.directory? tmpdir
 end
 
+def check_homebrew_temp_executable
+  file = Pathname.new "#{HOMEBREW_TEMP}/check_homebrew_temp_executable"
+  FileUtils.rm_f file
+  file.write "#!/bin/sh\n", 0700
+  unless system(file) then <<-EOS.undent
+    The disk volume of #{HOMEBREW_TEMP} is not executable.
+    Set the HOMEBREW_TEMP environment varible to a directory that is mounted on
+    an executable volume.
+    For example:
+      export HOMEBREW_TEMP=/var/tmp
+    or
+      export HOMEBREW_TEMP=#{HOMEBREW_PREFIX}/tmp
+    EOS
+  end
+ensure
+  FileUtils.rm_f file
+end
+
 def check_missing_deps
   return unless HOMEBREW_CELLAR.exist?
   missing = Set.new
@@ -1217,7 +1235,13 @@ module Homebrew
 
     first_warning = true
     methods.each do |method|
-      out = checks.send(method)
+      begin
+        out = checks.send(method)
+      rescue NoMethodError
+        Homebrew.failed = true
+        puts "No check available by the name: #{method}"
+        next
+      end
       unless out.nil? or out.empty?
         if first_warning
           puts <<-EOS.undent

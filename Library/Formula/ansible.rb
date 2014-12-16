@@ -2,16 +2,16 @@ require "formula"
 
 class Ansible < Formula
   homepage "http://www.ansible.com/home"
-  url "http://releases.ansible.com/ansible/ansible-1.7.2.tar.gz"
-  sha1 "21532ce402e08c91cc64c5e655758574af9fc8f3"
+  url "http://releases.ansible.com/ansible/ansible-1.8.2.tar.gz"
+  sha1 "4cfbec3a0850639384c908e77e2823acb1297e1e"
 
   head "https://github.com/ansible/ansible.git", :branch => "devel"
 
   bottle do
-    revision 3
-    sha1 "86361799cceb9b3dfcdc7f0c8780a903ab0e9b17" => :yosemite
-    sha1 "64b09af1848817e84f29ec1984a30aaed2289403" => :mavericks
-    sha1 "aa75a88b94c42fb02137ed66aae23d015360d28a" => :mountain_lion
+    revision 2
+    sha1 "ecedf8f29c9ebb482c1f3d56f8a97591d9a55ad5" => :yosemite
+    sha1 "4abe1bb420b7396bb213702bee06da733c044f39" => :mavericks
+    sha1 "6140887ca00017c45a2dfe5d699db072a8e035a7" => :mountain_lion
   end
 
   depends_on :python if MacOS.version <= :snow_leopard
@@ -43,8 +43,8 @@ class Ansible < Formula
   end
 
   resource "boto" do
-    url "https://pypi.python.org/packages/source/b/boto/boto-2.32.1.tar.gz"
-    sha1 "4fdecde66245b7fc0295e22d2c2d3c9b08c2b1fa"
+    url "https://pypi.python.org/packages/source/b/boto/boto-2.34.0.tar.gz"
+    sha1 "e19d252b58054a7711fae910324e26b2b551a44d"
   end
 
   resource "pyyaml" do
@@ -93,6 +93,10 @@ class Ansible < Formula
   end
 
   def install
+    # pycrypto needs this on 10.8
+    # https://github.com/Homebrew/homebrew/pull/34682#issuecomment-65813603
+    ENV.refurbish_args
+
     ENV["PYTHONPATH"] = libexec/"vendor/lib/python2.7/site-packages"
     ENV.prepend_create_path "PYTHONPATH", libexec/"lib/python2.7/site-packages"
 
@@ -117,6 +121,16 @@ class Ansible < Formula
   end
 
   test do
-    system "#{bin}/ansible", "--version"
+    ENV["ANSIBLE_REMOTE_TEMP"] = testpath/"tmp"
+    (testpath/"playbook.yml").write <<-EOF.undent
+      ---
+      - hosts: all
+        gather_facts: False
+        tasks:
+        - name: ping
+          ping:
+    EOF
+    (testpath/"hosts.ini").write("localhost ansible_connection=local\n")
+    system bin/"ansible-playbook", testpath/"playbook.yml", "-i", testpath/"hosts.ini"
   end
 end
