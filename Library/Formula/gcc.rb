@@ -167,9 +167,9 @@ class Gcc < Formula
       end
 
       if OS.linux?
-        link = Pathname.new "#{prefix}/x86_64-unknown-linux-gnu/bin"
-        link.parent.mkpath
-        link.make_symlink "#{HOMEBREW_PREFIX}/lib"
+        @link = Pathname.new "#{prefix}/x86_64-unknown-linux-gnu/bin"
+        @link.parent.mkpath
+        @link.make_symlink "#{HOMEBREW_PREFIX}/lib"
       end
 
       system "../configure", *args
@@ -218,8 +218,8 @@ class Gcc < Formula
     end
     
     if OS.linux?
-      p = link.parent
-      link.delete
+      p = @link.parent
+      @link.delete
       p.delete
       crts = Pathname.new "#{lib}/gcc/x86_64-unknown-linux-gnu/#{version}"
       Formula['glibc'].lib.children.select {|p| p.basename.to_s =~ /^crt.\.o$/ }.collect {|p| p.relative_path_from crts}.each do |p|
