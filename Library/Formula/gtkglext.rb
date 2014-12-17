@@ -27,6 +27,10 @@ class Gtkglext < Formula
     system "./configure", "--disable-debug", "--disable-dependency-tracking",
                           "--prefix=#{prefix}"
     system "make install"
+    if OS.linux?
+      system "sed-i -e 's# -L/usr/lib64 ##g' #{prefix}/lib/pkgconfig/gdkglext-x11-1.0.pc"
+      system "sed -i -e 's# -L/usr/lib64 ##g' #{prefix}/lib/pkgconfig/gdkglext-1.0.pc"
+    end
   end
 end
 
