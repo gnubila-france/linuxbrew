@@ -87,13 +87,24 @@ class Qt < Formula
     args << '-developer-build' if build.include? 'developer'
 
     system "./configure", *args
+
+    if OS.linux?
+      # Gentoo Hack from qt4-build-multilib.eclass:
+      # configure is stupid and assigns QMAKE_LFLAGS twice,
+      # thus the previous -rpath-link flag gets overwritten
+      # and some packages (e.g. qthelp) fail to link
+      system "sed -i -e '/^QMAKE_LFLAGS =/ s:$: $$QMAKE_LFLAGS:' .qmake.cache"
+    end
+
     system "make"
     ENV.j1
     system "make install"
 
     # what are these anyway?
-    (bin+'pixeltool.app').rmtree
-    (bin+'qhelpconverter.app').rmtree
+    if OS.mac?
+      (bin+'pixeltool.app').rmtree
+      (bin+'qhelpconverter.app').rmtree
+    end
     # remove porting file for non-humans
     (prefix+'q3porting.xml').unlink if build.without? 'qt3support'
 
@@ -107,7 +118,7 @@ class Qt < Formula
       include.install_symlink path => path.parent.basename(".framework")
     end
 
-    Pathname.glob("#{bin}/*.app") { |app| mv app, prefix }
+    Pathname.glob("#{bin}/*.app") { |app| mv app, prefix } if OS.mac?
   end
 
   test do
