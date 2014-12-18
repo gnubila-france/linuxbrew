@@ -71,6 +71,13 @@ class Cmake < Formula
 
   depends_on NoExpatFramework
 
+  # Temporary patch to prevent:
+  # -- extracting... [tar xfz]
+  # CMake Error: Problem with archive_write_finish_entry(): Can't restore time
+  # CMake Error: Problem extracting tar: /tmp/sailfish-n30248/sailfish-0.6.3/external/cmph-2.0.tar.gz
+  #
+  patch :DATA
+
   def install
     if build.with? "docs"
       ENV.prepend_create_path "PYTHONPATH", buildpath+"sphinx/lib/python2.7/site-packages"
@@ -109,3 +116,27 @@ class Cmake < Formula
     system "#{bin}/cmake", "."
   end
 end
+
+__END__
+diff --git a/Utilities/cmlibarchive/libarchive/archive_write_disk_posix.c b/Utilities/cmlibarchive/libarchive/archive_write_disk_posix.c
+index a7cf53f..feeaf3c 100644
+--- a/Utilities/cmlibarchive/libarchive/archive_write_disk_posix.c	2014-09-11 15:24:02.000000000 +0200
++++ b/Utilities/cmlibarchive/libarchive/archive_write_disk_posix.c	2014-12-18 14:07:04.000000000 +0100
+@@ -1730,7 +1730,7 @@
+                return (a->lookup_gid)(a->lookup_gid_data, name, id);
+        return (id);
+ }
+-
++
+ int64_t
+ archive_write_disk_uid(struct archive *_a, const char *name, int64_t id)
+ {
+@@ -2938,7 +2938,7 @@
+ 	if (r1 != 0 || r2 != 0) {
+ 		archive_set_error(&a->archive, errno,
+ 				  "Can't restore time");
+-		return (ARCHIVE_WARN);
++		return (ARCHIVE_OK);
+ 	}
+ 	return (ARCHIVE_OK);
+ }
