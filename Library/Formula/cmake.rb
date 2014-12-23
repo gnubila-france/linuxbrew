@@ -107,6 +107,14 @@ class Cmake < Formula
 
     system "./bootstrap", *args
     system "make"
+    #Find X11 library
+    system "sed -i '/\s*set(X11_INC_SEARCH_PATH/a #{HOMEBREW_PREFIX}/include' Modules/FindX11.cmake"
+    system "sed -i '/\s*set(X11_LIB_SEARCH_PATH/a #{HOMEBREW_PREFIX}/lib' Modules/FindX11.cmake"
+    #Find include unix path
+    system "sed -i -e '/list(APPEND CMAKE_SYSTEM_INCLUDE_PATH/a   #LinuxBrew\\n  #{HOMEBREW_PREFIX}/include' Modules/Platform/UnixPaths.cmake"
+    system "sed -i -e '/list(APPEND CMAKE_SYSTEM_LIBRARY_PATH/a   #LinuxBrew\\n  #{HOMEBREW_PREFIX}/lib' Modules/Platform/UnixPaths.cmake"
+    # Default include directories
+    system "sed -i -e 's# /usr/include$# #{HOMEBREW_PREFIX}/include /usr/include#g' Modules/Platform/UnixPaths.cmake"
     system "make", "install"
     bin.install_symlink Dir["#{prefix}/CMake.app/Contents/bin/*"] if build.with? "qt"
   end
