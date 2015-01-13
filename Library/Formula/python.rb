@@ -126,8 +126,15 @@ class Python < Formula
       ENV.append "LDFLAGS", "-L#{tcl_tk}/lib"
     end
 
+    ENV.append "CPPFLAGS", "-I#{HOMEBREW_PREFIX}/include"
+    ENV.append "LDFLAGS", "-L#{HOMEBREW_PREFIX}/lib"
+
     unless OS.mac?
       args << "--enable-shared"
+      # Allow python setup.py to find libraries needed to 
+      # compile for instance _sqlite3
+      ENV.append "CPPFLAGS", "-I#{HOMEBREW_PREFIX}/include"
+      ENV.append "LDFLAGS", "-L#{HOMEBREW_PREFIX}/lib"
     end
 
     system "./configure", *args
