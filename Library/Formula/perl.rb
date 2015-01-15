@@ -34,6 +34,11 @@ class Perl < Formula
     args << "-Dusedtrace" if build.with? "dtrace"
     args << "-Dusedevel" if build.head?
 
+    # Prevent "Cannot find errno.h at Errno_pm.PL line 138." in standalone
+    # linuxbrew installation... can break perl if this is not the case
+    args << "-Dlocincpth='#{HOMEBREW_PREFIX}/include'"
+    args << "-Dloclibpth='#{HOMEBREW_PREFIX}/lib'"
+
     system "./Configure", *args
     system "make"
     system "make", "test" if build.with? "tests"
