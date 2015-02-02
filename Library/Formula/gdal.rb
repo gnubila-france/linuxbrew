@@ -44,7 +44,7 @@ class Gdal < Formula
   depends_on "postgresql" => :optional
   depends_on "mysql" => :optional
 
-  depends_on 'homebrew/science/armadillo' if build.include? 'enable-armadillo'
+  depends_on 'gnubila-france/science/armadillo' if build.include? 'enable-armadillo'
 
   if build.with? "libkml"
     depends_on "autoconf" => :build
@@ -54,7 +54,7 @@ class Gdal < Formula
 
   if build.include? 'complete'
     # Raster libraries
-    depends_on "homebrew/science/netcdf" # Also brings in HDF5
+    depends_on "gnubila-france/science/netcdf" # Also brings in HDF5
     depends_on "jasper"
     depends_on "webp"
     depends_on "cfitsio"
