@@ -39,8 +39,6 @@ class Perl < Formula
     args << "-Dlocincpth='#{HOMEBREW_PREFIX}/include'"
     args << "-Dloclibpth='#{HOMEBREW_PREFIX}/lib'"
 
-    system "env"
-    
     system "./Configure", *args
     system "make"
     system "make", "test" if build.with? "tests"
