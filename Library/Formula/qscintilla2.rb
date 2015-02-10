@@ -23,13 +23,17 @@ class Qscintilla2 < Formula
   end
 
   def install
-    # On Mavericks we want to target libc++, this requires a unsupported/macx-clang-libc++ flag
-    if ENV.compiler == :clang and MacOS.version >= :mavericks
-      spec = "unsupported/macx-clang-libc++"
+    if OS.mac?
+      # On Mavericks we want to target libc++, this requires a unsupported/macx-clang-libc++ flag
+      if ENV.compiler == :clang and MacOS.version >= :mavericks
+        spec = "unsupported/macx-clang-libc++"
+      else
+        spec = "macx-g++"
+      end
+      args = %W[-config release -spec #{spec}]
     else
-      spec = "macx-g++"
+      args = %W[-config release ]
     end
-    args = %W[-config release -spec #{spec}]
 
     cd 'Qt4Qt5' do
       inreplace 'qscintilla.pro' do |s|
