@@ -97,12 +97,13 @@ class Caveats
     if keg and keg.app_installed?
       <<-EOS.undent
         .app bundles were installed.
-        Run `brew linkapps` to symlink these to /Applications.
+        Run `brew linkapps #{keg.name}` to symlink these to /Applications.
       EOS
     end
   end
 
   def plist_caveats
+    return "" unless OS.mac?
     s = []
     if f.plist or (keg and keg.plist_installed?)
       destination = f.plist_startup ? '/Library/LaunchDaemons' \

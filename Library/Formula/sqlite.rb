@@ -1,16 +1,14 @@
-require "formula"
-
 class Sqlite < Formula
-  homepage "http://sqlite.org/"
-  url "https://www.sqlite.org/2014/sqlite-autoconf-3080703.tar.gz"
-  version "3.8.7.3"
-  sha1 "5cbe9aa4af1b32787045a251dba6debee3f061c0"
+  homepage "https://sqlite.org/"
+  url "https://sqlite.org/2015/sqlite-autoconf-3080802.tar.gz"
+  sha1 "1db237523419af7110e1d92c6b766e965f9322e4"
+  version "3.8.8.2"
 
   bottle do
     cellar :any
-    sha1 "9d6185977e9ebf1bf43445c46b2b0911b869d7c7" => :yosemite
-    sha1 "18eaa94e0445f37cfa42834496b92d6192f4a60d" => :mavericks
-    sha1 "dbb39c30d616cf6916d230d59d45503c792fd749" => :mountain_lion
+    sha1 "86631016458cd3fddd30d183069aad462a2f167e" => :yosemite
+    sha1 "75b584b916ed199452dbbf0b4b5093ebed1f6c80" => :mavericks
+    sha1 "43550be52202bc36326f7ef455f32083ff37ed41" => :mountain_lion
   end
 
   keg_only :provided_by_osx, "OS X provides an older sqlite3."
@@ -19,6 +17,8 @@ class Sqlite < Formula
   option "with-docs", "Install HTML documentation"
   option "without-rtree", "Disable the R*Tree index module"
   option "with-fts", "Enable the FTS module"
+  option "with-secure-delete", "Defaults secure_delete to on"
+  option "with-unlock-notify", "Enable the unlock notification feature"
   option "with-icu4c", "Enable the ICU module"
   option "with-functions", "Enable more math and string functions for SQL queries"
 
@@ -26,35 +26,37 @@ class Sqlite < Formula
   depends_on "icu4c" => :optional
 
   resource "functions" do
-    url "http://www.sqlite.org/contrib/download/extension-functions.c?get=25", :using  => :nounzip
+    url "https://www.sqlite.org/contrib/download/extension-functions.c?get=25", :using  => :nounzip
     version "2010-01-06"
     sha1 "c68fa706d6d9ff98608044c00212473f9c14892f"
   end
 
   resource "docs" do
-    url "https://www.sqlite.org/2014/sqlite-doc-3080703.zip"
-    version "3.8.7.3"
-    sha1 "c4a0d51d0fc2fc9c74aa774aa12623b7f2a99db1"
+    url "https://sqlite.org/2015/sqlite-doc-3080802.zip"
+    version "3.8.8.2"
+    sha1 "a11a6ea95d3d4a88b8d7d4e0cb6fcc3e5f4bf887"
   end
 
   def install
     ENV.append "CPPFLAGS", "-DSQLITE_ENABLE_RTREE" if build.with? "rtree"
     ENV.append "CPPFLAGS", "-DSQLITE_ENABLE_FTS3 -DSQLITE_ENABLE_FTS3_PARENTHESIS" if build.with? "fts"
     ENV.append "CPPFLAGS", "-DSQLITE_ENABLE_COLUMN_METADATA"
+    ENV.append "CPPFLAGS", "-DSQLITE_SECURE_DELETE" if build.with? "secure-delete"
+    ENV.append "CPPFLAGS", "-DSQLITE_ENABLE_UNLOCK_NOTIFY" if build.with? "unlock-notify"
 
     if build.with? "icu4c"
-      icu4c = Formula['icu4c']
+      icu4c = Formula["icu4c"]
       icu4cldflags = `#{icu4c.opt_bin}/icu-config --ldflags`.tr("\n", " ")
       icu4ccppflags = `#{icu4c.opt_bin}/icu-config --cppflags`.tr("\n", " ")
       ENV.append "LDFLAGS", icu4cldflags
       ENV.append "CPPFLAGS", icu4ccppflags
-      ENV.append 'CPPFLAGS', "-DSQLITE_ENABLE_ICU"
+      ENV.append "CPPFLAGS", "-DSQLITE_ENABLE_ICU"
     end
 
     ENV.universal_binary if build.universal?
 
     system "./configure", "--prefix=#{prefix}", "--disable-dependency-tracking", "--enable-dynamic-extensions"
-    system "make install"
+    system "make", "install"
 
     if build.with? "functions"
       buildpath.install resource("functions")
@@ -75,7 +77,7 @@ class Sqlite < Formula
         In your application, call sqlite3_enable_load_extension(db,1) to
         allow loading external libraries.  Then load the library libsqlitefunctions
         using sqlite3_load_extension; the third argument should be 0.
-        See http://www.sqlite.org/cvstrac/wiki?p=LoadableExtensions.
+        See https://www.sqlite.org/cvstrac/wiki?p=LoadableExtensions.
         Select statements may now use these functions, as in
         SELECT cos(radians(inclination)) FROM satsum WHERE satnum = 25544;
 

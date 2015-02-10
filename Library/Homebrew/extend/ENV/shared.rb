@@ -25,6 +25,7 @@ module SharedEnvExtension
     MACOSX_DEPLOYMENT_TARGET SDKROOT DEVELOPER_DIR
     CMAKE_PREFIX_PATH CMAKE_INCLUDE_PATH CMAKE_FRAMEWORK_PATH
     GOBIN
+    LIBRARY_PATH
   ]
 
   def inherit?
@@ -131,7 +132,16 @@ module SharedEnvExtension
   end
 
   def determine_cc
-    COMPILER_SYMBOL_MAP.invert.fetch(compiler, compiler)
+    full_name = COMPILER_SYMBOL_MAP.invert.fetch(compiler, compiler)
+    return full_name unless OS.linux?
+    short_name = full_name.delete("-.")
+    if Pathname(full_name).exist? || which(full_name)
+      full_name
+    elsif which(short_name)
+      short_name
+    else
+      full_name
+    end
   end
 
   COMPILERS.each do |compiler|
@@ -143,7 +153,7 @@ module SharedEnvExtension
   end
 
   # Snow Leopard defines an NCURSES value the opposite of most distros
-  # See: http://bugs.python.org/issue6848
+  # See: https://bugs.python.org/issue6848
   # Currently only used by aalib in core
   def ncurses_define
     append 'CPPFLAGS', "-DNCURSES_OPAQUE=0"
@@ -230,7 +240,7 @@ module SharedEnvExtension
       gcc_formula = gcc_version_formula(gcc)
       if gcc_formula.name == "gcc"
         return if gcc_formula.opt_prefix.exist?
-        return if OS.linux? && which("gcc-#{gcc}")
+        return if OS.linux? && (which("gcc-#{gcc}") || which(gcc_name))
         raise <<-EOS.undent
         The Homebrew GCC was not installed.
         You must:
@@ -239,6 +249,7 @@ module SharedEnvExtension
       end
 
       if !gcc_formula.opt_prefix.exist?
+        return if OS.linux? && (which("gcc-#{gcc}") || which(gcc_name))
         raise <<-EOS.undent
         The requested Homebrew GCC, #{gcc_name}, was not installed.
         You must:

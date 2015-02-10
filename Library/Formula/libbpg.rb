@@ -2,26 +2,20 @@ require "formula"
 
 class Libbpg < Formula
   homepage "http://bellard.org/bpg/"
-  url "http://bellard.org/bpg/libbpg-0.9.1.tar.gz"
-  sha1 "0ece88372e178985d3327bbb7a0c94947586b3f1"
+  url "http://bellard.org/bpg/libbpg-0.9.5.tar.gz"
+  sha1 "1eee24f9d9d381b574b86a28d2af1073ab07bb55"
 
   bottle do
     cellar :any
-    sha1 "3ad0c2c2c23a9066e7e8db6ef93c90be7d0d8fe9" => :yosemite
-    sha1 "d4f5563138bb800f9ec301a972ae9be74ba75672" => :mavericks
-    sha1 "2edf42ccb895e3ff41f4c3c4a95c04d8543c5dd5" => :mountain_lion
+    sha1 "b3484df329f2b40968a1d70f6a2b4e9df8b15c4d" => :yosemite
+    sha1 "dc8a09cf7f7ebc452aa0d27caa78b4fb1d26b8c1" => :mavericks
+    sha1 "ae5340b8b0a353282bafea08edce8146cf6d5106" => :mountain_lion
   end
 
   depends_on "libpng"
   depends_on "jpeg"
 
   def install
-    # Following changes are necessary for compilation on OS X. These have been
-    # reported to the author and can be removed once incorporated upstream.
-    inreplace "libavutil/mem.c" do |s|
-      s.gsub! "#include <malloc.h>", "#include <malloc/malloc.h>"
-    end
-
     bin.mkpath
     system "make", "install", "prefix=#{prefix}", "CONFIG_APPLE=y"
   end

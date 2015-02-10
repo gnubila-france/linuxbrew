@@ -1,17 +1,14 @@
-require "formula"
-
 class Libav < Formula
   homepage "https://libav.org/"
-  url "https://libav.org/releases/libav-11.tar.xz"
-  sha1 "21f3c7c2154c0ad703872f2faa65ef20d6b7a14f"
+  url "https://libav.org/releases/libav-11.2.tar.xz"
+  sha1 "52ba52cabe5d86b45ce62f56e11fa7912c6e5083"
 
   head "git://git.libav.org/libav.git"
 
   bottle do
-    revision 1
-    sha1 "4e9ae48294c0a8895a1a8317a70ab1c1e65b9c0d" => :yosemite
-    sha1 "b090384d2f18e9fa4cda302a266ca0b74c930754" => :mavericks
-    sha1 "74be2bc63f46166e0883e9a2132eb87c5215c95e" => :mountain_lion
+    sha1 "7c3f6d6c2510250f6719e8a5296c9c3de317854e" => :yosemite
+    sha1 "7c1495d6c2a4826843f5c0ce13ce75204ac2a284" => :mavericks
+    sha1 "764442e2f6be9bb482809948448c7c21e55bf7bb" => :mountain_lion
   end
 
   option "without-faac", "Disable AAC encoder via faac"
@@ -19,7 +16,7 @@ class Libav < Formula
   option "without-x264", "Disable H.264 encoder via x264"
   option "without-xvid", "Disable Xvid MPEG-4 video encoder via xvid"
 
-  option "with-opencore-amr", "Enable AMR-NB de/encoding and AMR-WB decoding " +
+  option "with-opencore-amr", "Enable AMR-NB de/encoding and AMR-WB decoding " \
     "via libopencore-amrnb and libopencore-amrwb"
   option "with-openjpeg", "Enable JPEG 2000 de/encoding via OpenJPEG"
   option "with-openssl", "Enable SSL support"
@@ -63,6 +60,7 @@ class Libav < Formula
     args = [
       "--disable-debug",
       "--disable-shared",
+      "--disable-indev=jack",
       "--prefix=#{prefix}",
       "--enable-gpl",
       "--enable-nonfree",
@@ -70,7 +68,7 @@ class Libav < Formula
       "--enable-vda",
       "--cc=#{ENV.cc}",
       "--host-cflags=#{ENV.cflags}",
-      "--host-ldflags=#{ENV.ldflags}"
+      "--host-ldflags=#{ENV.ldflags}",
     ]
 
     args << "--enable-frei0r" if build.with? "frei0r"
@@ -107,6 +105,9 @@ class Libav < Formula
   end
 
   test do
-    system "#{bin}/avconv -h"
+    # Create an example mp4 file
+    system "#{bin}/avconv", "-y", "-filter_complex",
+        "testsrc=rate=1:duration=1", "#{testpath}/video.mp4"
+    assert (testpath/"video.mp4").exist?
   end
 end

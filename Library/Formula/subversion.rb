@@ -1,17 +1,13 @@
-require "formula"
-
 class Subversion < Formula
   homepage "https://subversion.apache.org/"
-  url "http://www.apache.org/dyn/closer.cgi?path=subversion/subversion-1.8.10.tar.bz2"
-  mirror "http://archive.apache.org/dist/subversion/subversion-1.8.10.tar.bz2"
-  sha1 "d6896d94bb53c1b4c6e9c5bb1a5c466477b19b2b"
-  revision 1
+  url "http://www.apache.org/dyn/closer.cgi?path=subversion/subversion-1.8.11.tar.bz2"
+  mirror "http://archive.apache.org/dist/subversion/subversion-1.8.11.tar.bz2"
+  sha1 "161edaee328f4fdcfd2a7c10ecd3fbcd51c61275"
 
   bottle do
-    revision 4
-    sha1 "91915d626c5e843b2a035e4cfa00898c6c79b353" => :yosemite
-    sha1 "c0d4416a5dc4db63d37bbfae2af29538699b28ca" => :mavericks
-    sha1 "7b78b1abd3bb77ef8ee8f711d3bbc0eec8a9390a" => :mountain_lion
+    sha1 "fdc774e0ca4c603e7d6167b0780fe6fb38ddd3f7" => :yosemite
+    sha1 "0ed6964b8bde9170b25e54c9e3cd56067325b00b" => :mavericks
+    sha1 "f27aeb2bc0aac84caea6ed9c9adb6401fd62143e" => :mountain_lion
   end
 
   deprecated_option "java" => "with-java"
@@ -23,10 +19,11 @@ class Subversion < Formula
   option "with-perl", "Build Perl bindings"
   option "with-ruby", "Build Ruby bindings"
   option "with-gpg-agent", "Build with support for GPG Agent"
+  option "without-serf", "Build without the serf HTTP library"
 
   resource "serf" do
-    url "https://serf.googlecode.com/svn/src_releases/serf-1.3.7.tar.bz2", :using => :curl
-    sha1 "db9ae339dba10a2b47f9bdacf30a58fd8e36683a"
+    url "https://serf.googlecode.com/svn/src_releases/serf-1.3.8.tar.bz2", :using => :curl
+    sha1 "1d45425ca324336ce2f4ae7d7b4cfbc5567c5446"
   end
 
   depends_on "pkg-config" => :build
@@ -80,9 +77,15 @@ class Subversion < Formula
       args = %W[PREFIX=#{serf_prefix} GSSAPI=/usr CC=#{ENV.cc}
                 CFLAGS=#{ENV.cflags} LINKFLAGS=#{ENV.ldflags}
                 OPENSSL=#{Formula["openssl"].opt_prefix}]
+
+      unless OS.mac? && MacOS::CLT.installed?
+        args << "APR=#{Formula["apr"].opt_prefix}"
+        args << "APU=#{Formula["apr-util"].opt_prefix}"
+      end
+
       scons *args
       scons "install"
-    end
+    end if build.with? "serf"
 
     if build.include? "unicode-path"
       raise <<-EOS.undent
@@ -121,10 +124,9 @@ class Subversion < Formula
     # Don't mess with Apache modules (since we're not sudo)
     args = ["--disable-debug",
             "--prefix=#{prefix}",
-            "--with-apr=#{which("apr-1-config").dirname}",
             "--with-zlib=/usr",
             "--with-sqlite=#{Formula["sqlite"].opt_prefix}",
-            "--with-serf=#{serf_prefix}",
+            ("--with-serf=#{serf_prefix}" if build.with? "serf"),
             "--disable-mod-activation",
             "--disable-nls",
             "--without-apache-libexecdir",
@@ -132,6 +134,15 @@ class Subversion < Formula
 
     args << "--enable-javahl" << "--without-jikes" if build.with? "java"
     args << "--without-gpg-agent" if build.without? "gpg-agent"
+
+    unless OS.mac? && MacOS::CLT.installed?
+      args << "--with-apr=#{Formula["apr"].opt_prefix}"
+      args << "--with-apr-util=#{Formula["apr-util"].opt_prefix}"
+      args << "--with-apxs=no"
+    else
+      args << "--with-apr=/usr"
+      args << "--with-apr-util=/usr"
+    end
 
     if build.with? "ruby"
       args << "--with-ruby-sitedir=#{lib}/ruby"
@@ -244,10 +255,10 @@ end
 
 __END__
 diff --git a/configure b/configure
-index 445251b..3ed9485 100755
+index 445251b..6ff4332 100755
 --- a/configure
 +++ b/configure
-@@ -25205,6 +25205,8 @@ fi
+@@ -25366,6 +25366,8 @@ fi
  SWIG_CPPFLAGS="$CPPFLAGS"
  
    SWIG_CPPFLAGS=`echo "$SWIG_CPPFLAGS" | $SED -e 's/-no-cpp-precomp //'`

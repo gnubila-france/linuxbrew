@@ -3,13 +3,13 @@ require "language/go"
 
 class Terraform < Formula
   homepage "http://www.terraform.io/"
-  url "https://github.com/hashicorp/terraform/archive/v0.3.1.tar.gz"
-  sha1 "818d75a0d7d4e46876a6a63a6d5d5a4f8570a0ca"
+  url "https://github.com/hashicorp/terraform/archive/v0.3.6.tar.gz"
+  sha1 "27b95dc159b8fa9c9611bb18a236d2b46d7f6a95"
 
   bottle do
-    sha1 "a21451209263faf134912d1bb212c753929c2879" => :yosemite
-    sha1 "eb83f3c7931c35bce59dacc0b4a192ddd47783b7" => :mavericks
-    sha1 "572381cadce869d3402c9e306d5f033ff137e31e" => :mountain_lion
+    sha1 "cba89a212c639eb9bb3c8a903c56e92aeed4ffee" => :yosemite
+    sha1 "cf9c544dd2555e8db364790ed4983c9e3a9ca9ed" => :mavericks
+    sha1 "8847237302ad9f7d3d369cc6dc8937feaed736e0" => :mountain_lion
   end
 
   depends_on "go" => :build
@@ -39,7 +39,7 @@ class Terraform < Formula
   end
 
   go_resource "github.com/mitchellh/goamz" do
-    url "https://github.com/mitchellh/goamz.git", :revision => "835bb759f66f80805f855201eb6bc6243b059a65"
+    url "https://github.com/mitchellh/goamz.git", :revision => "2441a8d0fab90553ec345cfdf3db24bb61ea61c3"
   end
 
   go_resource "github.com/vaughan0/go-ini" do
@@ -55,7 +55,7 @@ class Terraform < Formula
   end
 
   go_resource "github.com/pearkes/digitalocean" do
-    url "https://github.com/pearkes/digitalocean.git", :revision => "ff10277f356f92c61e6d7703c24f3ba42e867dcb"
+    url "https://github.com/pearkes/digitalocean.git", :revision => "454ebf8720a34e077ebe62c7cd5a248cbf7ca8ff"
   end
 
   go_resource "github.com/pearkes/dnsimple" do
@@ -130,6 +130,14 @@ class Terraform < Formula
       :using => :hg
   end
 
+  go_resource "github.com/hashicorp/atlas-go" do
+    url "https://github.com/hashicorp/atlas-go.git", :revision => "072814b5d05e34466c6c0fdd62cdecf184dc3521"
+  end
+
+  go_resource "github.com/xanzy/go-cloudstack" do
+    url "https://github.com/xanzy/go-cloudstack.git", :revision => "c2c4143ae294b5df4b7b5ae6e087ead01264167f"
+  end
+
   def install
     ENV["GOPATH"] = buildpath
     # For the gox buildtool used by terraform, which doesn't need to
@@ -146,7 +154,9 @@ class Terraform < Formula
     end
 
     cd terrapath do
-      system "make", "test"
+      # Clear ATLAS_TOKEN env var to not run atlas acceptance tests
+      # that would require an active atlas account
+      system "make", "test", "ATLAS_TOKEN="
 
       mkdir "bin"
       arch = MacOS.prefer_64_bit? ? "amd64" : "386"

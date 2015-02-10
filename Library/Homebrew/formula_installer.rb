@@ -1,5 +1,3 @@
-# encoding: UTF-8
-
 require 'cxxstdlib'
 require 'exceptions'
 require 'formula'
@@ -160,7 +158,7 @@ class FormulaInstaller
       raise "Unrecognized architecture for --bottle-arch: #{arch}"
     end
 
-    formula.active_spec.deprecated_flags.each do |deprecated_option|
+    formula.deprecated_flags.each do |deprecated_option|
       old_flag = deprecated_option.old_flag
       new_flag = deprecated_option.current_flag
       opoo "#{formula.name}: #{old_flag} was deprecated; using #{new_flag} instead!"
@@ -196,28 +194,18 @@ class FormulaInstaller
     opoo "Nothing was installed to #{formula.prefix}" unless formula.installed?
   end
 
-  # HACK: If readline is present in the dependency tree, it will clash
-  # with the stdlib's Readline module when the debugger is loaded
-  def perform_readline_hack
-    if (formula.recursive_dependencies.any? { |d| d.name == "readline" } || formula.name == "readline") && debug?
-      ENV['HOMEBREW_NO_READLINE'] = '1'
-    end
-  end
-
   def check_conflicts
     return if ARGV.force?
 
     conflicts = formula.conflicts.select do |c|
-      formula = Formulary.factory(c.name)
-      formula.linked_keg.exist? && formula.opt_prefix.exist?
+      f = Formulary.factory(c.name)
+      f.linked_keg.exist? && f.opt_prefix.exist?
     end
 
     raise FormulaConflictError.new(formula, conflicts) unless conflicts.empty?
   end
 
   def compute_and_install_dependencies
-    perform_readline_hack
-
     req_map, req_deps = expand_requirements
 
     check_requirements(req_map)
@@ -401,7 +389,7 @@ class FormulaInstaller
     link(keg)
     fix_install_names(keg)
 
-    if build_bottle?
+    if build_bottle? && formula.post_install_defined?
       ohai "Not running post_install as we're building a bottle"
       puts "You can run it manually using `brew postinstall #{formula.name}`"
     else
@@ -575,7 +563,7 @@ class FormulaInstaller
   end
 
   def install_plist
-    return unless formula.plist
+    return unless OS.mac? && formula.plist
     formula.plist_path.atomic_write(formula.plist)
     formula.plist_path.chmod 0644
   rescue Exception => e

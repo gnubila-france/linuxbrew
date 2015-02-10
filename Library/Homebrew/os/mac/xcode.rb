@@ -53,7 +53,7 @@ module OS
 
       # Ask Spotlight where Xcode is. If the user didn't install the
       # helper tools and installed Xcode in a non-conventional place, this
-      # is our only option. See: http://superuser.com/questions/390757
+      # is our only option. See: https://superuser.com/questions/390757
       def bundle_path
         MacOS.app_with_bundle_id(V4_BUNDLE_ID, V3_BUNDLE_ID)
       end
@@ -77,7 +77,7 @@ module OS
 
         %W[#{prefix}/usr/bin/xcodebuild #{which("xcodebuild")}].uniq.each do |path|
           if File.file? path
-            `#{path} -version 2>/dev/null` =~ /Xcode (\d(\.\d)*)/
+            Utils.popen_read(path, "-version") =~ /Xcode (\d(\.\d)*)/
             return $1 if $1
           end
         end
@@ -156,6 +156,7 @@ module OS
       # Returns true even if outdated tools are installed, e.g.
       # tools from Xcode 4.x on 10.9
       def installed?
+        return true if OS.linux?
         !!detect_version
       end
 

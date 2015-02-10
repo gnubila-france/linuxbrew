@@ -8,9 +8,9 @@ require 'version'
 class Resource
   include FileUtils
 
-  attr_reader :checksum, :mirrors, :specs, :using
-  attr_writer :url, :checksum, :version
-  attr_accessor :download_strategy
+  attr_reader :mirrors, :specs, :using
+  attr_writer :version
+  attr_accessor :download_strategy, :checksum
 
   # Formula name must be set after the DSL, as we have no access to the
   # formula name before initialization of the formula
@@ -50,7 +50,7 @@ class Resource
   end
 
   def downloader
-    @downloader ||= download_strategy.new(download_name, Download.new(self))
+    download_strategy.new(download_name, Download.new(self))
   end
 
   # Removes /s from resource names; this allows go package names
@@ -72,8 +72,11 @@ class Resource
     downloader.clear_cache
   end
 
-  # Fetch, verify, and unpack the resource
   def stage(target=nil, &block)
+    unless target || block
+      raise ArgumentError, "target directory or block is required"
+    end
+
     verify_download_integrity(fetch)
     unpack(target, &block)
   end
@@ -145,6 +148,8 @@ class Resource
   private
 
   def detect_version(val)
+    return if val.nil? && url.nil?
+
     case val
     when nil     then Version.detect(url, specs)
     when String  then Version.new(val)
