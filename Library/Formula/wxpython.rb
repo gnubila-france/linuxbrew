@@ -29,6 +29,7 @@ class Wxpython < Formula
     depends_on FrameworkPython if OS.mac?
   end
   depends_on "wxmac"
+  depends_on "libuuid" if OS.linux?
 
   def install
     ENV["WXWIN"] = buildpath
