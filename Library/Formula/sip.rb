@@ -29,10 +29,10 @@ class Sip < Formula
 
 
     args = %W[
-      "--destdir=#{lib}/python#{version}/site-packages"
-      "--bindir=#{bin}"
-      "--incdir=#{include}"
-      "--sipdir=#{HOMEBREW_PREFIX}/share/sip"
+      --destdir=#{lib}/python#{version}/site-packages
+      --bindir=#{bin}
+      --incdir=#{include}
+      --sipdir=#{HOMEBREW_PREFIX}/share/sip
            ]
 
     args << "--deployment-target=#{MacOS.version}" if OS.mac?
