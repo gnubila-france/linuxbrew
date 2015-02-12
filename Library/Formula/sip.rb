@@ -35,7 +35,7 @@ class Sip < Formula
       "--sipdir=#{HOMEBREW_PREFIX}/share/sip"
            ]
 
-    args << "--deployment-target=#{MacOS.version}" if OS.Mac?
+    args << "--deployment-target=#{MacOS.version}" if OS.mac?
 
     Language::Python.each_python(build) do |python, version|
       # Note the binary `sip` is the same for python 2.x and 3.x
