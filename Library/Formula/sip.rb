@@ -27,18 +27,17 @@ class Sip < Formula
       system "python", "build.py", "prepare"
     end
 
-
-    args = %W[
+    Language::Python.each_python(build) do |python, version|
+      # Note the binary `sip` is the same for python 2.x and 3.x
+      args = %W[
       --destdir=#{lib}/python#{version}/site-packages
       --bindir=#{bin}
       --incdir=#{include}
       --sipdir=#{HOMEBREW_PREFIX}/share/sip
            ]
 
-    args << "--deployment-target=#{MacOS.version}" if OS.mac?
+      args << "--deployment-target=#{MacOS.version}" if OS.mac?
 
-    Language::Python.each_python(build) do |python, version|
-      # Note the binary `sip` is the same for python 2.x and 3.x
       system python, "configure.py", *args
       system "make"
       system "make", "install"
