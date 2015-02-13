@@ -34,6 +34,19 @@ class Cmake < Formula
       url "https://github.com/Kitware/CMake/commit/c5d9a828.diff"
       sha1 "61b15b638c1409233f36e6e3383b98cab514c3bb"
     end
+
+    # This patch fixes ncurse finding issue: http://public.kitware.com/Bug/view.php?id=15011
+    patch do
+      url "https://github.com/Kitware/CMake/commit/6c8364e6.diff"
+      sha1 "32d20530ac5efc3e2ec2ae9091924562022be60f"
+    end
+
+    # Fix: http://public.kitware.com/Bug/view.php?id=15220
+    patch do
+      url "https://github.com/Kitware/CMake/commit/f11f9579.diff"
+      sha1 "8faca235b85862f46fb33e8dd954b4accb079a73"
+    end
+
   end
 
   bottle do
