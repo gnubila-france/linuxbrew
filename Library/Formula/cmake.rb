@@ -34,19 +34,6 @@ class Cmake < Formula
       url "https://github.com/Kitware/CMake/commit/c5d9a828.diff"
       sha1 "61b15b638c1409233f36e6e3383b98cab514c3bb"
     end
-
-    # This patch fixes ncurse finding issue: http://public.kitware.com/Bug/view.php?id=15011
-    patch do
-      url "https://github.com/Kitware/CMake/commit/6c8364e6.diff"
-      sha1 "32d20530ac5efc3e2ec2ae9091924562022be60f"
-    end
-
-    # Fix: http://public.kitware.com/Bug/view.php?id=15220
-    patch do
-      url "https://github.com/Kitware/CMake/commit/f11f9579.diff"
-      sha1 "8faca235b85862f46fb33e8dd954b4accb079a73"
-    end
-
   end
 
   bottle do
@@ -126,8 +113,6 @@ class Cmake < Formula
       args << "--sphinx-man" << "--sphinx-build=#{buildpath}/sphinx/bin/sphinx-build"
     end
 
-    system "./bootstrap", *args
-    system "make"
     #Find X11 library
     system "sed -i '/\s*set(X11_INC_SEARCH_PATH/a #{HOMEBREW_PREFIX}/include' Modules/FindX11.cmake"
     system "sed -i '/\s*set(X11_LIB_SEARCH_PATH/a #{HOMEBREW_PREFIX}/lib' Modules/FindX11.cmake"
@@ -136,6 +121,9 @@ class Cmake < Formula
     system "sed -i -e '/list(APPEND CMAKE_SYSTEM_LIBRARY_PATH/a   #LinuxBrew\\n  #{HOMEBREW_PREFIX}/lib' Modules/Platform/UnixPaths.cmake"
     # Default include directories
     system "sed -i -e 's# /usr/include$# #{HOMEBREW_PREFIX}/include /usr/include#g' Modules/Platform/UnixPaths.cmake"
+
+    system "./bootstrap", *args
+    system "make"
     system "make", "install"
   end
 
