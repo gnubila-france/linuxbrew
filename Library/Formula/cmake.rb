@@ -119,8 +119,8 @@ class Cmake < Formula
     #Find include unix path
     system "sed -i -e '/list(APPEND CMAKE_SYSTEM_INCLUDE_PATH/a   #LinuxBrew\\n  #{HOMEBREW_PREFIX}/include' Modules/Platform/UnixPaths.cmake"
     system "sed -i -e '/list(APPEND CMAKE_SYSTEM_LIBRARY_PATH/a   #LinuxBrew\\n  #{HOMEBREW_PREFIX}/lib' Modules/Platform/UnixPaths.cmake"
-    # Default include directories
-    system "sed -i -e 's# /usr/include$# #{HOMEBREW_PREFIX}/include /usr/include#g' Modules/Platform/UnixPaths.cmake"
+    # Default include directories. Only search include dire inside linuxbrew (might break non standalone installation)
+    system "sed -i -e 's# /usr/include$# #{HOMEBREW_PREFIX}/include#g' Modules/Platform/UnixPaths.cmake"
 
     system "./bootstrap", *args
     system "make"
