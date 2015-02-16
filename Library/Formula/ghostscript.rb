@@ -64,6 +64,12 @@ class Ghostscript < Formula
     # the version included in ghostscript, we get errors
     # Taken from the MacPorts portfile - http://bit.ly/ghostscript-portfile
     renames = %w{freetype jbig2dec jpeg libpng tiff}
+
+    # Zlib is also provided on linux (standalone installation only ?)
+    # See: http://www.linuxfromscratch.org/blfs/view/svn/pst/gs.html
+    system "sed -i 's/ZLIBDIR=src/ZLIBDIR=$includedir/' configure.ac configure"
+    renames << "zlib" if OS.linux?
+
     renames.each { |lib| mv lib, "#{lib}_local" }
   end
 
