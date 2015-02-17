@@ -116,8 +116,11 @@ class Cmake < Formula
     #Find X11 library
     system "sed -i '/\s*set(X11_INC_SEARCH_PATH/a #{HOMEBREW_PREFIX}/include' Modules/FindX11.cmake"
     system "sed -i '/\s*set(X11_LIB_SEARCH_PATH/a #{HOMEBREW_PREFIX}/lib' Modules/FindX11.cmake"
+    #Find prefix unix path
+    system "sed -i -e '/list(APPEND CMAKE_SYSTEM_PREFIX_PATH/a   #LinuxBrew\\n  #{HOMEBREW_PREFIX}' Modules/Platform/UnixPaths.cmake"
     #Find include unix path
     system "sed -i -e '/list(APPEND CMAKE_SYSTEM_INCLUDE_PATH/a   #LinuxBrew\\n  #{HOMEBREW_PREFIX}/include' Modules/Platform/UnixPaths.cmake"
+    #Find library unix path
     system "sed -i -e '/list(APPEND CMAKE_SYSTEM_LIBRARY_PATH/a   #LinuxBrew\\n  #{HOMEBREW_PREFIX}/lib' Modules/Platform/UnixPaths.cmake"
     # Default include directories. Only search include dire inside linuxbrew (might break non standalone installation)
     system "sed -i -e 's# /usr/include$# #{HOMEBREW_PREFIX}/include#g' Modules/Platform/UnixPaths.cmake"
