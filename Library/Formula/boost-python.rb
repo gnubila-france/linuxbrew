@@ -83,7 +83,11 @@ class BoostPython < Formula
       py_include = `#{python} -c "from __future__ import print_function; import distutils.sysconfig; print(distutils.sysconfig.get_python_inc(True))"`.strip
       open("user-config.jam", "w") do |file|
         # Force boost to compile with the desired compiler
-        file.write "using darwin : : #{ENV.cxx} ;\n"
+	if OS.mac?
+          file.write "using darwin : : #{ENV.cxx} ;\n"
+        else
+          file.write "using gcc : : #{ENV.cxx} ;\n"
+        end
         file.write <<-EOS.undent
           using python : #{version}
                        : #{python}
