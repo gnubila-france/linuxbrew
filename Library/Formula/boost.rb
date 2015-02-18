@@ -1,6 +1,7 @@
 class Boost < Formula
   homepage "http://www.boost.org"
   url "https://downloads.sourceforge.net/project/boost/boost/1.57.0/boost_1_57_0.tar.bz2"
+  mirror "http://ufpr.dl.sourceforge.net/project/boost/boost/1.57.0/boost_1_57_0.tar.bz2"
   sha1 "e151557ae47afd1b43dc3fac46f8b04a8fe51c12"
 
   head "https://github.com/boostorg/boost.git"
