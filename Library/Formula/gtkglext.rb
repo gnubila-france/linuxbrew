@@ -25,7 +25,7 @@ class Gtkglext < Formula
 
   def install
     # Include Linuxbrew include path where to search for X11
-    system "sed -i -e 's#ac_x_header_dirs=\'.*#ac_x_header_dirs=\'#{prefix}/include#' ./configure"
+    system "sed -i '/ac_x_header_dirs=/a#{HOMEBREW_PREFIX}/include' ./configure"
 
     system "./configure", "--disable-debug", "--disable-dependency-tracking",
                           "--prefix=#{prefix}"
