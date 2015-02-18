@@ -300,8 +300,6 @@ class CurlDownloadStrategy < AbstractFileDownloadStrategy
   def curl(*args)
     args << '--connect-timeout' << '5' unless mirrors.empty?
     args << "--user" << meta.fetch(:user) if meta.key?(:user)
-    # Tmp workaround for the SourceForge certificates issue!
-    args << "--insecure"
     super
   end
 end
