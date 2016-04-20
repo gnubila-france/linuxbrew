@@ -1,28 +1,30 @@
-require 'formula'
-
 class Omniorb < Formula
-  homepage 'http://omniorb.sourceforge.net/'
-  url 'https://downloads.sourceforge.net/project/omniorb/omniORB/omniORB-4.1.7/omniORB-4.1.7.tar.bz2'
-  sha1 'e039eba5f63458651cfdc8a67c664c1ce4134540'
+  desc "IOR and naming service utilities for omniORB"
+  homepage "http://omniorb.sourceforge.net/"
+  url "https://downloads.sourceforge.net/project/omniorb/omniORB/omniORB-4.2.1/omniORB-4.2.1-2.tar.bz2"
+  sha256 "9b638c7047a05551c42fe13901194e63b58750d4124654bfa26203d09cb5072d"
 
-  depends_on 'pkg-config' => :build
-
-  resource 'bindings' do
-    url 'https://downloads.sourceforge.net/project/omniorb/omniORBpy/omniORBpy-3.7/omniORBpy-3.7.tar.bz2'
-    sha1 '71ad9835c2273fe884fd9bd1bc282d40177f4d74'
+  bottle do
+    sha256 "f433740ab82239c1e634f77c90a7657d540df7bcecb8666461b38584e25f76db" => :el_capitan
+    sha256 "a7ec7b6c556d1fa1fa447e07cfddbe30e0c6a0936637c554c43d5162baf8e3af" => :yosemite
+    sha256 "6fdf2acaf82b96459db16f272b97ac8a7ac4088227a2dcfb69331d3b7f672568" => :mavericks
   end
 
-  # http://www.omniorb-support.com/pipermail/omniorb-list/2012-February/031202.html
-  patch :DATA
+  depends_on "pkg-config" => :build
+
+  resource "bindings" do
+    url "https://downloads.sourceforge.net/project/omniorb/omniORBpy/omniORBpy-4.2.1/omniORBpy-4.2.1-2.tar.bz2"
+    sha256 "e0d0f89c0fc6e33b480a2bf7acc7d353b9346a7067571a6be8f594c78b161422"
+  end
 
   def install
     system "./configure", "--prefix=#{prefix}"
     system "make"
-    system "make install"
+    system "make", "install"
 
-    resource('bindings').stage do
+    resource("bindings").stage do
       system "./configure", "--prefix=#{prefix}"
-      system "make install"
+      system "make", "install"
     end
   end
 
@@ -31,20 +33,3 @@ class Omniorb < Formula
   end
 end
 
-__END__
-diff --git a/include/omniORB4/CORBA_sysdep.h b/include/omniORB4/CORBA_sysdep.h
-index 3ff1f22..e3b8d3c 100644
---- a/include/omniORB4/CORBA_sysdep.h
-+++ b/include/omniORB4/CORBA_sysdep.h
-@@ -231,6 +231,11 @@
- #endif
-
-
-+#if defined(__clang__)
-+#  define OMNI_NO_INLINE_FRIENDS
-+#endif
-+
-+
- //
- // Windows DLL hell
- //

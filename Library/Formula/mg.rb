@@ -1,22 +1,34 @@
-require 'formula'
-
 class Mg < Formula
-  homepage 'http://homepage.boetes.org/software/mg/'
-  url 'http://homepage.boetes.org/software/mg/mg-20131118.tar.gz'
-  sha1 '61f0d6ef2fd36acc51fa560aa67d4eccd3a6c2b9'
+  desc "Small Emacs-like editor"
+  homepage "https://devio.us/~bcallah/mg/"
+  url "https://devio.us/~bcallah/mg/mg-20160103.tar.gz"
+  sha256 "4abd059ba3e0d59626104a21812ae33a37ee1f6ddaafdb33511f38d21057fae6"
 
-  depends_on 'clens'
+  bottle do
+    cellar :any_skip_relocation
+    revision 1
+    sha256 "5ed12a2bdce7b76ff2f336a0dcc1ec1be95cf8194cd253600d6edde4de51ac36" => :el_capitan
+    sha256 "1feeace7595726f96687dc2ee0bf2836ac9aaba982d39306f32703047340827d" => :yosemite
+    sha256 "f199621c41a7f6af908017610eac17f5d81da652ceeab148560afb96c8ba9ccc" => :mavericks
+  end
+
+  conflicts_with "mg3a", :because => "both install `mg` binaries"
 
   def install
-    # makefile hardcodes include path to clens; since it's a
-    # nonstandard path, Homebrew's standard include paths won't
-    # fix this for people with nonstandard prefixes.
-    # Note mg also has a Makefile; but MacOS make uses GNUmakefile
-    inreplace "GNUmakefile", "$(includedir)/clens", "#{Formula['clens'].opt_include}/clens"
+    system "make", "install", "PREFIX=#{prefix}", "MANDIR=#{man}"
+  end
 
-    system "make"
-    bin.install "mg"
-    doc.install "tutorial"
-    man1.install "mg.1"
+  test do
+    (testpath/"command.sh").write <<-EOS.undent
+      #!/usr/bin/expect -f
+      set timeout -1
+      spawn #{bin}/mg
+      match_max 100000
+      send -- "\u0018\u0003"
+      expect eof
+    EOS
+    chmod 0755, testpath/"command.sh"
+
+    system testpath/"command.sh"
   end
 end

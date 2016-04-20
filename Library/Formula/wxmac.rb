@@ -1,40 +1,46 @@
-require "formula"
-
 class Wxmac < Formula
-  homepage "http://www.wxwidgets.org"
-  url "https://downloads.sourceforge.net/project/wxwindows/3.0.2/wxWidgets-3.0.2.tar.bz2"
-  sha1 "6461eab4428c0a8b9e41781b8787510484dea800"
+  desc "wxWidgets, a cross-platform C++ GUI toolkit (for OS X)"
+  homepage "https://www.wxwidgets.org"
+  revision 2
+
+  head "https://github.com/wxWidgets/wxWidgets.git"
+
+  stable do
+    url "https://github.com/wxWidgets/wxWidgets/releases/download/v3.0.2/wxWidgets-3.0.2.tar.bz2"
+    sha256 "346879dc554f3ab8d6da2704f651ecb504a22e9d31c17ef5449b129ed711585d"
+
+    # Various fixes related to Yosemite. Revisit in next stable release.
+    # Please keep an eye on http://trac.wxwidgets.org/ticket/16329 as well
+    # Theoretically the above linked patch should still be needed, but it isn't. Try to find out why.
+    patch :DATA
+  end
 
   bottle do
-    revision 9
-    sha1 "7a63c6715dea44ef7eee683355458e9203fb723a" => :yosemite
-    sha1 "5e6e114cff5901ec6f7586a844df713dc376fcf7" => :mavericks
-    sha1 "2f7ab6db7de665c76abe4546672e58cd48973c13" => :mountain_lion
+    cellar :any
+    sha256 "3cc5a1c0a2c3a94fdc8ba9fc7664d55f936b95964227ab90a5ea19b904b91418" => :el_capitan
+    sha256 "61d719f4a7bd53e3105b8bd41bcf291cec122fe7fb2ab5991bbe462fca2b6d43" => :yosemite
+    sha256 "9b137f0338358bdce6afc21e94226a09aa32432563a95173f6f050709e5c8f37" => :mavericks
   end
+
+  devel do
+    url "https://github.com/wxWidgets/wxWidgets/releases/download/v3.1.0/wxWidgets-3.1.0.tar.bz2"
+    sha256 "e082460fb6bf14b7dd6e8ac142598d1d3d0b08a7b5ba402fdbf8711da7e66da8"
+  end
+
+  option :universal
+  option "with-stl", "use standard C++ classes for everything"
+  option "with-static", "build static libraries"
 
   depends_on "jpeg"
   depends_on "libpng"
   depends_on "libtiff"
-
-  # Various fixes related to Yosemite. Revisit in next stable release.
-  # Please keep an eye on http://trac.wxwidgets.org/ticket/16329 as well
-  # Theoretically the above linked patch should still be needed, but it isn't. Try to find out why.
-  patch :DATA
+  depends_on "gtk+" unless OS.mac?
 
   def install
     # need to set with-macosx-version-min to avoid configure defaulting to 10.5
-    # need to enable universal binary build in order to build all x86_64
-    # Jack - I don't believe this is the whole story, surely this can be fixed
-    # without building universal for users who don't need it.
-    # headers need to specify x86_64 and i386 or will try to build for ppc arch
-    # and fail on newer OSes
-    # DomT4 - MacPorts seems to have stopped building universal by default? Can we do the same?
-    # https://trac.macports.org/browser/trunk/dports/graphics/wxWidgets-3.0/Portfile#L210
-    ENV.universal_binary
     args = [
       "--disable-debug",
       "--prefix=#{prefix}",
-      "--enable-shared",
       "--enable-unicode",
       "--enable-std_string",
       "--enable-display",
@@ -59,18 +65,41 @@ class Wxmac < Formula
       "--enable-controls",
       "--enable-dataviewctrl",
       "--with-expat",
-      "--enable-universal_binary=#{Hardware::CPU.universal_archs.join(',')}",
       "--disable-precomp-headers",
       # This is the default option, but be explicit
-      "--disable-monolithic"
+      "--disable-monolithic",
     ]
 
     if OS.mac?
-      args << "-with-osx_cocoa" << "--with-macosx-version-min=#{MacOS.version}"
+      args << "--with-osx_cocoa"
+      args << "--with-macosx-version-min=#{MacOS.version}"
+    end
+
+    if build.universal?
+      ENV.universal_binary
+      args << "--enable-universal_binary=#{Hardware::CPU.universal_archs.join(",")}"
+    end
+
+    args << "--enable-stl" if build.with? "stl"
+
+    if build.with? "static"
+      args << "--disable-shared"
+    else
+      args << "--enable-shared"
     end
 
     system "./configure", *args
     system "make", "install"
+
+    # wx-config should reference the public prefix, not wxmac's keg
+    # this ensures that Python software trying to locate wxpython headers
+    # using wx-config can find both wxmac and wxpython headers,
+    # which are linked to the same place
+    inreplace "#{bin}/wx-config", prefix, HOMEBREW_PREFIX
+  end
+
+  test do
+    system bin/"wx-config", "--libs"
   end
 end
 

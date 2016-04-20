@@ -1,17 +1,27 @@
 class Jenkins < Formula
+  desc "Extendable open source continuous integration server"
   homepage "https://jenkins-ci.org"
-  url "http://mirrors.jenkins-ci.org/war/1.598/jenkins.war"
-  sha1 "ee3f94a2eab93a119baaa897a2fd0045cc401e73"
+  url "http://mirrors.jenkins-ci.org/war/1.655/jenkins.war"
+  sha256 "0cee889af697c115961ce50229cc5e39d1b798c0a0a689687b745c0a938c8547"
+
+  devel do
+    url "http://mirrors.jenkins-ci.org/war-rc/2.0/jenkins.war"
+    version "2.0-rc"
+    sha256 "7ff7759e1d7a097e018c8001db5f4248db04d0bf39f9b0f06934c124a936cfa2"
+  end
 
   head do
     url "https://github.com/jenkinsci/jenkins.git"
     depends_on "maven" => :build
   end
 
-  depends_on :java => "1.6+"
+  bottle :unneeded
+
+  depends_on :java => "1.7+"
 
   def install
     if build.head?
+      ENV.java_cache
       system "mvn", "clean", "install", "-pl", "war", "-am", "-DskipTests"
     else
       system "jar", "xvf", "jenkins.war"
@@ -48,6 +58,22 @@ class Jenkins < Formula
 
   def caveats; <<-EOS.undent
     Note: When using launchctl the port will be 8080.
-    EOS
+  EOS
+  end
+
+  test do
+    ENV["JENKINS_HOME"] = testpath
+    ENV["_JAVA_OPTIONS"] = "-Djava.io.tmpdir=#{testpath}"
+    pid = fork do
+      exec "#{bin}/jenkins"
+    end
+    sleep 60
+
+    begin
+      assert_match /Welcome to Jenkins!|Unlock Jenkins|Authentication required/, shell_output("curl localhost:8080/")
+    ensure
+      Process.kill("SIGINT", pid)
+      Process.wait(pid)
+    end
   end
 end

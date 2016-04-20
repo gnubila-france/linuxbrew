@@ -1,11 +1,11 @@
-require "formula"
-
 class GnuCobol < Formula
+  desc "Implements much of the COBOL 85 and COBOL 2002 standards"
   homepage "http://www.opencobol.org/"
+  revision 2
 
   stable do
     url "https://downloads.sourceforge.net/project/open-cobol/gnu-cobol/1.1/gnu-cobol-1.1.tar.gz"
-    sha1 "86e928c43cb3372f1f4564f3fd5e1dde668e8c1f"
+    sha256 "5cd6c99b2b1c82fd0c8fffbb350aaf255d484cde43cf5d9b92de1379343b3d7e"
 
     fails_with :clang do
       cause <<-EOS.undent
@@ -15,31 +15,33 @@ class GnuCobol < Formula
     end
   end
 
-  devel do
-    version "2.0_nightly_r411"
-    url "https://downloads.sourceforge.net/project/open-cobol/gnu-cobol/2.0/gnu-cobol-2.0_nightly_r411.tar.gz"
-    sha1 "009215c090b9a90fbf02bbc913095ce2a9b31910"
+  bottle do
+    sha256 "012a52adf5bdb3f137afaadafb315bf966f037e1620fee022d98bab3541531cd" => :el_capitan
+    sha256 "62b99b26f9a6e83330ff6b0fc4834c578fecef83d4b49e418a4435b9d2e766d5" => :yosemite
+    sha256 "044fad7cd09f88cdda0c9e84f5af6c45c854749e69a0b481fc6e3868641595f9" => :mavericks
   end
 
-  bottle do
-    revision 1
-    sha1 "0faef373e0364a8c92e32b828904e0fc10198aab" => :mavericks
-    sha1 "cf08ce9301cfb80a882b37587ef0b9cb5c96f70b" => :mountain_lion
-    sha1 "fc50ad8ec550f6d347044778b795688e4f18ad24" => :lion
+  devel do
+    version "2.0_nightly_r658"
+    url "https://downloads.sourceforge.net/project/open-cobol/gnu-cobol/2.0/gnu-cobol-2.0_nightly_r658.tar.gz"
+    sha256 "0a210d10624a53904871526afd69a6bef9feab40c2766386f74477598a313ae8"
   end
 
   depends_on "autoconf" => :build
   depends_on "automake" => :build
-  depends_on "berkeley-db4"
+  depends_on "berkeley-db"
   depends_on "gmp"
   depends_on "gcc"
+
+  conflicts_with "open-cobol",
+    :because => "both install `cob-config`, `cobc` and `cobcrun` binaries"
 
   def install
     # both environment variables are needed to be set
     # the cobol compiler takes these variables for calling cc during its run
     # if the paths to gmp and bdb are not provided, the run of cobc fails
     gmp = Formula["gmp"]
-    bdb = Formula["berkeley-db4"]
+    bdb = Formula["berkeley-db"]
     ENV.append "CPPFLAGS", "-I#{gmp.opt_include} -I#{bdb.opt_include}"
     ENV.append "LDFLAGS", "-L#{gmp.opt_lib} -L#{bdb.opt_lib}"
 

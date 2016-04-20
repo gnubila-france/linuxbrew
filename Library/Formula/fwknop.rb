@@ -1,13 +1,14 @@
 class Fwknop < Formula
-  homepage "http://www.cipherdyne.org/fwknop/"
+  desc "Single Packet Authorization and Port Knocking"
+  homepage "https://www.cipherdyne.org/fwknop/"
+  url "https://github.com/mrash/fwknop/archive/2.6.8.tar.gz"
+  sha256 "96e6ba8b7e29aaf65bd06eaa823896ab66169b2aaced8123375378ff4b76a2d6"
   head "https://github.com/mrash/fwknop.git"
-  url "https://github.com/mrash/fwknop/archive/2.6.5.tar.gz"
-  sha1 "52f5a191f37aeeb2716d2ad5a25dbf41d6593100"
 
   bottle do
-    sha1 "f59415c1d1381e55fdd480a87dc192900d64324f" => :yosemite
-    sha1 "9c82b902d1289ab3d3070d430f751f7a1e7c00aa" => :mavericks
-    sha1 "19cc832e0b839f7369713cd2735f1d4258e0338c" => :mountain_lion
+    sha256 "fd2b5c7e993a76dc242e75b69776a2228a7eb1e6721756c9a978478e2fa14828" => :el_capitan
+    sha256 "4c4ef1ddfcf4c59dde5c1bf31571917c699db67b08c5ca03002be82ede022302" => :yosemite
+    sha256 "60bc661b9d289ae9f20b7f80b8d11e0d2823994358d329bd6439006f9b94ce1a" => :mavericks
   end
 
   depends_on "automake" => :build

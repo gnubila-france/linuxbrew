@@ -1,17 +1,18 @@
-require 'formula'
-
 class DynamodbLocal < Formula
-  homepage 'https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Tools.DynamoDBLocal.html'
-  url 'http://dynamodb-local.s3-website-us-west-2.amazonaws.com/dynamodb_local_2014-10-07.tar.gz'
-  version '2014-10-07'
-  sha1 '7fc8a3b246d9e132c0522c3e08acf6f14d76fe44'
+  desc "Client-side database and server imitating DynamoDB"
+  homepage "https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Tools.DynamoDBLocal.html"
+  url "https://dynamodb-local.s3.amazonaws.com/dynamodb_local_2016-03-01.tar.gz"
+  version "2016-03-01"
+  sha256 "c102d30a2f3d420fc9a4784fd7544bccdf3bc8782203ef63e3f92942c4493c93"
+
+  bottle :unneeded
 
   def data_path
-    var/'data/dynamodb-local'
+    var/"data/dynamodb-local"
   end
 
   def log_path
-    var/'log/dynamodb-local.log'
+    var/"log/dynamodb-local.log"
   end
 
   def bin_wrapper; <<-EOS.undent
@@ -23,7 +24,7 @@ class DynamodbLocal < Formula
   def install
     prefix.install %w[LICENSE.txt README.txt third_party_licenses]
     libexec.install %w[DynamoDBLocal_lib DynamoDBLocal.jar]
-    (bin/'dynamodb-local').write(bin_wrapper)
+    (bin/"dynamodb-local").write(bin_wrapper)
   end
 
   def post_install
@@ -58,7 +59,7 @@ class DynamodbLocal < Formula
       <false/>
       <key>ProgramArguments</key>
       <array>
-        <string>#{bin}/dynamodb-local</string>
+        <string>#{opt_bin}/dynamodb-local</string>
       </array>
       <key>StandardErrorPath</key>
       <string>#{log_path}</string>

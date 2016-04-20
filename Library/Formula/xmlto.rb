@@ -1,20 +1,21 @@
-require 'formula'
-
 class Xmlto < Formula
-  homepage 'http://cyberelk.net/tim/software/xmlto/'
-  url 'http://fedorahosted.org/releases/x/m/xmlto/xmlto-0.0.25.tar.bz2'
-  sha1 '5d1aecd59d519066f94b4591722767c4e41bdc0f'
+  desc "Convert XML to another format (based on XSL or other tools)"
+  homepage "https://fedorahosted.org/xmlto/"
+  url "https://fedorahosted.org/releases/x/m/xmlto/xmlto-0.0.28.tar.bz2"
+  sha256 "1130df3a7957eb9f6f0d29e4aa1c75732a7dfb6d639be013859b5c7ec5421276"
 
   bottle do
-    cellar :any
-    sha1 "429f1b6a3186432fb0a130d1ee003269af6fc9d9" => :yosemite
-    sha1 "158eb206779654ac305d5948b79c950e64afaada" => :mavericks
-    sha1 "611a524653264cd414c74b60c50d4522bb63d570" => :mountain_lion
+    cellar :any_skip_relocation
+    sha256 "25c7921f993a9cc8c4b9e2bd8a4e6f1a90b7f755f747b55f391ed063f123f64d" => :el_capitan
+    sha256 "add17a1f3fd3569e3a8ed9e970f5d9397bdf1cca185c47b50af4f56492f8afff" => :yosemite
+    sha256 "afd12ae6c79db17692175c1da036fbcf3df0c33592c0c6d7a686ce37f2443838" => :mavericks
   end
 
-  depends_on 'docbook'
-  depends_on 'docbook-xsl'
-  depends_on 'gnu-getopt'
+  depends_on "docbook"
+  depends_on "docbook-xsl"
+  # Doesn't strictly depend on GNU getopt, but OS X system getopt(1)
+  # does not support longopts in the optstring, so use GNU getopt.
+  depends_on "gnu-getopt"
 
   # xmlto forces --nonet on xsltproc, which causes it to fail when
   # DTDs/entities aren't available locally.
@@ -22,13 +23,13 @@ class Xmlto < Formula
 
   def install
     # GNU getopt is keg-only, so point configure to it
-    ENV['GETOPT'] = Formula["gnu-getopt"].bin/"getopt"
+    ENV["GETOPT"] = Formula["gnu-getopt"].opt_prefix/"bin/getopt"
     # Find our docbook catalog
-    ENV['XML_CATALOG_FILES'] = "#{etc}/xml/catalog"
+    ENV["XML_CATALOG_FILES"] = "#{etc}/xml/catalog"
 
     ENV.deparallelize
     system "./configure", "--disable-dependency-tracking", "--prefix=#{prefix}"
-    system "make install"
+    system "make", "install"
   end
 end
 

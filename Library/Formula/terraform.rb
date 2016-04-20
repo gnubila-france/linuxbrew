@@ -1,141 +1,45 @@
-require "formula"
 require "language/go"
 
 class Terraform < Formula
-  homepage "http://www.terraform.io/"
-  url "https://github.com/hashicorp/terraform/archive/v0.3.6.tar.gz"
-  sha1 "27b95dc159b8fa9c9611bb18a236d2b46d7f6a95"
+  desc "Tool to build, change, and version infrastructure"
+  homepage "https://www.terraform.io/"
+  url "https://github.com/hashicorp/terraform/archive/v0.6.14.tar.gz"
+  sha256 "e19a35e4794ea551d3e42abf771069c658d121c5ebbb7bc1c48c2822412c1825"
+  head "https://github.com/hashicorp/terraform.git"
 
   bottle do
-    sha1 "cba89a212c639eb9bb3c8a903c56e92aeed4ffee" => :yosemite
-    sha1 "cf9c544dd2555e8db364790ed4983c9e3a9ca9ed" => :mavericks
-    sha1 "8847237302ad9f7d3d369cc6dc8937feaed736e0" => :mountain_lion
+    cellar :any_skip_relocation
+    sha256 "2c61707a042d8709e48a7eae6c08d8837ca03fbb00f264ee038b569fb9d5c399" => :el_capitan
+    sha256 "a0fb1966b325108fb552dea799ed0195178dd21c9a1b94d7d2df791442fc1293" => :yosemite
+    sha256 "b57468057255801eacaf889f9d79811374f8b9fb8b716f458068a7f8845e1970" => :mavericks
   end
 
   depends_on "go" => :build
+  depends_on "godep" => :build
 
-  go_resource "github.com/mitchellh/gox" do
-    url "https://github.com/mitchellh/gox.git", :tag => "v0.3.0"
+  terraform_deps = %w[
+    github.com/mitchellh/gox 770c39f64e66797aa46b70ea953ff57d41658e40
+    github.com/mitchellh/iochan 87b45ffd0e9581375c491fef3d32130bb15c5bd7
+    github.com/Azure/azure-sdk-for-go 1cb9dff8c37b2918ad1ebd7b294d01100a153d27
+    github.com/aws/aws-sdk-go 4da0bec8953a0a540f391930a946917b12a95671
+    github.com/cenkalti/backoff 4dc77674aceaabba2c7e3da25d4c823edfb73f99
+    github.com/davecgh/go-spew 5215b55f46b2b919f50a1df0eaa5886afe4e3b3d
+    gopkg.in/yaml.v2 f7716cbe52baa25d2e9b0d0da546fcf909fc16b4
+    github.com/golang/protobuf 45bba206dd5270d96bac4942dcfe515726613249
+  ]
+
+  terraform_deps.each_slice(2) do |x, y|
+    go_resource x do
+      url "https://#{x}.git", :revision => y
+    end
   end
 
-  go_resource "github.com/mitchellh/iochan" do
-    url "https://github.com/mitchellh/iochan.git", :revision => "b584a329b193e206025682ae6c10cdbe03b0cd77"
+  go_resource "golang.org/x/tools" do
+    url "https://go.googlesource.com/tools.git", :revision => "977844c7af2aa555048a19d28e9fe6c392e7b8e9"
   end
 
-  go_resource "github.com/hashicorp/hcl" do
-    url "https://github.com/hashicorp/hcl.git", :revision => "25719dbfedc20ce21c23dadb25983fad4694dcf8"
-  end
-
-  go_resource "github.com/mitchellh/copystructure" do
-    url "https://github.com/mitchellh/copystructure.git", :revision => "d8968bce41ab42f33aeb143afa95e331cb1ba886"
-  end
-
-  go_resource "github.com/mitchellh/reflectwalk" do
-    url "https://github.com/mitchellh/reflectwalk.git", :revision => "9989d7067f58812d814f5a837c5cbdd31799b694"
-  end
-
-  go_resource "github.com/mitchellh/mapstructure" do
-    url "https://github.com/mitchellh/mapstructure.git", :revision => "740c764bc6149d3f1806231418adb9f52c11bcbf"
-  end
-
-  go_resource "github.com/mitchellh/goamz" do
-    url "https://github.com/mitchellh/goamz.git", :revision => "2441a8d0fab90553ec345cfdf3db24bb61ea61c3"
-  end
-
-  go_resource "github.com/vaughan0/go-ini" do
-    url "https://github.com/vaughan0/go-ini.git", :revision => "a98ad7ee00ec53921f08832bc06ecf7fd600e6a1"
-  end
-
-  go_resource "github.com/pearkes/cloudflare" do
-    url "https://github.com/pearkes/cloudflare.git", :revision => "79e8a91a6e873a40d645ac9f03f7cdcbfdb8103a"
-  end
-
-  go_resource "github.com/armon/consul-api" do
-    url "https://github.com/armon/consul-api.git", :revision => "115162c46303047d9cefb2a953eeb643d4624a3e"
-  end
-
-  go_resource "github.com/pearkes/digitalocean" do
-    url "https://github.com/pearkes/digitalocean.git", :revision => "454ebf8720a34e077ebe62c7cd5a248cbf7ca8ff"
-  end
-
-  go_resource "github.com/pearkes/dnsimple" do
-    url "https://github.com/pearkes/dnsimple.git", :revision => "b01a0dd175142d0beafd32d7de2b9342d34cc4c0"
-  end
-
-  go_resource "github.com/cyberdelia/heroku-go" do
-    url "https://github.com/cyberdelia/heroku-go.git", :revision => "8cf5a2245af00170a36c9b2aaa504a97328659bb"
-  end
-
-  go_resource "github.com/pearkes/mailgun" do
-    url "https://github.com/pearkes/mailgun.git", :revision => "5b02e7e9ffee9869f81393e80db138f6ff726260"
-  end
-
-  go_resource "github.com/mitchellh/go-homedir" do
-    url "https://github.com/mitchellh/go-homedir.git", :revision => "7d2d8c8a4e078ce3c58736ab521a40b37a504c52"
-  end
-
-  go_resource "github.com/armon/circbuf" do
-    url "https://github.com/armon/circbuf.git", :revision => "f092b4f207b6e5cce0569056fba9e1a2735cb6cf"
-  end
-
-  go_resource "github.com/mitchellh/cli" do
-    url "https://github.com/mitchellh/cli.git", :revision => "bfacda5ba006a32b10ddfe2abad56c11661573eb"
-  end
-
-  go_resource "github.com/mitchellh/colorstring" do
-    url "https://github.com/mitchellh/colorstring.git", :revision => "15fc698eaae194ff160846daf77922a45b9290a7"
-  end
-
-  go_resource "github.com/mitchellh/osext" do
-    url "https://github.com/mitchellh/osext.git", :revision => "0dd3f918b21bec95ace9dc86c7e70266cfc5c702"
-  end
-
-  go_resource "github.com/mitchellh/panicwrap" do
-    url "https://github.com/mitchellh/panicwrap.git", :revision => "45cbfd3bae250c7676c077fb275be1a2968e066a"
-  end
-
-  go_resource "github.com/mitchellh/prefixedio" do
-    url "https://github.com/mitchellh/prefixedio.git", :revision => "89d9b535996bf0a185f85b59578f2e245f9e1724"
-  end
-
-  go_resource "github.com/mitchellh/go-linereader" do
-    url "https://github.com/mitchellh/go-linereader.git", :revision => "07bab5fdd9580500aea6ada0e09df4aa28e68abd"
-  end
-
-  go_resource "github.com/hashicorp/yamux" do
-    url "https://github.com/hashicorp/yamux.git", :revision => "9feabe6854fadca1abec9cd3bd2a613fe9a34000"
-  end
-
-  go_resource "github.com/hashicorp/go-checkpoint" do
-    url "https://github.com/hashicorp/go-checkpoint.git", :revision => "89ef2a697dd8cdb4623097d5bb9acdb19a470767"
-  end
-
-  go_resource "code.google.com/p/goauth2" do
-    url "https://code.google.com/p/goauth2/", :revision => "afe77d958c70",
-      :using => :hg
-  end
-
-  go_resource "code.google.com/p/google-api-go-client" do
-    url "https://code.google.com/p/google-api-go-client/", :revision => "e1c259484b49",
-      :using => :hg
-  end
-
-  go_resource "code.google.com/p/go-uuid" do
-    url "https://code.google.com/p/go-uuid/", :revision => "7dda39b2e7d5",
-      :using => :hg
-  end
-
-  go_resource "code.google.com/p/go.crypto" do
-    url "https://code.google.com/p/go.crypto/", :revision => "00a7d3b31bba",
-      :using => :hg
-  end
-
-  go_resource "github.com/hashicorp/atlas-go" do
-    url "https://github.com/hashicorp/atlas-go.git", :revision => "072814b5d05e34466c6c0fdd62cdecf184dc3521"
-  end
-
-  go_resource "github.com/xanzy/go-cloudstack" do
-    url "https://github.com/xanzy/go-cloudstack.git", :revision => "c2c4143ae294b5df4b7b5ae6e087ead01264167f"
+  go_resource "google.golang.org/grpc" do
+    url "https://github.com/grpc/grpc-go.git", :revision => "5d64098b94ee9dbbea8ddc130208696bcd199ba4"
   end
 
   def install
@@ -153,19 +57,27 @@ class Terraform < Formula
       buildpath.install "gox"
     end
 
+    cd "src/golang.org/x/tools/cmd/stringer" do
+      system "go", "build"
+      buildpath.install "stringer"
+    end
+
     cd terrapath do
-      # Clear ATLAS_TOKEN env var to not run atlas acceptance tests
-      # that would require an active atlas account
-      system "make", "test", "ATLAS_TOKEN="
+      terraform_files = `go list ./...`.lines.map { |f| f.strip unless f.include? "/vendor/" }.compact
+      # v0.6.12 - source contains tests which fail if these environment variables are set locally.
+      ENV.delete "AWS_ACCESS_KEY"
+      ENV.delete "AWS_SECRET_KEY"
+      system "go", "test", *terraform_files
 
       mkdir "bin"
       arch = MacOS.prefer_64_bit? ? "amd64" : "386"
-      system "gox", "-arch", arch,
-        "-os", "darwin",
-        "-output", "bin/terraform-{{.Dir}}",
-        "./..."
+      system "gox",
+        "-arch", arch,
+        "-os", OS::NAME,
+        "-output", "bin/terraform-{{.Dir}}", *terraform_files
       bin.install "bin/terraform-terraform" => "terraform"
       bin.install Dir["bin/*"]
+      zsh_completion.install "contrib/zsh-completion/_terraform"
     end
   end
 
@@ -198,6 +110,6 @@ class Terraform < Formula
         count = 4
       }
     EOS
-    system "#{bin}/terraform", "plan", "-var", "aws.region=us-west-2", testpath
+    system "#{bin}/terraform", "graph", testpath
   end
 end

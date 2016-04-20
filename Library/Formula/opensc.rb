@@ -1,49 +1,59 @@
-require "formula"
-
 class Opensc < Formula
+  desc "Tools and libraries for smart cards"
   homepage "https://github.com/OpenSC/OpenSC/wiki"
-  url "https://downloads.sourceforge.net/project/opensc/OpenSC/opensc-0.14.0/opensc-0.14.0.tar.gz"
-  sha1 "4a898e351b0a6d2a5d81576daa7ebed45baf9138"
-  revision 1
+  head "https://github.com/OpenSC/OpenSC.git"
+
+  stable do
+    url "https://github.com/OpenSC/OpenSC/archive/0.15.0.tar.gz"
+    sha256 "8f8f8cf52e0252334e4dfdccca829b876a3de6340deb772aa0bfe0c0cc10eaf5"
+
+    patch :p1 do
+      url "https://github.com/carlhoerberg/OpenSC/commit/e5ae77cae32fdcc7a23d6bd0013c2fd115a43591.diff"
+      sha256 "18bd9b6220bfc03768c6a7f5324e7f3981eff0bc8b8f7eb0f5159508b43d6863"
+    end
+  end
 
   bottle do
-    sha1 "82b08c2bd2b58b7080797a441f8c641cbb101064" => :mavericks
-    sha1 "b5107cad1a7b5c7808d8b93f497bfe64127fcbce" => :mountain_lion
-    sha1 "26bc12047a4ca119fd37ff76ea4055226d88dc34" => :lion
+    revision 2
+    sha256 "b84361bf93572c5b156e5e722408ad88f94ecb76ff5703ad731300cc2bf4a59d" => :el_capitan
+    sha256 "68c918cc0aa1660dd91ed127b3d0dcc07a0ce4001cbdb530904b4aec04c6d48b" => :yosemite
+    sha256 "def6a8fa98e04884692da8e0c01043b861c4879becb7a773b1321c2374b019d7" => :mavericks
   end
 
-  head do
-    url "https://github.com/OpenSC/OpenSC.git"
-
-    depends_on "autoconf" => :build
-    depends_on "automake" => :build
-    depends_on "libtool" => :build
+  devel do
+    url "https://github.com/OpenSC/OpenSC/archive/v0.16.0-pre1.tar.gz"
+    sha256 "097132ce24d8c19f9ef79b46fde558698ed1dc1bd616d8ad275e32eaf79e5ba6"
+    version "0.16.0-pre1"
   end
 
-  option "with-man-pages", "Build manual pages"
+  option "without-man-pages", "Skip building manual pages"
 
-  depends_on "docbook-xsl" if build.with? "man-pages"
+  depends_on "autoconf" => :build
+  depends_on "automake" => :build
+  depends_on "libtool" => :build
+  depends_on "pkg-config" => :build
+  depends_on "docbook-xsl" => :build if build.with? "man-pages"
   depends_on "openssl"
 
   def install
-    args = []
+    args = %W[
+      --disable-dependency-tracking
+      --prefix=#{prefix}
+      --enable-sm
+      --enable-openssl
+      --enable-pcsc
+    ]
 
     if build.with? "man-pages"
       args << "--with-xsl-stylesheetsdir=#{Formula["docbook-xsl"].opt_prefix}/docbook-xsl"
     end
 
-    system "./bootstrap" if build.head?
-    system "./configure", "--disable-dependency-tracking",
-                          "--prefix=#{prefix}",
-                          "--enable-sm",
-                          "--enable-openssl",
-                          "--enable-pcsc",
-                          *args
-
+    system "./bootstrap"
+    system "./configure", *args
     system "make", "install"
   end
 
   test do
-    system "#{bin}/opensc-tool", "-i"
+    assert_match "0.15.0", shell_output("#{bin}/opensc-tool -i")
   end
 end

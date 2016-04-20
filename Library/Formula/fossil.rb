@@ -1,31 +1,50 @@
-require "formula"
-
 class Fossil < Formula
-  homepage "http://www.fossil-scm.org/"
-  head "http://www.fossil-scm.org/", :using => :fossil
-  url "http://www.fossil-scm.org/download/fossil-src-20140612172556.tar.gz"
-  sha1 "173c3350ba39ecfee6e660f866b4f3104e351b33"
-  version "1.29"
+  desc "Distributed software configuration management"
+  homepage "https://www.fossil-scm.org/"
+  url "https://www.fossil-scm.org/download/fossil-src-1.34.tar.gz"
+  sha256 "53a6b83e878feced9ac7705f87e5b6ea82727314e3e19202ae1c46c7e4dba49f"
+
+  head "https://www.fossil-scm.org/", :using => :fossil
 
   bottle do
     cellar :any
-    sha1 "977cde0938a0b751938aaac28cab1fe7ef479e9b" => :yosemite
-    sha1 "f45d99ad80bdda2852a8dcb9e1292b5117d0ae56" => :mavericks
-    sha1 "b00e434097adba303767426916654da1f17d7f39" => :mountain_lion
+    sha256 "c63a8f0c159ca20bfd2808c1bd56d2a0e599fa316c56e731285bb2adc68389b2" => :el_capitan
+    sha256 "032e30a35f52aa80a409ae62194b412132bd2fb16399e64593594d3e60f77388" => :yosemite
+    sha256 "7ed7555f4240cdc6366e40810c57285e2402f7637483a69befeec52dd2693d65" => :mavericks
   end
 
   option "without-json", "Build without 'json' command support"
   option "without-tcl", "Build without the tcl-th1 command bridge"
 
   depends_on "openssl"
+  depends_on :osxfuse => :optional
 
   def install
-    args = []
+    args = [
+      # fix a build issue, recommended by upstream on the mailing-list:
+      # http://comments.gmane.org/gmane.comp.version-control.fossil-scm.user/22444
+      "--with-tcl-private-stubs=1"
+    ]
     args << "--json" if build.with? "json"
-    args << "--with-tcl" if build.with? "tcl"
+
+    if MacOS::CLT.installed? && build.with?("tcl")
+      args << "--with-tcl"
+    else
+      args << "--with-tcl-stubs"
+    end
+
+    if build.with? "osxfuse"
+      ENV.prepend "CFLAGS", "-I#{HOMEBREW_PREFIX}/include/osxfuse"
+    else
+      args << "--disable-fusefs"
+    end
 
     system "./configure", *args
     system "make"
     bin.install "fossil"
+  end
+
+  test do
+    system "#{bin}/fossil", "init", "test"
   end
 end

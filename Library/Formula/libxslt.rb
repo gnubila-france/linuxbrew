@@ -1,24 +1,24 @@
-require 'formula'
-
 class Libxslt < Formula
-  homepage 'http://xmlsoft.org/XSLT/'
-  url 'ftp://xmlsoft.org/libxml2/libxslt-1.1.28.tar.gz'
-  mirror 'http://xmlsoft.org/sources/libxslt-1.1.28.tar.gz'
-  sha1 '4df177de629b2653db322bfb891afa3c0d1fa221'
+  desc "C XSLT library for GNOME"
+  homepage "http://xmlsoft.org/XSLT/"
+  url "http://xmlsoft.org/sources/libxslt-1.1.28.tar.gz"
+  mirror "ftp://xmlsoft.org/libxml2/libxslt-1.1.28.tar.gz"
+  sha256 "5fc7151a57b89c03d7b825df5a0fae0a8d5f05674c0e7cf2937ecec4d54a028c"
+  revision 1
 
   bottle do
     revision 1
-    sha1 "b2fbd32e69e1787d4ea792ee2c51f81466b26f20" => :yosemite
-    sha1 "3f2dee00534b0646cfdcd8064a16c970c4a01cd0" => :mavericks
-    sha1 "791b272f8c0aca80af72c263f9e0f7066ce00628" => :mountain_lion
+    sha256 "c362e947b994dc21c3f6a8802a1d783996504c4e6a1ec9e957a7b282543badac" => :el_capitan
+    sha256 "8ee39c4e7fe3868b175185632db62d0b2e63e7d76df589492d9e11a720c569d7" => :yosemite
+    sha256 "39820c2f81926fc1aee8854553d3c390c644db068847ceae77c805d65e2303a2" => :mavericks
   end
 
   keg_only :provided_by_osx
 
-  depends_on 'libxml2'
+  depends_on "libxml2"
 
   head do
-    url "git://git.gnome.org/libxslt"
+    url "https://git.gnome.org/browse/libxslt.git"
 
     depends_on "autoconf" => :build
     depends_on "automake" => :build
@@ -34,12 +34,15 @@ class Libxslt < Formula
       system "./autogen.sh"
     end
 
+    # https://bugzilla.gnome.org/show_bug.cgi?id=762967
+    inreplace "configure", /PYTHON_LIBS=.*/, 'PYTHON_LIBS="-undefined dynamic_lookup"'
+
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
                           ("--without-crypto" if OS.linux?),
-                          "--with-libxml-prefix=#{Formula["libxml2"].prefix}"
+                          "--with-libxml-prefix=#{Formula["libxml2"].opt_prefix}"
     system "make"
-    system "make install"
+    system "make", "install"
   end
 
   def caveats; <<-EOS.undent

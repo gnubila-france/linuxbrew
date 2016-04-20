@@ -1,15 +1,16 @@
-require 'formula'
-
 class Hive < Formula
-  homepage 'http://hive.apache.org'
-  url 'http://www.apache.org/dyn/closer.cgi?path=hive/hive-0.14.0/apache-hive-0.14.0-bin.tar.gz'
-  sha1 '8268ca84870f10f1ab163b87c2c7e6b0bbd39744'
+  desc "Hadoop-based data summarization, query, and analysis"
+  homepage "https://hive.apache.org"
+  url "https://www.apache.org/dyn/closer.cgi?path=hive/hive-1.2.1/apache-hive-1.2.1-bin.tar.gz"
+  sha256 "29d9780c4af887ef623bafe6a73ec6f1bea9759bbe31fb4aeeb5b0f68c4c9979"
 
-  depends_on 'hadoop'
-  conflicts_with 'apache-spark', :because => 'both install `beeline` binaries'
+  bottle :unneeded
+
+  depends_on "hadoop"
+  depends_on :java
 
   def install
-    rm_f Dir["bin/*.bat"]
+    rm_f Dir["bin/ext/*.cmd", "bin/ext/util/*.cmd"]
     libexec.install %w[bin conf examples hcatalog lib scripts]
     bin.write_exec_script Dir["#{libexec}/bin/*"]
   end
@@ -25,5 +26,9 @@ class Hive < Formula
     You may need to set JAVA_HOME:
       export JAVA_HOME="$(/usr/libexec/java_home)"
     EOS
+  end
+
+  test do
+    assert_match /default/, shell_output("#{bin}/hive -e 'show databases;'")
   end
 end

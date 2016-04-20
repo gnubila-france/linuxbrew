@@ -1,28 +1,46 @@
 class Openssl < Formula
-  homepage "https://openssl.org"
-  url "https://www.openssl.org/source/openssl-1.0.2.tar.gz"
-  mirror "https://raw.githubusercontent.com/DomT4/LibreMirror/master/OpenSSL/openssl-1.0.2.tar.gz"
-  sha256 "8c48baf3babe0d505d16cfc0cf272589c66d3624264098213db0fb00034728e9"
+  desc "SSL/TLS cryptography library"
+  homepage "https://openssl.org/"
+  url "https://www.openssl.org/source/openssl-1.0.2g.tar.gz"
+  mirror "https://dl.bintray.com/homebrew/mirror/openssl-1.0.2g.tar.gz"
+  mirror "https://www.mirrorservice.org/sites/ftp.openssl.org/source/openssl-1.0.2g.tar.gz"
+  sha256 "b784b1b3907ce39abf4098702dade6365522a253ad1552e267a9a0e89594aa33"
 
   bottle do
-    sha1 "0e5844609ea57a7f5361dca42d05578c6cf45643" => :yosemite
-    sha1 "56a6407b6a9179084a760d6f463cd0e6ea083c0e" => :mavericks
-    sha1 "8e36006185156281d487a2b1f04322701d0bef7b" => :mountain_lion
+    sha256 "b1de0682c7a838a75da3a06ddad2b9700d208b2faaaa1b51c0889ba403c7dd22" => :el_capitan
+    sha256 "68e5432c7b863341bc0c42c9a9391c11ba244519f110ba7c5ef4d97eb5c6b8fa" => :yosemite
+    sha256 "cdb9ddcc2bc683afa836b40258acbd40fa82dc67b68b245b7413d85e18d98ca0" => :mavericks
   end
 
   resource "cacert" do
-    # homepage "http://curl.haxx.se/docs/caextract.html"
-    url "http://curl.haxx.se/ca/cacert.pem"
-    sha1 "1d6fef5a6a5ad01f52e31e274e2d811b2b794e80"
+    # homepage "http://curl.haxx.se/docs/caextract.html", "https://github.com/bagder/ca-bundle"
+    url "https://raw.githubusercontent.com/bagder/ca-bundle/bff056d04b9e2c92ea8c83b2e39be9c8d0501039/ca-bundle.crt"
+    sha256 "0f119da204025da7808273fab42ed8e030cafb5c7ea4e1deda4e75f066f528fb"
   end
-
-  option :universal
-  option "without-check", "Skip build-time tests (not recommended)"
-
-  depends_on "makedepend" => :build
 
   keg_only :provided_by_osx,
     "Apple has deprecated use of OpenSSL in favor of its own TLS and crypto libraries"
+
+  option :universal
+  option "without-test", "Skip build-time tests (not recommended)"
+
+  deprecated_option "without-check" => "without-test"
+
+  depends_on "makedepend" => :build
+  depends_on "zlib" unless OS.mac?
+
+  # Replace with upstream url if they merge the more robust fix
+  # https://github.com/openssl/openssl/pull/597
+  if MacOS.version <= :snow_leopard
+    patch do
+      url "https://raw.githubusercontent.com/Homebrew/patches/3f1dc8ea145a70543aded8101a0c725abf82fc45/openssl/revert-pass-pure-constants-verbatim.patch"
+      sha256 "e38f84181a56e70028ade8408ad70aaffaea386b7e1b35de55728ae878d544aa"
+    end
+    patch do
+      url "https://raw.githubusercontent.com/Homebrew/patches/3f1dc8ea145a70543aded8101a0c725abf82fc45/openssl/tshort-asm.patch"
+      sha256 "f161e2fc1395efcb53d785004d67d4962d28aa8ce282a91020f12809c03b2afd"
+    end
+  end
 
   def arch_args
     return { :i386  => %w[linux-generic32], :x86_64 => %w[linux-x86_64] } if OS.linux?
@@ -33,16 +51,25 @@ class Openssl < Formula
   end
 
   def configure_args; %W[
-      --prefix=#{prefix}
-      --openssldir=#{openssldir}
-      no-ssl2
-      zlib-dynamic
-      shared
-      enable-cms
-    ]
+    --prefix=#{prefix}
+    --openssldir=#{openssldir}
+    no-ssl2
+    zlib-dynamic
+    shared
+    enable-cms
+    #{[ENV.cppflags, ENV.cflags, ENV.ldflags].join(" ") unless OS.mac?}
+  ]
   end
 
   def install
+    # Load zlib from an explicit path instead of relying on dyld's fallback
+    # path, which is empty in a SIP context. This patch will be unnecessary
+    # when we begin building openssl with no-comp to disable TLS compression.
+    # https://langui.sh/2015/11/27/sip-and-dlopen
+    inreplace "crypto/comp/c_zlib.c",
+              'zlib_dso = DSO_load(NULL, "z", NULL, 0);',
+              'zlib_dso = DSO_load(NULL, "/usr/lib/libz.dylib", NULL, DSO_FLAG_NO_NAME_TRANSLATION);' if OS.mac?
+
     if build.universal?
       ENV.permit_arch_flags
       archs = Hardware::CPU.universal_archs
@@ -68,11 +95,12 @@ class Openssl < Formula
       system "make", "depend"
       system "make"
 
-      if (MacOS.prefer_64_bit? || arch == MacOS.preferred_arch) && build.with?("check")
+      if (MacOS.prefer_64_bit? || arch == MacOS.preferred_arch) && build.with?("test")
         system "make", "test"
       end
 
       if build.universal?
+        cp "include/openssl/opensslconf.h", dir
         cp Dir["*.?.?.?.dylib", "*.a", "apps/openssl"], dir
         cp Dir["engines/**/*.dylib"], "#{dir}/engines"
       end
@@ -100,6 +128,15 @@ class Openssl < Formula
       system "lipo", "-create", "#{dirs.first}/openssl",
                                 "#{dirs.last}/openssl",
                      "-output", "#{bin}/openssl"
+
+      confs = archs.map do |arch|
+        <<-EOS.undent
+          #ifdef __#{arch}__
+          #{(buildpath/"build-#{arch}/opensslconf.h").read}
+          #endif
+          EOS
+      end
+      (include/"openssl/opensslconf.h").atomic_write confs.join("\n")
     end
   end
 
@@ -110,7 +147,7 @@ class Openssl < Formula
   def post_install
     unless OS.mac?
       # Download and install cacert.pem from curl.haxx.se
-      (etc/"openssl").install resource("cacert").files("cacert.pem" => "cert.pem")
+      (etc/"openssl").install resource("cacert").files("ca-bundle.crt" => "cert.pem")
       return
     end
 
@@ -119,8 +156,22 @@ class Openssl < Formula
       /System/Library/Keychains/SystemRootCertificates.keychain
     ]
 
+    certs_list = `security find-certificate -a -p #{keychains.join(" ")}`
+    certs = certs_list.scan(
+      /-----BEGIN CERTIFICATE-----.*?-----END CERTIFICATE-----/m
+    )
+
+    valid_certs = certs.select do |cert|
+      IO.popen("#{bin}/openssl x509 -inform pem -checkend 0 -noout", "w") do |openssl_io|
+        openssl_io.write(cert)
+        openssl_io.close_write
+      end
+
+      $?.success?
+    end
+
     openssldir.mkpath
-    (openssldir/"cert.pem").atomic_write `security find-certificate -a -p #{keychains.join(" ")}`
+    (openssldir/"cert.pem").atomic_write(valid_certs.join("\n"))
   end
 
   def caveats; <<-EOS.undent
@@ -140,8 +191,8 @@ class Openssl < Formula
 
     # Check OpenSSL itself functions as expected.
     (testpath/"testfile.txt").write("This is a test file")
-    expected_checksum = "91b7b0b1e27bfbf7bc646946f35fa972c47c2d32"
-    system "#{bin}/openssl", "dgst", "-sha1", "-out", "checksum.txt", "testfile.txt"
+    expected_checksum = "e2d0fe1585a63ec6009c8016ff8dda8b17719a637405a4e23c0ff81339148249"
+    system "#{bin}/openssl", "dgst", "-sha256", "-out", "checksum.txt", "testfile.txt"
     open("checksum.txt") do |f|
       checksum = f.read(100).split("=").last.strip
       assert_equal checksum, expected_checksum

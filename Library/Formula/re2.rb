@@ -1,30 +1,44 @@
 class Re2 < Formula
+  desc "Alternative to backtracking PCRE-style regular expression engines"
   homepage "https://github.com/google/re2"
-  url "https://re2.googlecode.com/files/re2-20140304.tgz"
-  sha1 "f30dda8e530921b623c32aa58a5dabbe9157f6ca"
-
   head "https://github.com/google/re2.git"
+
+  stable do
+    url "https://github.com/google/re2/archive/2016-03-01.tar.gz"
+    version "20160301"
+    sha256 "2dc6188270fe83660ccb379ef2d5ce38e0e38ca0e1c0b3af4b2b7cf0d8c9c11a"
+  end
 
   bottle do
     cellar :any
-    revision 1
-    sha1 "c502279673f7a522964161813c1d284d3dd12115" => :mavericks
-    sha1 "ed4e24ef60a2c44af9ed67b22d6f983f3177f0fc" => :mountain_lion
-    sha1 "50250f3de155321a6b93276f0df967e868fc4ca8" => :lion
+    sha256 "e1042bd0951be2c2651327269ffdf605c6cddff01162c266dac9663ee846940a" => :el_capitan
+    sha256 "00abdcbad108a5dee607a6b34ccb97d970f6dc6fd53dd9680e0549945ef2fb9e" => :yosemite
+    sha256 "941571b08e34921134c2fc15b5e855f7c2da5a882fd262766fa01dac988990f3" => :mavericks
   end
 
+  needs :cxx11 unless OS.mac?
+
   def install
-    # https://code.google.com/p/re2/issues/detail?id=99
-    if ENV.compiler != :clang || MacOS.version < :mavericks
-      inreplace 'libre2.symbols.darwin',
-                # operator<<(std::__1::basic_ostream<char, std::__1::char_traits<char> >&, re2::StringPiece const&)
-                '__ZlsRNSt3__113basic_ostreamIcNS_11char_traitsIcEEEERKN3re211StringPieceE',
-                # operator<<(std::ostream&, re2::StringPiece const&)
-                '__ZlsRSoRKN3re211StringPieceE'
-    end
+    ENV.cxx11 unless OS.mac?
     system "make", "install", "prefix=#{prefix}"
-    mv lib/"libre2.so.0.0.0", lib/"libre2.0.0.0.dylib"
-    lib.install_symlink "libre2.0.0.0.dylib" => "libre2.0.dylib"
-    lib.install_symlink "libre2.0.0.0.dylib" => "libre2.dylib"
+    system "install_name_tool", "-id", "#{lib}/libre2.0.dylib", "#{lib}/libre2.0.0.0.dylib" if OS.mac?
+    ext = OS.mac? ? "dylib" : "so"
+    lib.install_symlink "libre2.0.0.0.#{ext}" => "libre2.0.#{ext}"
+    lib.install_symlink "libre2.0.0.0.#{ext}" => "libre2.#{ext}"
+  end
+
+  test do
+    (testpath/"test.cpp").write <<-EOS.undent
+      #include <re2/re2.h>
+      #include <assert.h>
+      int main() {
+        assert(!RE2::FullMatch("hello", "e"));
+        assert(RE2::PartialMatch("hello", "e"));
+        return 0;
+      }
+    EOS
+    system ENV.cxx, "-I#{include}", "-L#{lib}", "-lre2",
+           testpath/"test.cpp", "-o", "test"
+    system "./test"
   end
 end

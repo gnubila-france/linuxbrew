@@ -1,30 +1,30 @@
-require "formula"
 
 class Ksh < Formula
+  desc "ksh93, the KornShell"
   homepage "http://www.kornshell.com"
-  url  "http://www2.research.att.com/~astopen/download/tgz/ast-ksh.2012-08-01.tgz",
-    :using => :nounzip, :user => "I accept www.opensource.org/licenses/eclipse:."
-  sha1 "316428e9937806183a134aa1669dea40c3a73695"
+  url "https://opensource.apple.com/source/ksh/ksh-23/ast-ksh.2012-08-01.tgz",
+    :using => :nounzip
+  mirror "https://www.mirrorservice.org/pub/pkgsrc/distfiles/ast-ksh.2012-08-01.tgz"
   version "93u+" # Versioning scheme: + means "+ patches", - means "beta/alpha".
+  sha256 "e6192cfa52a6a9fd20618cbaf3fa81f0cc9fd83525500757e83017275e962851"
 
   bottle do
-    cellar :any
-    revision 1
-    sha1 "e9cb13e19571b48d13c1b51c37d74c8a3206d397" => :mavericks
-    sha1 "568d10076fcb5b145611fd60fa01b0b0fb9d5f39" => :mountain_lion
-    sha1 "ad1c9d854e90b29baee3b1ade2c185ac48119657" => :lion
+    cellar :any_skip_relocation
+    revision 3
+    sha256 "5148e18444c7f1a4e7b71f72982362491aa5581101296acaa6d9c2a782d620b1" => :el_capitan
+    sha256 "13f85c7df7f44b68f1e5560c05b61eff8145230d94986537bdee5702c1e72e68" => :yosemite
+    sha256 "7c665466fb323fc0cb6ffb87ec9fe1630d75afcd3b12864e2424677473db4924" => :mavericks
   end
 
   resource "init" do
-    url "http://www2.research.att.com/~astopen/download/tgz/INIT.2012-08-01.tgz",
-      :using => :nounzip, :user => "I accept www.opensource.org/licenses/eclipse:."
-    sha1 "0b472a615db384fe707042baaa3347dc1aa1c81e"
+    url "https://opensource.apple.com/source/ksh/ksh-23/INIT.2012-08-01.tgz"
+    mirror "https://www.mirrorservice.org/pub/pkgsrc/distfiles/INIT.2012-08-01.tgz"
+    sha256 "c40cf57e9b2186271a9c362a560aa4a6e25ba911a8258ab931d2bbdbce44cfe5"
   end
 
   def install
-    (buildpath/"lib/package/tgz").install resource("init"), Dir["*.tgz"]
-
-    system "tar", "xzf", "lib/package/tgz/INIT.2012-08-01.tgz"
+    resource("init").stage buildpath
+    (buildpath/"lib/package/tgz").install Dir["*.tgz"]
     system "/bin/ksh", "bin/package", "read"
 
     # Needed due to unusal build system.
@@ -42,8 +42,12 @@ class Ksh < Formula
   end
 
   def caveats; <<-EOS.undent
-    We agreed to the Eclipse Public License 1.0 for you.
-    If this is unacceptable you should uninstall.
+      We agreed to the Eclipse Public License 1.0 for you.
+      If this is unacceptable you should uninstall.
     EOS
+  end
+
+  test do
+    assert_equal "Hello World!", pipe_output("#{bin}/ksh -e 'echo Hello World!'").chomp
   end
 end

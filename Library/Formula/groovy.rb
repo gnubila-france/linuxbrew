@@ -1,26 +1,30 @@
-require 'formula'
-
 class Groovy < Formula
-  homepage 'http://groovy.codehaus.org/'
-  url 'http://dl.bintray.com/groovy/maven/groovy-binary-2.4.0.zip'
-  sha1 '1e521a0c0018e35945e3ab93ae93a9b2dfc43b8e'
+  desc "Groovy: a Java-based scripting language"
+  homepage "http://www.groovy-lang.org"
+  url "https://dl.bintray.com/groovy/maven/apache-groovy-binary-2.4.6.zip"
+  sha256 "9b3fb5b51bc21342bba13f090a88ad6d89b20c4a7a166dd50df2ac763c278768"
 
-  option 'invokedynamic', "Install the InvokeDynamic version of Groovy (only works with Java 1.7+)"
+  bottle :unneeded
+
+  option "with-invokedynamic", "Install the InvokeDynamic version of Groovy (only works with Java 1.7+)"
+
+  deprecated_option "invokedynamic" => "with-invokedynamic"
+
+  conflicts_with "groovysdk", :because => "both install the same binaries"
 
   def install
     # Don't need Windows files.
     rm_f Dir["bin/*.bat"]
 
-    if build.include? 'invokedynamic'
+    if build.with? "invokedynamic"
       Dir.glob("indy/*.jar") do |src_path|
-        dst_file = File.basename(src_path, '-indy.jar') + '.jar'
-        dst_path = File.join('lib', dst_file)
+        dst_file = File.basename(src_path, "-indy.jar") + ".jar"
+        dst_path = File.join("lib", dst_file)
         mv src_path, dst_path
       end
     end
 
-    prefix.install_metafiles
-    libexec.install %w(bin conf lib embeddable)
+    libexec.install %w[bin conf lib embeddable]
     bin.install_symlink Dir["#{libexec}/bin/*"]
   end
 
@@ -29,5 +33,9 @@ class Groovy < Formula
       You should set GROOVY_HOME:
         export GROOVY_HOME=#{opt_libexec}
     EOS
+  end
+
+  test do
+    system "#{bin}/grape", "install", "org.activiti", "activiti-engine", "5.16.4"
   end
 end

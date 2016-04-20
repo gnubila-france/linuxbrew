@@ -1,22 +1,21 @@
-require 'formula'
-
 class Abnfgen < Formula
-  homepage 'http://www.quut.com/abnfgen/'
-  url 'http://www.quut.com/abnfgen/abnfgen-0.16.tar.gz'
-  sha1 '0ed2d09fc1601bb22bcd452000c2e4fd9b2bff81'
+  desc "Quickly generate random documents that match an ABFN grammar"
+  homepage "http://www.quut.com/abnfgen/"
+  url "http://www.quut.com/abnfgen/abnfgen-0.17.tar.gz"
+  sha256 "777a264d91a93bc9cf008d7520abb0470d7280fb38008c5f185cbf2d29640083"
 
   bottle do
-    cellar :any
-    sha1 "44b60ec95b34c9869787025439ac699bb76e916e" => :yosemite
-    sha1 "f24c3fcf1371e5da17994205b887054078de2a92" => :mavericks
-    sha1 "ade80460f765a647fe8f2f1457ea54d2ff15219c" => :mountain_lion
+    cellar :any_skip_relocation
+    sha256 "25aa694b994374b0194f65a01afdf1911ddd366d3195a6ac6451e81f87234768" => :el_capitan
+    sha256 "6020fe82950619f9ddf60265c80c2e8f2f68808618e87150d1634f5ec2c0eff8" => :yosemite
+    sha256 "004aa4f75ee0e51327a69a558cb3920b6859303b1d032e32e3caabe623dc35d4" => :mavericks
   end
 
   def install
     system "./configure", "--disable-debug", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
                           "--mandir=#{man}"
-    system "make install"
+    system "make", "install"
   end
 
   test do

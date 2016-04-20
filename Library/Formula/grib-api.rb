@@ -1,32 +1,39 @@
-require 'formula'
-
 class GribApi < Formula
-  homepage 'https://software.ecmwf.int/wiki/display/GRIB/Home'
-  url 'https://software.ecmwf.int/wiki/download/attachments/3473437/grib_api-1.12.3.tar.gz'
-  sha1 '2764b262c8f081fefb81112f7f7463a3a34b6e66'
-  revision 1
+  desc "Encode and decode grib messages (editions 1 and 2)"
+  homepage "https://software.ecmwf.int/wiki/display/GRIB/Home"
+  url "https://software.ecmwf.int/wiki/download/attachments/3473437/grib_api-1.14.7-Source.tar.gz"
+  sha256 "a42b9b0bd6bd2364897c13feafd09adba6a52e05866db61d2d7ab5ee0534f1f7"
 
   bottle do
-    sha1 "08dc51f4cdba79970fe8637fec16cfe47a9bb471" => :yosemite
-    sha1 "07779d6c8cc95a7dee2479b43c6f148f91f92b10" => :mavericks
-    sha1 "4b023028c85935df0891c6fdec3249ac439454ab" => :mountain_lion
+    sha256 "225eccf4e850b18d3b46ac35d55618f0348256794473795ee0ca8a7fbc319ec2" => :el_capitan
+    sha256 "87a9bbc980bdd0e7b4aded23fe8e1063004f26141d1efc4a3b49ab2700c4a353" => :yosemite
+    sha256 "6a10d0d9a39fda3c06505fd0b8a3f2fded6652bb2ac4e11a80d2cbcd5eb5441c" => :mavericks
   end
 
+  option "with-static", "Build static instead of shared library."
+
   depends_on :fortran
-  depends_on 'jasper' => :recommended
-  depends_on 'openjpeg' => :optional
+  depends_on "cmake" => :build
+  depends_on "jasper" => :recommended
+  depends_on "openjpeg" => :optional
 
   # Fixes build errors in Lion
   # https://software.ecmwf.int/wiki/plugins/viewsource/viewpagesrc.action?pageId=12648475
   patch :DATA
 
   def install
-    ENV.deparallelize
-    ENV.no_optimization
+    mkdir "build" do
+      args = std_cmake_args
+      args << "-DBUILD_SHARED_LIBS=OFF" if build.with? "static"
+      system "cmake", "..", *args
+      system "make", "install"
+    end
+  end
 
-    system "./configure", "--prefix=#{prefix}"
-    system "make"
-    system "make install"
+  test do
+    grib_samples_path = shell_output("#{bin}/grib_info -t").strip
+    system "#{bin}/grib_ls", "#{grib_samples_path}/GRIB1.tmpl"
+    system "#{bin}/grib_ls", "#{grib_samples_path}/GRIB2.tmpl"
   end
 end
 

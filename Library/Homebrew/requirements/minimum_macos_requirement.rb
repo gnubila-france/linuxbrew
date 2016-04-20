@@ -1,4 +1,4 @@
-require 'requirement'
+require "requirement"
 
 class MinimumMacOSRequirement < Requirement
   fatal OS.mac?
@@ -8,7 +8,7 @@ class MinimumMacOSRequirement < Requirement
     super
   end
 
-  satisfy { !OS.mac? || MacOS.version >= @version }
+  satisfy(:build_env => false) { !OS.mac? || MacOS.version >= @version }
 
   def message
     "OS X #{@version.pretty_name} or newer is required."

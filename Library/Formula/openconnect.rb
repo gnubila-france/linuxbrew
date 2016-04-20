@@ -1,14 +1,14 @@
-require "formula"
-
 class Openconnect < Formula
+  desc "Open client for Cisco AnyConnect VPN"
   homepage "http://www.infradead.org/openconnect.html"
-  url "ftp://ftp.infradead.org/pub/openconnect/openconnect-7.04.tar.gz"
-  sha1 "1a87bebcc615fd96146a8afd05491883ef2b4daf"
+  url "ftp://ftp.infradead.org/pub/openconnect/openconnect-7.06.tar.gz"
+  sha256 "facf695368dc4537a6a30e2147be90b1d77ee3cb2d269eaef070b6d9ddab70f2"
+  revision 1
 
   bottle do
-    sha1 "304af06c460efee55cffd2086ca1a7b3a36ae6f7" => :yosemite
-    sha1 "5a151e79eff6550a7832aa9493d67e7194ce78b5" => :mavericks
-    sha1 "43a8ec2383668d00d1fbc4734c3d3de3069c264f" => :mountain_lion
+    sha256 "2ef2b744defa276e570e26670f0b68e4fa5082930120f72e2fc7df53ab0e8c21" => :el_capitan
+    sha256 "de85876d8ab21f85179117585c273d7fffa471532fea24f2b7080998175f3840" => :yosemite
+    sha256 "eeabad2f02c28d233fef47235e9518a293bc93eb911594936976fbd5181a5305" => :mavericks
   end
 
   head do
@@ -18,18 +18,18 @@ class Openconnect < Formula
     depends_on "libtool" => :build
   end
 
-  option "with-gnutls", "Use GnuTLS instead of OpenSSL"
+  # No longer compiles against OpenSSL 1.0.2 - It chooses the system OpenSSL instead.
+  # http://lists.infradead.org/pipermail/openconnect-devel/2015-February/002757.html
 
   depends_on "pkg-config" => :build
   depends_on "gettext"
-  depends_on "openssl" if build.without? "gnutls"
-  depends_on "gnutls" => :optional
+  depends_on "gnutls"
   depends_on "oath-toolkit" => :optional
   depends_on "stoken" => :optional
 
   resource "vpnc-script" do
-    url "http://git.infradead.org/users/dwmw2/vpnc-scripts.git/blob_plain/df5808b301ba767578ffbec966db3b9ff154f588:/vpnc-script"
-    sha1 "c4cb07222ed5b6c4a52f5c094dec9933ade87344"
+    url "http://git.infradead.org/users/dwmw2/vpnc-scripts.git/blob_plain/a64e23b1b6602095f73c4ff7fdb34cccf7149fd5:/vpnc-script"
+    sha256 "cc30b74788ca76928f23cc7bc6532425df8ea3701ace1454d38174ca87d4b9c5"
   end
 
   def install
@@ -37,7 +37,6 @@ class Openconnect < Formula
     chmod 0755, "#{etc}/vpnc-script"
 
     if build.head?
-      ENV["GIT_DIR"] = cached_download/".git"
       ENV["LIBTOOLIZE"] = "glibtoolize"
       system "./autogen.sh"
     end
@@ -50,6 +49,10 @@ class Openconnect < Formula
     ]
 
     system "./configure", *args
-    system "make install"
+    system "make", "install"
+  end
+
+  test do
+    assert_match /AnyConnect VPN/, pipe_output("#{bin}/openconnect 2>&1")
   end
 end

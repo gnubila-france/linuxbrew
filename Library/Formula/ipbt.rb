@@ -1,21 +1,20 @@
-require 'formula'
-
 class Ipbt < Formula
-  homepage 'http://www.chiark.greenend.org.uk/~sgtatham/ipbt/'
-  url 'http://www.chiark.greenend.org.uk/~sgtatham/ipbt/ipbt-r9487.tar.gz'
-  sha1 'cd7c0b991a9422ed5f31ce13846f28fb5860b0dc'
-  version 'r9487'
+  desc "Program for recording a UNIX terminal session"
+  homepage "http://www.chiark.greenend.org.uk/~sgtatham/ipbt/"
+  url "http://www.chiark.greenend.org.uk/~sgtatham/ipbt/ipbt-20141026.2197432.tar.gz"
+  sha256 "151da94da378cc88e979df8eb5f9a05c4e663bd1299c191d24c10128bae879b0"
 
   bottle do
     cellar :any
-    sha1 "979bc5d479a2a232c45301737133bd008e50214a" => :mavericks
-    sha1 "556a13b85150ca19aaab8915d2d107d9101e1abd" => :mountain_lion
-    sha1 "9ddf633e6a677e4818b14788bf13c3263fd3e85d" => :lion
+    sha256 "31cb431e2612d8eb4c1fc1653d675c2d6789c74acf3fbe09367df8e0b5350a8e" => :yosemite
+    sha256 "d5ae41af0fa56f3cfb1e5fef2e17fb20fc2d18b2b1c11ecb0f0d57fd97edfc58" => :mavericks
+    sha256 "2f6782c8fa4d72545b367c6a210d58bffa87db3e36c8d66ac28934183a6d4547" => :mountain_lion
   end
 
   def install
-    system './configure', "--prefix=#{prefix}", '--disable-dependency-tracking'
-    system "make install"
+    system "./configure", "--prefix=#{prefix}",
+                          "--disable-dependency-tracking"
+    system "make", "install"
   end
 
   test do

@@ -1,16 +1,18 @@
+# This formula tracks GnuPG stable. You can find GnuPG Modern via:
+# brew install homebrew/versions/gnupg21
+# At the moment GnuPG Modern causes too many incompatibilities to be in core.
 class Gnupg2 < Formula
+  desc "GNU Privacy Guard: a free PGP replacement"
   homepage "https://www.gnupg.org/"
-  url "ftp://ftp.gnupg.org/gcrypt/gnupg/gnupg-2.0.26.tar.bz2"
-  mirror "ftp://ftp.mirrorservice.org/sites/ftp.gnupg.org/gcrypt/gnupg/gnupg-2.0.26.tar.bz2"
-  mirror "ftp://mirror.tje.me.uk/pub/mirrors/ftp.gnupg.org/gnupg/gnupg-2.0.26.tar.bz2"
-  sha1 "3ff5b38152c919724fd09cf2f17df704272ba192"
-  revision 1
+  url "https://gnupg.org/ftp/gcrypt/gnupg/gnupg-2.0.29.tar.bz2"
+  mirror "https://www.mirrorservice.org/sites/ftp.gnupg.org/gcrypt/gnupg/gnupg-2.0.29.tar.bz2"
+  sha256 "68ed6b386ba78425b05a60e8ee22785ff0fef190bdc6f1c612f19a58819d4ac9"
 
   bottle do
-    revision 2
-    sha1 "ccbafc88773f15b92e7ab931ec1be83fb27b58c2" => :yosemite
-    sha1 "1735c876de43f9635e191e6b1f1ed3f1ae04068d" => :mavericks
-    sha1 "ad0e8129ffbaf615f8b43aa93b89eb1cdc517f1f" => :mountain_lion
+    sha256 "76d5ab157d1ee5dc047b972ae8082fcc21981d2bc2e0ba2c888a65f9bd384da3" => :el_capitan
+    sha256 "506b7545cfd1ed03df482c3e8d8e3ad496401e92a8cdadd4c46a29954c2708ab" => :yosemite
+    sha256 "d3163fd4191af0de8431bfa0a2ff0789d86a1e55b3e5b8c6742704a3acd8bb44" => :mavericks
+    sha256 "fe5fb8a7c9f335dd674a238b0f988efae71aa1cd2fc9e1e2b12a644f3366d954" => :mountain_lion
   end
 
   depends_on "libgpg-error"
@@ -69,7 +71,7 @@ class Gnupg2 < Formula
 
     # Conflicts with a manpage from the 1.x formula, and
     # gpg-zip isn't installed by this formula anyway
-    rm man1/"gpg-zip.1"
+    rm_f man1/"gpg-zip.1"
   end
 
   test do

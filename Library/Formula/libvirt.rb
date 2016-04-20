@@ -1,14 +1,13 @@
-require "formula"
-
 class Libvirt < Formula
-  homepage "http://www.libvirt.org"
-  url "http://libvirt.org/sources/libvirt-1.2.12.tar.gz"
-  sha1 "1ccbc1d2cdb88cc5f317e95218429d42cb0ff235"
+  desc "C virtualization API"
+  homepage "https://www.libvirt.org"
+  url "https://libvirt.org/sources/libvirt-1.3.2.tar.gz"
+  sha256 "e3c6fc2683178660b371efb3ac7a1103a3f4b78efac7ffe560bc5917974ccf05"
 
   bottle do
-    sha1 "e96d37dfcf5b5764ea922f258380c62997920efd" => :yosemite
-    sha1 "d0cbb3d239c60f7f8f4899f495fa057ea255123a" => :mavericks
-    sha1 "5f1273536ae5d0a71fd64668489737c4a45cfcdb" => :mountain_lion
+    sha256 "cda088f24db7ec467c7c57b327272489285b9efdc362e34f92ae9c3a87119d31" => :el_capitan
+    sha256 "2bce8df62700d8982f2d447ce0cf330363f828e0ef3232461d4a9894360066ea" => :yosemite
+    sha256 "3a8ea1878ebe2a331f1941649e22572716a5f2230a8275268c9e05ef0b8d468f" => :mavericks
   end
 
   option "without-libvirtd", "Build only the virsh client and development libraries"
@@ -49,7 +48,7 @@ class Libvirt < Formula
 
     # Compilation of docs doesn't get done if we jump straight to "make install"
     system "make"
-    system "make install"
+    system "make", "install"
 
     # Update the SASL config file with the Homebrew prefix
     inreplace "#{etc}/sasl2/libvirt.conf" do |s|

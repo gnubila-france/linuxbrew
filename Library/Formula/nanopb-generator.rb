@@ -1,16 +1,14 @@
-require "formula"
-
 class NanopbGenerator < Formula
-  homepage "http://koti.kapsi.fi/jpa/nanopb/docs/index.html"
-  url "http://koti.kapsi.fi/~jpa/nanopb/download/nanopb-0.2.7.tar.gz"
-  sha1 "7dce0b9e1f9e5d0614697a8ea1678cee76f14858"
-  revision 1
+  desc "ANSI C library for encoding and decoding Protocol Buffer messages"
+  homepage "https://koti.kapsi.fi/jpa/nanopb/docs/index.html"
+  url "https://koti.kapsi.fi/~jpa/nanopb/download/nanopb-0.3.5.tar.gz"
+  sha256 "3dd539671403d578425f15c6b4b6ba7390ee9a20369b969637ef1d18487e150e"
 
   bottle do
-    cellar :any
-    sha1 "2552d564120cc40eec05204779c4e2725fa0bacd" => :mavericks
-    sha1 "f40866f5be494fcd0ecbacc1eccabedfea449084" => :mountain_lion
-    sha1 "697c2bcc74f4eb368cdbeb2c512a1555ea0ed14f" => :lion
+    cellar :any_skip_relocation
+    sha256 "e48c213f1af09ef52f38a874991dcd5bc6e2fe86e5404a7b272160d4a9cea5cb" => :el_capitan
+    sha256 "1390bb0c55b7b6a278588d3648b1ca6441fd2294d6f62d34e8552405710093eb" => :yosemite
+    sha256 "cf5dabc592b4c8d4b338915dcbc1bddb9a000fe0c087bd03c2f13ff0981c2edd" => :mavericks
   end
 
   depends_on :python if MacOS.version <= :snow_leopard
@@ -18,7 +16,7 @@ class NanopbGenerator < Formula
 
   resource "protobuf-python" do
     url "https://pypi.python.org/packages/source/p/protobuf/protobuf-2.6.0.tar.gz"
-    sha1 "2e630252c75d9deb14843b11418a302383b745ba"
+    sha256 "b1556c5e9cca9069143b41312fd45d0d4785ca0cab682b2624195a6bc4ec296f"
   end
 
   def install

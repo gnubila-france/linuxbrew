@@ -1,49 +1,58 @@
-require 'formula'
-
 class PerconaServer < Formula
-  homepage 'http://www.percona.com'
-  url 'http://www.percona.com/redir/downloads/Percona-Server-5.6/LATEST/source/tarball/percona-server-5.6.22-71.0.tar.gz'
-  version '5.6.22-71.0'
-  sha1 '346c96c951a566bdc52aef3c1f9dcd124d08b705'
+  desc "Drop-in MySQL replacement"
+  homepage "https://www.percona.com"
+  url "https://www.percona.com/downloads/Percona-Server-5.7/Percona-Server-5.7.11-4/source/tarball/percona-server-5.7.11-4.tar.gz"
+  sha256 "3634d2262e646db11b03837561acb0e084f33e5a597957506cf4c333ea811921"
 
   bottle do
-    sha1 "e7924ffef4c65dea4b46c612cff72a1a682c62d8" => :yosemite
-    sha1 "13471918fd06a997b885d31d9b6519821a2d2fff" => :mavericks
-    sha1 "b96a234a0d1b6cfdbac43ed971a1e901bfd97356" => :mountain_lion
+    sha256 "b29c60effc8a8bd01865bab31db4d19a8e6cf3f00668ae1aafbe3718e494fe23" => :el_capitan
+    sha256 "22161689bd19379470c96f8748362110409bf9fe28df524702e16b8c2e99c959" => :yosemite
+    sha256 "ce865776bf9f4413fa278f9965dd877b0e5e2ccafb8ac31aa8d2de04984ddb1b" => :mavericks
   end
 
-  depends_on 'cmake' => :build
-  depends_on 'pidof' unless MacOS.version >= :mountain_lion
+  option :universal
+  option "with-test", "Build with unit tests"
+  option "with-embedded", "Build the embedded server"
+  option "with-memcached", "Build with InnoDB Memcached plugin"
+  option "with-local-infile", "Build with local infile loading support"
+
+  deprecated_option "enable-local-infile" => "with-local-infile"
+  deprecated_option "with-tests" => "with-test"
+
+  depends_on "cmake" => :build
+  depends_on "pidof" unless MacOS.version >= :mountain_lion
   depends_on "openssl"
 
-  option :universal
-  option 'with-tests', 'Build with unit tests'
-  option 'with-embedded', 'Build the embedded server'
-  option 'with-memcached', 'Build with InnoDB Memcached plugin'
-  option 'enable-local-infile', 'Build with local infile loading support'
+  conflicts_with "mysql-connector-c",
+    :because => "both install `mysql_config`"
 
-  conflicts_with 'mysql-connector-c',
-    :because => 'both install `mysql_config`'
-
-  conflicts_with 'mariadb', 'mysql', 'mysql-cluster',
+  conflicts_with "mariadb", "mysql", "mysql-cluster",
     :because => "percona, mariadb, and mysql install the same binaries."
-  conflicts_with 'mysql-connector-c',
-    :because => 'both install MySQL client libraries'
+  conflicts_with "mysql-connector-c",
+    :because => "both install MySQL client libraries"
+  conflicts_with "mariadb-connector-c",
+    :because => "both install plugins"
 
   fails_with :llvm do
     build 2334
     cause "https://github.com/Homebrew/homebrew/issues/issue/144"
   end
 
-  # Where the database files should be located. Existing installs have them
-  # under var/percona, but going forward they will be under var/msyql to be
-  # shared with the mysql and mariadb formulae.
-  def datadir
-    @datadir ||= (var/'percona').directory? ? var/'percona' : var/'mysql'
+  resource "boost" do
+    url "https://downloads.sourceforge.net/project/boost/boost/1.59.0/boost_1_59_0.tar.bz2"
+    sha256 "727a932322d94287b62abb1bd2d41723eec4356a7728909e38adb65ca25241ca"
   end
 
-  def pour_bottle?
-    datadir == var/"mysql"
+  # Where the database files should be located. Existing installs have them
+  # under var/percona, but going forward they will be under var/mysql to be
+  # shared with the mysql and mariadb formulae.
+  def datadir
+    @datadir ||= (var/"percona").directory? ? var/"percona" : var/"mysql"
+  end
+
+  pour_bottle? do
+    reason "The bottle needs a var/mysql datadir (yours is var/percona)."
+    satisfy { datadir == var/"mysql" }
   end
 
   def install
@@ -83,18 +92,28 @@ class PerconaServer < Formula
       -DWITHOUT_DIALOG=1
     ]
 
+    # TokuDB is broken on MacOsX
+    # https://bugs.launchpad.net/percona-server/+bug/1531446
+    args.concat %W[-DWITHOUT_TOKUDB=1]
+
+    # MySQL >5.7.x mandates Boost as a requirement to build & has a strict
+    # version check in place to ensure it only builds against expected release.
+    # This is problematic when Boost releases don't align with MySQL releases.
+    (buildpath/"boost_1_59_0").install resource("boost")
+    args << "-DWITH_BOOST=#{buildpath}/boost_1_59_0"
+
     # To enable unit testing at build, we need to download the unit testing suite
-    if build.with? 'tests'
+    if build.with? "test"
       args << "-DENABLE_DOWNLOADS=ON"
     else
       args << "-DWITH_UNIT_TESTS=OFF"
     end
 
     # Build the embedded server
-    args << "-DWITH_EMBEDDED_SERVER=ON" if build.with? 'embedded'
+    args << "-DWITH_EMBEDDED_SERVER=ON" if build.with? "embedded"
 
     # Build with InnoDB Memcached plugin
-    args << "-DWITH_INNODB_MEMCACHED=ON" if build.with? 'memcached'
+    args << "-DWITH_INNODB_MEMCACHED=ON" if build.with? "memcached"
 
     # Make universal for binding to universal applications
     if build.universal?
@@ -103,41 +122,24 @@ class PerconaServer < Formula
     end
 
     # Build with local infile loading support
-    args << "-DENABLED_LOCAL_INFILE=1" if build.include? 'enable-local-infile'
+    args << "-DENABLED_LOCAL_INFILE=1" if build.with? "local-infile"
 
     system "cmake", *args
     system "make"
-    system "make install"
+    system "make", "install"
 
     # Don't create databases inside of the prefix!
     # See: https://github.com/Homebrew/homebrew/issues/4975
-    rm_rf prefix+'data'
-
-    # Link the setup script into bin
-    bin.install_symlink prefix/"scripts/mysql_install_db"
+    rm_rf prefix+"data"
 
     # Fix up the control script and link into bin
     inreplace "#{prefix}/support-files/mysql.server" do |s|
       s.gsub!(/^(PATH=".*)(")/, "\\1:#{HOMEBREW_PREFIX}/bin\\2")
       # pidof can be replaced with pgrep from proctools on Mountain Lion
-      s.gsub!(/pidof/, 'pgrep') if MacOS.version >= :mountain_lion
+      s.gsub!(/pidof/, "pgrep") if MacOS.version >= :mountain_lion
     end
 
     bin.install_symlink prefix/"support-files/mysql.server"
-
-    # Move mysqlaccess to libexec
-    mv "#{bin}/mysqlaccess", libexec
-    mv "#{bin}/mysqlaccess.conf", libexec
-  end
-
-  def post_install
-    # Make sure that data directory exists
-    datadir.mkpath
-    unless File.exist? "#{datadir}/mysql/user.frm"
-      ENV['TMPDIR'] = nil
-      system "#{bin}/mysql_install_db", "--verbose", "--user=#{ENV["USER"]}",
-        "--basedir=#{prefix}", "--datadir=#{datadir}", "--tmpdir=/tmp"
-    end
   end
 
   def caveats; <<-EOS.undent
@@ -146,10 +148,13 @@ class PerconaServer < Formula
 
     To connect:
         mysql -uroot
+
+    To initialize the data directory:
+        mysqld --initialize --datadir=#{datadir} --user=#{ENV["USER"]}
     EOS
   end
 
-  plist_options :manual => 'mysql.server start'
+  plist_options :manual => "mysql.server start"
 
   def plist; <<-EOS.undent
     <?xml version="1.0" encoding="UTF-8"?>

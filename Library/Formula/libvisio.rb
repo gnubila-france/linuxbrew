@@ -1,27 +1,26 @@
-require "formula"
-
 class Libvisio < Formula
+  desc "Interpret and import Visio diagrams"
   homepage "https://wiki.documentfoundation.org/DLP/Libraries/libvisio"
-  url "http://dev-www.libreoffice.org/src/libvisio/libvisio-0.1.0.tar.xz"
-  sha1 "c82e5c7ad25e513c268032cda9febd01b8879504"
-  revision 3
+  url "http://dev-www.libreoffice.org/src/libvisio/libvisio-0.1.3.tar.xz"
+  sha256 "943e03b1e6c969af4c2133a6671c9630adf3aaf8d460156744a28f58c9f47cd8"
 
   bottle do
     cellar :any
-    revision 1
-    sha1 "99ed3132f737611f552f499c593171b9c5de98f1" => :yosemite
-    sha1 "fe4be3eedf1ecfc4e30c2ced7dba2a8c01483e95" => :mavericks
-    sha1 "100c2d78d59c91ab3f6d77937cc35a669e24d383" => :mountain_lion
+    sha256 "2b44b226a48b76cdd2cea1d17d88252fd2d254d552939aaf3d98cc182741741b" => :el_capitan
+    sha256 "049915e816c2d8d2c3a80b138494e64c9f89616a8434c8caafbc88da6de094c3" => :yosemite
+    sha256 "4e66fae8303d256b5ee16e8766ee9ee82146d17d57555434b8fdd04fde6dc607" => :mavericks
   end
 
   depends_on "pkg-config" => :build
   depends_on "boost" => :build
-  depends_on "libwpd"
-  depends_on "libwpg"
-  depends_on "icu4c"
+  depends_on "cppunit" => :build
   depends_on "librevenge"
+  depends_on "icu4c"
+
 
   def install
+    # Needed for Boost 1.59.0 compatibility.
+    ENV["LDFLAGS"] = "-lboost_system-mt"
     system "./configure", "--without-docs",
                           "-disable-dependency-tracking",
                           "--enable-static=no",

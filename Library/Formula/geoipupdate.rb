@@ -1,12 +1,13 @@
 class Geoipupdate < Formula
+  desc "Automatic updates of GeoIP2 and GeoIP Legacy databases"
   homepage "https://github.com/maxmind/geoipupdate"
-  url "https://github.com/maxmind/geoipupdate/releases/download/v2.1.0/geoipupdate-2.1.0.tar.gz"
-  sha1 "3b77c88d43ab7ad5056cbd5bc2f557b193fa5100"
+  url "https://github.com/maxmind/geoipupdate/releases/download/v2.2.2/geoipupdate-2.2.2.tar.gz"
+  sha256 "156ab7604255a9c62c4a442c76d48d024ac813c6542639bffa93b28e2a781621"
 
   bottle do
-    sha1 "38fee37aa1dec793929bbd02d6fb9165d076172e" => :yosemite
-    sha1 "9e3b01045af204b08852cf95ed79ec34c400343d" => :mavericks
-    sha1 "fa0ad3c890c31f506b4c980fc6b702457b56eb68" => :mountain_lion
+    sha256 "0e69897d110e62e85a16536ee88955bd99ec20e428436f02253b8017535f5c48" => :el_capitan
+    sha256 "3cb6006adb116784d3aec5415be409feb2d663595fa05defab110d5856029b8b" => :yosemite
+    sha256 "5738a8729ef6111da261f11d7819d614d3d22c48d0261caea89b12b668b62a7e" => :mavericks
   end
 
   head do
@@ -25,7 +26,7 @@ class Geoipupdate < Formula
     # See https://github.com/maxmind/geoip-api-c#150
     inreplace "conf/GeoIP.conf.default", "YOUR_USER_ID_HERE", "999999"
     inreplace "conf/GeoIP.conf.default", "YOUR_LICENSE_KEY_HERE", "000000000000"
-    inreplace "conf/GeoIP.conf.default", /^ProductIds .*$/, "ProductIds 506 533"
+    inreplace "conf/GeoIP.conf.default", /^ProductIds .*$/, "ProductIds 506 533 GeoLite2-City GeoLite2-Country"
 
     system "./bootstrap" if build.head?
 
@@ -41,6 +42,6 @@ class Geoipupdate < Formula
   end
 
   test do
-    system "#{bin}/geoipupdate", "-v"
+    system "#{bin}/geoipupdate", "-V"
   end
 end

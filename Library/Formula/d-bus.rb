@@ -1,24 +1,28 @@
-require "formula"
-
 class DBus < Formula
-  # releases: even (1.8.x) = stable, odd (1.9.x) = development
-  homepage "http://www.freedesktop.org/wiki/Software/dbus"
-  url "http://dbus.freedesktop.org/releases/dbus/dbus-1.8.12.tar.gz"
-  sha1 "9dc3003a53892b41eb61ade20051aba57be1b4b1"
+  # releases: even (1.10.x) = stable, odd (1.11.x) = development
+  desc "Message bus system, providing inter-application communication"
+  homepage "https://wiki.freedesktop.org/www/Software/dbus"
+  url "https://dbus.freedesktop.org/releases/dbus/dbus-1.10.6.tar.gz"
+  mirror "https://mirrors.ocf.berkeley.edu/debian/pool/main/d/dbus/dbus_1.10.6.orig.tar.gz"
+  sha256 "b5fefa08a77edd76cd64d872db949eebc02cf6f3f8be82e4bbc641742af5d35f"
+  head "https://anongit.freedesktop.org/git/dbus/dbus.git"
 
   bottle do
-    sha1 "50c1012cd5f5b89f2f5a843fb9de22bc76dc5178" => :yosemite
-    sha1 "825bfc579a58d923697893d70fb2b9af157a9a77" => :mavericks
-    sha1 "5b53fa3634d6aaec601b0b5a1c6330392b240958" => :mountain_lion
+    revision 1
+    sha256 "93ff1512d2ee0dfbf25e77822165c2a62439af86d63cd3811d325bc43195445b" => :el_capitan
+    sha256 "54729cfbe8f3f889012aa4cdd8565979c80ad6c8cc896cdbfe15b842e196f9b1" => :yosemite
+    sha256 "e50f1ade0a5871d9c0441fb129e74f45166e928d32fbf50972ada039917155a6" => :mavericks
+    sha256 "0a7fe65fd37c4d3955b121e1c5f06e2e9eba5b05d0a8b841a1e2acf564ccb4c9" => :x86_64_linux
   end
 
-  # Upstream fix for O_CLOEXEC portability
-  # http://cgit.freedesktop.org/dbus/dbus/commit/?id=5d91f615d18629eaac074fbde2ee7e17b82e5472
-  # This is fixed in 1.9.x but won't be fixed upstream for 1.8.x
+  # Patch applies the config templating fixed in https://bugs.freedesktop.org/show_bug.cgi?id=94494
+  # Homebrew pr/issue: 50219
   patch do
-    url "http://cgit.freedesktop.org/dbus/dbus/patch/?id=5d91f615d18629eaac074fbde2ee7e17b82e5472"
-    sha1 "ebb383abb86eeafbe048dbb8b77d83bdf0b7c9bb"
+    url "https://raw.githubusercontent.com/Homebrew/patches/0a8a55872e/d-bus/org.freedesktop.dbus-session.plist.osx.diff"
+    sha256 "a8aa6fe3f2d8f873ad3f683013491f5362d551bf5d4c3b469f1efbc5459a20dc"
   end
+
+  depends_on "expat" unless OS.mac?
 
   def install
     # Fix the TMPDIR to one D-Bus doesn't reject due to odd symbols
@@ -30,15 +34,13 @@ class DBus < Formula
                           "--sysconfdir=#{etc}",
                           "--disable-xml-docs",
                           "--disable-doxygen-docs",
-                          "--enable-launchd",
-                          "--with-launchd-agent-dir=#{prefix}",
+                          ("--enable-launchd" if OS.mac?),
+                          ("--with-launchd-agent-dir=#{prefix}" if OS.mac?),
                           "--without-x",
                           "--disable-tests"
     system "make"
     ENV.deparallelize
     system "make", "install"
-
-    (prefix+"org.freedesktop.dbus-session.plist").chmod 0644
   end
 
   def post_install

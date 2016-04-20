@@ -1,24 +1,25 @@
-require 'formula'
-
 class Apktool < Formula
-  homepage 'http://android-apktool.googlecode.com/'
-  url 'https://android-apktool.googlecode.com/files/apktool1.5.2.tar.bz2'
-  sha1 '2dd828cf79467730c7406aa918f1da1bd21aaec8'
+  desc "Tool for reverse engineering 3rd party, closed, binary Android apps"
+  homepage "https://github.com/iBotPeaches/Apktool"
+  url "https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_2.1.0.jar", :using => :nounzip
+  sha256 "3e87c0cc351ec78dad62c0f93ab1bff26620763e2f28fbb5fe70cc4255bfed0b"
 
-  resource 'exes' do
-    url 'https://android-apktool.googlecode.com/files/apktool-install-macosx-r05-ibot.tar.bz2'
-    sha1 'c2fb262760ccd27530e58ccc4bbef4d4a7b0ab39'
+  bottle :unneeded
+
+  resource "sample.apk" do
+    url "https://github.com/downloads/stephanenicolas/RoboDemo/robodemo-sample-1.0.1.apk", :using => :nounzip
+    sha256 "bf3ec04631339538c8edb97ebbd5262c3962c5873a2df9022385156c775eb81f"
   end
 
   def install
-    libexec.install 'apktool.jar', resource('exes')
+    libexec.install "apktool_#{version}.jar"
+    bin.write_jar_script libexec/"apktool_#{version}.jar", "apktool"
+  end
 
-    # Make apktool look for jar and aapkt in libexec
-    inreplace "#{libexec}/apktool" do |s|
-      s.gsub! /^libdir=.*$/, "libdir=\"#{libexec}\""
-      s.gsub! "PATH=$PATH:`pwd`;", "PATH=$PATH:#{libexec};"
+  test do
+    resource("sample.apk").stage do
+      system "#{bin}/apktool", "d", "robodemo-sample-1.0.1.apk"
+      system "#{bin}/apktool", "b", "robodemo-sample-1.0.1"
     end
-
-    bin.install_symlink libexec/'apktool'
   end
 end

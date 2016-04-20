@@ -1,15 +1,14 @@
-require 'formula'
-
 class Openrtsp < Formula
-  homepage 'http://www.live555.com/openRTSP'
-  url 'http://www.live555.com/liveMedia/public/live.2014.10.21.tar.gz'
-  sha1 'e493e0d6f7f2bf4be8e88393bb3ba583136bb271'
+  desc "Command-line RTSP client"
+  homepage "http://www.live555.com/openRTSP"
+  url "http://www.live555.com/liveMedia/public/live.2016.03.14.tar.gz"
+  sha256 "67574112d881ce7729faa844d987b04dbc71dee88d1a811dc6499155f194683b"
 
   bottle do
-    cellar :any
-    sha1 "01a5a2676e3995e505fc092ca949b67691f2e812" => :yosemite
-    sha1 "f019de571028a7fa0027a2f4e464651e5a5259f9" => :mavericks
-    sha1 "ee10c6dd74631ae656f4482380a1ec81c86e779d" => :mountain_lion
+    cellar :any_skip_relocation
+    sha256 "49c9594da046dfef7005a6e56b66ce5d7ca7075b6d26865c7d5be9a0e2a0c8f5" => :el_capitan
+    sha256 "55c86ff5826840c9fdb00495d89a290d0fb99689b7cd45ea0bb7cb4cd836e304" => :yosemite
+    sha256 "bf8ecebfae81a65b78bb72d17606dad99b59da3ca04b84575141d64651b93c6c" => :mavericks
   end
 
   option "32-bit"
@@ -17,11 +16,20 @@ class Openrtsp < Formula
   def install
     if build.build_32_bit? || !MacOS.prefer_64_bit?
       ENV.m32
-      system "./genMakefiles macosx-32bit"
+      system "./genMakefiles", "macosx-32bit"
     else
-      system "./genMakefiles macosx"
+      system "./genMakefiles", "macosx"
     end
 
     system "make", "PREFIX=#{prefix}", "install"
+
+    # Move the testing executables out of the main PATH
+    libexec.install Dir.glob(bin/"test*")
+  end
+
+  def caveats; <<-EOS.undent
+    Testing executables have been placed in:
+      #{libexec}
+    EOS
   end
 end

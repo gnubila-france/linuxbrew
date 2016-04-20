@@ -1,18 +1,19 @@
 class GnuGetopt < Formula
+  desc "Command-line option parsing library"
   homepage "http://software.frodo.looijaard.name/getopt/"
-  url "http://frodo.looijaard.name/system/files/software/getopt/getopt-1.1.5.tar.gz"
-  sha1 "9090eb46ac92f2fd2749ca4121e81aaad40f325d"
+  url "http://frodo.looijaard.name/system/files/software/getopt/getopt-1.1.6.tar.gz"
+  sha256 "d0bf1dc642a993e7388a1cddfb9409bed375c21d5278056ccca3a0acd09dc5fe"
 
   bottle do
-    revision 1
-    sha1 "003e06f4580de4066f39bf7d4c178f3e06e1b55a" => :yosemite
-    sha1 "a694925a2dce22c7bbbd252907b8e484e9a1db39" => :mavericks
-    sha1 "8c90689aca391072d2a557b8f8ebfe0eacbba2f2" => :mountain_lion
+    sha256 "5e9e87fe18c5681e80f1cf940fed275ed895831304326bc5e7be6fb6e53e8594" => :el_capitan
+    sha256 "f8dbbec03aaaeb1bc774d9bf606701901cc9a8ad15cecc5473567e51845057e6" => :yosemite
+    sha256 "27938c615808c8e4ff2eacac0a4059c76dee5518a5c8bbfb304b24b70736b429" => :mavericks
+    sha256 "88a02cd609a91253e9b996a1fcb1e8837161673e413fe792e5d05aa3ff9a94cf" => :mountain_lion
   end
 
-  depends_on "gettext"
-
   keg_only :provided_by_osx
+
+  depends_on "gettext"
 
   def install
     inreplace "Makefile" do |s|

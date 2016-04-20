@@ -1,9 +1,7 @@
-require "formula"
-
 class RRequirement < Requirement
   fatal true
 
-  satisfy { which('r') }
+  satisfy { which("r") }
 
   def message; <<-EOS.undent
     R not found. The R integration module requires R.
@@ -16,18 +14,19 @@ class RRequirement < Requirement
 end
 
 class Monetdb < Formula
+  desc "Column-store database"
   homepage "https://www.monetdb.org/"
-  url "https://dev.monetdb.org/downloads/sources/Oct2014-SP2/MonetDB-11.19.9.zip"
-  sha1 "dde2cad29d2f5bbdd2e2845ee0663969eb0aeb3f"
+  url "https://www.monetdb.org/downloads/sources/Jul2015-SP3/MonetDB-11.21.17.zip"
+  sha256 "9c4133a5b878a2554844b678dcf8ec8bb3066aaab706fc4feb9c2d820940f72e"
 
   bottle do
-    sha1 "a277df350c7758eee0dd9082f5b369da4aeb67b3" => :yosemite
-    sha1 "360ce097dd63e8af6caf94f0a1c422491d965c9b" => :mavericks
-    sha1 "d63d44cbc488f5f4d40d5ed169e92d2ece4964d6" => :mountain_lion
+    sha256 "871686d5da4a35c4b36950f71d169dc235757dc4c439379c890d27cf2c15de55" => :el_capitan
+    sha256 "baaecec8b693882a079df7d25ce42f99dd8a0b36aeb0d93bf7a05dc7035f8ecc" => :yosemite
+    sha256 "9eb839d5abc747abb5df3bfa815527e0f4ffcab5adfe59efaa9c826ce06deea2" => :mavericks
   end
 
   head do
-    url "http://dev.monetdb.org/hg/MonetDB", :using => :hg
+    url "https://dev.monetdb.org/hg/MonetDB", :using => :hg
 
     depends_on "libtool" => :build
     depends_on "gettext" => :build
@@ -35,8 +34,9 @@ class Monetdb < Formula
     depends_on "autoconf" => :build
   end
 
-  option "with-java", 'Build the JDBC dirver'
-  option "with-r", 'Build the R integration module'
+  option "with-java", "Build the JDBC driver"
+  option "with-ruby", "Build the Ruby driver"
+  option "with-r", "Build the R integration module"
 
   depends_on RRequirement => :optional
 
@@ -62,13 +62,13 @@ class Monetdb < Formula
             "--enable-assert=no",
             "--enable-optimize=yes",
             "--enable-testing=no",
-            "--with-readline=#{Formula["readline"].opt_prefix}", # Use the correct readline
-            "--without-rubygem"] # Installing the RubyGems requires root permissions
+            "--with-readline=#{Formula["readline"].opt_prefix}"]
 
     args << "--with-java=no" if build.without? "java"
+    args << "--with-rubygem=no" if build.without? "ruby"
     args << "--disable-rintegration" if build.without? "r"
 
     system "./configure", *args
-    system "make install"
+    system "make", "install"
   end
 end

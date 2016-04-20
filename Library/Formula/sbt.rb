@@ -1,15 +1,14 @@
-require "formula"
-
 class Sbt < Formula
+  desc "Build tool for Scala projects"
   homepage "http://www.scala-sbt.org"
-  url "https://dl.bintray.com/sbt/native-packages/sbt/0.13.7/sbt-0.13.7.tgz"
-  sha1 "0ee4df9a5bd6dc478f9007ebdb24bacd1cf2731c"
+  url "https://dl.bintray.com/sbt/native-packages/sbt/0.13.11/sbt-0.13.11.tgz"
+  sha256 "a36a6fbf6dd70afd93fb8db16c40e8ac00798fdddfa0b4c678786dc15617afa6"
 
   bottle do
-    cellar :any
-    sha1 "4ca22cd7cca26e940eb8634a9226f2051b098053" => :yosemite
-    sha1 "db2296a8b05c7fbe2db23dfe8b53d575df2ef164" => :mavericks
-    sha1 "d97a9693ea2475d8f671cfe22b50a4a0188b421a" => :mountain_lion
+    cellar :any_skip_relocation
+    sha256 "fb230c178ae02ea07b175c425905453535466915574f9ef3d850850e4a12094a" => :el_capitan
+    sha256 "56bc9c0db2e8d225cf1218845bacfb7a2439898ac3dc1ca79c94919dd5c6f6fe" => :yosemite
+    sha256 "3559009c0349c7ea597f300477d2a85c1e37eb1e2413f5f794e43e1644f60f28" => :mavericks
   end
 
   def install

@@ -1,14 +1,21 @@
-require 'formula'
-
 class OpenMpi < Formula
-  homepage 'http://www.open-mpi.org/'
-  url 'http://www.open-mpi.org/software/ompi/v1.8/downloads/openmpi-1.8.4.tar.bz2'
-  sha1 '88ae39850fcf0db05ac20e35dd9e4cacc75bde4d'
+  desc "High performance message passing library"
+  homepage "https://www.open-mpi.org/"
+  url "https://www.open-mpi.org/software/ompi/v1.10/downloads/openmpi-1.10.2.tar.bz2"
+  sha256 "8846e7e69a203db8f50af90fa037f0ba47e3f32e4c9ccdae2db22898fd4d1f59"
 
   bottle do
-    sha1 "a6ec98d40ab34bf2eb4dbe9223d5aa430ba749ed" => :yosemite
-    sha1 "9d7366e69787c6b331fe5473c8025d86d8b79691" => :mavericks
-    sha1 "8c8627010c9390cb72054fba3f8eea419a67bb2b" => :mountain_lion
+    revision 1
+    sha256 "3a6ec528d87a0648b30ec17b0dd88a7c40bac25719cb6509421879d9dab009bb" => :el_capitan
+    sha256 "8682efb08c38e781245783991a2ed1019f92eb735288c8d1a0cf25ea8b559ed7" => :yosemite
+    sha256 "168b60f491efc640c17fb92afd64eacf5b9430d519f594934106be01561bf907" => :mavericks
+  end
+
+  head do
+    url "https://github.com/open-mpi/ompi.git"
+    depends_on "automake" => :build
+    depends_on "autoconf" => :build
+    depends_on "libtool" => :build
   end
 
   deprecated_option "disable-fortran" => "without-fortran"
@@ -17,11 +24,12 @@ class OpenMpi < Formula
   option "with-mpi-thread-multiple", "Enable MPI_THREAD_MULTIPLE"
   option :cxx11
 
-  conflicts_with 'mpich2', :because => 'both install mpi__ compiler wrappers'
-  conflicts_with 'lcdf-typetools', :because => 'both install same set of binaries.'
+  conflicts_with "mpich", :because => "both install mpi__ compiler wrappers"
+  conflicts_with "lcdf-typetools", :because => "both install same set of binaries."
 
   depends_on :fortran => :recommended
-  depends_on 'libevent'
+  depends_on "libevent"
+  depends_on :java => :optional
 
   def install
     ENV.cxx11 if build.cxx11?
@@ -32,22 +40,30 @@ class OpenMpi < Formula
       --disable-silent-rules
       --enable-ipv6
       --with-libevent=#{Formula["libevent"].opt_prefix}
+      --with-sge
     ]
+    args << "--with-platform-optimized" if build.head?
     args << "--disable-mpi-fortran" if build.without? "fortran"
     args << "--enable-mpi-thread-multiple" if build.with? "mpi-thread-multiple"
+    args << "--enable-mpi-java" if build.with? "java"
 
-    system './configure', *args
-    system 'make', 'all'
-    system 'make', 'check'
-    system 'make', 'install'
+    system "./autogen.pl" if build.head?
+    system "./configure", *args
+    system "make", "all"
+    system "make", "check"
+    system "make", "install"
 
     # If Fortran bindings were built, there will be stray `.mod` files
     # (Fortran header) in `lib` that need to be moved to `include`.
-    include.install Dir["#{lib}/*.mod"]
+    if build.with? "fortran"
+      include.install Dir["#{lib}/*.mod"]
+    end
 
-    # Move vtsetup.jar from bin to libexec.
-    libexec.install bin/'vtsetup.jar'
-    inreplace bin/'vtsetup', '$bindir/vtsetup.jar', '$prefix/libexec/vtsetup.jar'
+    if build.stable?
+      # Move vtsetup.jar from bin to libexec.
+      libexec.install bin/"vtsetup.jar"
+      inreplace bin/"vtsetup", "$bindir/vtsetup.jar", "$prefix/libexec/vtsetup.jar"
+    end
   end
 
   test do
@@ -71,5 +87,19 @@ class OpenMpi < Formula
     system "#{bin}/mpicc", "hello.c", "-o", "hello"
     system "./hello"
     system "#{bin}/mpirun", "-np", "4", "./hello"
+    (testpath/"hellof.f90").write <<-EOS.undent
+      program hello
+      include 'mpif.h'
+      integer rank, size, ierror, tag, status(MPI_STATUS_SIZE)
+      call MPI_INIT(ierror)
+      call MPI_COMM_SIZE(MPI_COMM_WORLD, size, ierror)
+      call MPI_COMM_RANK(MPI_COMM_WORLD, rank, ierror)
+      print*, 'node', rank, ': Hello Fortran world'
+      call MPI_FINALIZE(ierror)
+      end
+    EOS
+    system "#{bin}/mpif90", "hellof.f90", "-o", "hellof"
+    system "./hellof"
+    system "#{bin}/mpirun", "-np", "4", "./hellof"
   end
 end

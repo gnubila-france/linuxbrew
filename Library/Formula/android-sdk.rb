@@ -1,36 +1,49 @@
-require 'formula'
+require "base64"
 
 class AndroidSdk < Formula
-  homepage 'http://developer.android.com/index.html'
-
-  version '24.0.2'
+  desc "Android API libraries and developer tools"
+  homepage "https://developer.android.com/index.html"
+  version "24.4.1"
   if OS.mac?
-    url 'http://dl.google.com/android/android-sdk_r24.0.2-macosx.zip'
-      sha1 '3ab5e0ab0db5e7c45de9da7ff525dee6cfa97455'
+    url "https://dl.google.com/android/android-sdk_r#{version}-macosx.zip"
+    sha256 "ce1638cb48526a0e55857fc46b57eda4349e6512006244ad13dd6c1361c74104"
   elsif OS.linux?
-    url 'http://dl.google.com/android/android-sdk_r24.0.2-linux.tgz'
-    sha1 'b6fd75e8b06b0028c2427e6da7d8a09d8f956a86'
+    url "https://dl.google.com/android/android-sdk_r#{version}-linux.tgz"
+    sha256 "e16917ad685c1563ccbc5dd782930ee1a700a1b6a6fd3e44b83ac694650435e9"
+  end
+  revision 1
+
+  bottle do
+    cellar :any
+    revision 1
+    sha256 "17a99fa50d2e532d95e189f83fe84a5626c47386b30bbdd9203a9fcdb8087089" => :el_capitan
+    sha256 "c4453630cf237b3a54e09cf08867739f5d69841c466270b0c98a368f9d9d7b1a" => :yosemite
+    sha256 "88aac41e9525e897d207ba3e50cd36351ac5270c99cb3d85bed2306ccb623b21" => :mavericks
   end
 
-  conflicts_with 'android-platform-tools',
+  depends_on :java
+  depends_on :macos => :mountain_lion
+
+  conflicts_with "android-platform-tools",
     :because => "The Android Platform-Tools need to be installed as part of the SDK."
 
-  resource 'completion' do
-    url 'https://raw.githubusercontent.com/CyanogenMod/android_sdk/938c8d70af7d77dfcd1defe415c1e0deaa7d301b/bash_completion/adb.bash'
-    sha1 '6dfead9b1350dbe1c16a1c80ed70beedebfa39eb'
+  resource "completion" do
+    url "https://android.googlesource.com/platform/sdk/+/7859e2e738542baf96c15e6c8b50bbdb410131b0/bash_completion/adb.bash?format=TEXT"
+    mirror "https://raw.githubusercontent.com/Homebrew/patches/c3b801f/android-sdk/adb.bash"
+    sha256 "44b3e20ed9cb8fff01dc6907a57bd8648cd0d1bcc7b129ec952a190983ab5e1a"
   end
 
   # Version of the android-build-tools the wrapper scripts reference.
   def build_tools_version
-    "21.1.2"
+    "23.0.1"
   end
 
   def install
-    prefix.install 'tools', 'SDK Readme.txt' => 'README'
+    prefix.install "tools", "SDK Readme.txt" => "README"
 
     %w[android ddms draw9patch emulator
-    emulator-arm emulator-x86 hierarchyviewer lint mksdcard
-    monitor monkeyrunner traceview].each do |tool|
+       emulator-arm emulator-x86 hierarchyviewer lint mksdcard
+       monitor monkeyrunner traceview].each do |tool|
       (bin/tool).write <<-EOS.undent
         #!/bin/bash
         TOOL="#{prefix}/tools/#{tool}"
@@ -85,28 +98,29 @@ class AndroidSdk < Formula
       EOS
     end
 
-    bash_completion.install resource('completion').files('adb.bash' => 'adb-completion.bash')
+    resource("completion").stage do
+      # googlesource.com only serves up the file in base64-encoded format; we
+      # need to decode it before installing
+      decoded_file = buildpath/"adb-completion.bash"
+      decoded_file.write Base64.decode64(File.read("adb.bash"))
+      bash_completion.install decoded_file
+    end
+
+    # automatically install platform and build tools
+    system "echo y | bash #{bin}/android --verbose update sdk --no-ui --all --filter platform-tools,build-tools-#{build_tools_version}"
   end
 
   def caveats; <<-EOS.undent
     Now run the 'android' tool to install the actual SDK stuff.
 
-    The Android-SDK location for IDEs such as Eclipse, IntelliJ etc is:
-      #{prefix}
-
-    You will have to install the platform-tools and docs EVERY time this formula
-    updates. If you want to try and fix this then see the comment in this formula.
+    The Android-SDK is available at #{opt_prefix}
 
     You may need to add the following to your .bashrc:
       export ANDROID_HOME=#{opt_prefix}
     EOS
   end
 
-  # The 'android' tool insists on deleting #{prefix}/platform-tools
-  # and then installing the new one. So it is impossible for us to redirect
-  # the SDK location to var so that the platform-tools don't have to be
-  # freshly installed EVERY DANG time the base SDK updates.
-
-  # Ideas: make android a script that calls the actual android tool, but after
-  # that tool exits it repairs the directory locations?
+  test do
+    assert_match version.to_s, shell_output("#{prefix}/tools/emulator -version")
+  end
 end

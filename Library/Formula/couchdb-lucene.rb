@@ -1,13 +1,24 @@
 class CouchdbLucene < Formula
-  homepage 'https://github.com/rnewson/couchdb-lucene'
-  url 'https://github.com/rnewson/couchdb-lucene/archive/v1.0.2.tar.gz'
-  sha1 '75e0c55a87f47903c6cd122286ea3e4568809f7e'
+  desc "Full-text search of CouchDB documents using Lucene"
+  homepage "https://github.com/rnewson/couchdb-lucene"
+  url "https://github.com/rnewson/couchdb-lucene/archive/v1.0.2.tar.gz"
+  sha256 "c3f33890670160b14515fd1e26aa30df89f6101f36148639f213c40a6fff8e7d"
 
-  depends_on 'couchdb'
-  depends_on 'maven' => :build
+  bottle do
+    cellar :any_skip_relocation
+    revision 1
+    sha256 "38f8b7946415fadd1ed0d0bae55a2b4a07b887b68a6513436bb33347fe25b59f" => :el_capitan
+    sha256 "9da083783bddfdff05e89511006eddc7a4e382b04b897741a7418f48f6b6dff0" => :yosemite
+    sha256 "41fdbc137d3a24139de0fd0ae4111ae7d6f14d20fb9aaba25b5ef0b5bb21085d" => :mavericks
+  end
+
+  depends_on "couchdb"
+  depends_on "maven" => :build
+  depends_on :java
 
   def install
-    ENV["JAVA_HOME"] = `/usr/libexec/java_home`.chomp
+    ENV.java_cache
+
     system "mvn"
     system "tar", "-xzf", "target/couchdb-lucene-#{version}-dist.tar.gz", "--strip", "1"
 
@@ -85,7 +96,13 @@ class CouchdbLucene < Formula
   end
 
   test do
-    io = IO.popen("#{bin}/cl_run")
+    # This seems to be the easiest way to make the test play nicely in our
+    # sandbox. If it works here, it'll work in the normal location though.
+    cp_r Dir[opt_prefix/"*"], testpath
+    inreplace "bin/cl_run", "CL_BASEDIR=#{libexec}/bin",
+                            "CL_BASEDIR=#{testpath}/libexec/bin"
+
+    io = IO.popen("#{testpath}/bin/cl_run")
     sleep 2
     Process.kill("SIGINT", io.pid)
     Process.wait(io.pid)

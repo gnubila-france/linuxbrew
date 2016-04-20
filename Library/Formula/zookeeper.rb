@@ -1,41 +1,21 @@
-require "formula"
-
 class Zookeeper < Formula
+  desc "Centralized server for distributed coordination of services"
   homepage "https://zookeeper.apache.org/"
-  revision 1
 
   stable do
-    url "http://www.apache.org/dyn/closer.cgi?path=zookeeper/zookeeper-3.4.6/zookeeper-3.4.6.tar.gz"
-    sha1 "2a9e53f5990dfe0965834a525fbcad226bf93474"
-
-    # To resolve Yosemite build errors.
-    # https://issues.apache.org/jira/browse/ZOOKEEPER-2049
-    if MacOS.version == :yosemite
-      patch :p0 do
-        url "https://issues.apache.org/jira/secure/attachment/12673210/ZOOKEEPER-2049.noprefix.branch-3.4.patch"
-        sha1 "ff0e971c028050ccebd8cc7caa348ab14716d664"
-      end
-    end
+    url "https://www.apache.org/dyn/closer.cgi?path=zookeeper/zookeeper-3.4.8/zookeeper-3.4.8.tar.gz"
+    sha256 "f10a0b51f45c4f64c1fe69ef713abf9eb9571bc7385a82da892e83bb6c965e90"
   end
 
   bottle do
-    revision 1
-    sha1 "4ef32a515592565bdf88546b9773725e4079a080" => :yosemite
-    sha1 "c2db3e5bf5f66cd575a827842d667ec7f1acf6d0" => :mavericks
-    sha1 "ac54b226852c9ec51477de8263bec2c767f7e842" => :mountain_lion
+    cellar :any
+    sha256 "b45ec5b5e847bb31357700c3fb02821dc5b42f41f81f432ed6990e35c6719a8b" => :el_capitan
+    sha256 "9988bce4d4e77d580e27ead20a2a9d0d82cc34c795a3dbdaccb71a7e619d0c03" => :yosemite
+    sha256 "7d7c14e893642c5625f34676622ca3766e74cbb7cb39d921cf67bc21afb44a9d" => :mavericks
   end
 
   head do
     url "https://svn.apache.org/repos/asf/zookeeper/trunk"
-
-    # To resolve Yosemite build errors.
-    # https://issues.apache.org/jira/browse/ZOOKEEPER-2049
-    if MacOS.version == :yosemite
-      patch :p0 do
-        url "https://issues.apache.org/jira/secure/attachment/12673212/ZOOKEEPER-2049.noprefix.trunk.patch"
-        sha1 "79ed0793e4693c9bbb83aad70582b55012f19eac"
-      end
-    end
 
     depends_on "ant" => :build
     depends_on "cppunit" => :build
@@ -44,11 +24,13 @@ class Zookeeper < Formula
     depends_on "automake" => :build
   end
 
-  option "perl", "Build Perl bindings"
+  option "with-perl", "Build Perl bindings"
+
+  deprecated_option "perl" => "with-perl"
 
   depends_on :python => :optional
 
-  def shim_script target
+  def shim_script(target)
     <<-EOS.undent
       #!/usr/bin/env bash
       . "#{etc}/zookeeper/defaults"
@@ -94,17 +76,21 @@ class Zookeeper < Formula
       system "make", "install"
     end
 
-    cd "src/contrib/zkpython" do
-      system "python", "src/python/setup.py", "build"
-      system "python", "src/python/setup.py", "install", "--prefix=#{prefix}"
-    end if build.with? "python"
+    if build.with? "python"
+      cd "src/contrib/zkpython" do
+        system "python", "src/python/setup.py", "build"
+        system "python", "src/python/setup.py", "install", "--prefix=#{prefix}"
+      end
+    end
 
-    cd "src/contrib/zkperl" do
-      system "perl", "Makefile.PL", "PREFIX=#{prefix}",
-                                    "--zookeeper-include=#{include}",
-                                    "--zookeeper-lib=#{lib}"
-      system "make", "install"
-    end if build.include? "perl"
+    if build.with? "perl"
+      cd "src/contrib/zkperl" do
+        system "perl", "Makefile.PL", "PREFIX=#{prefix}",
+                                      "--zookeeper-include=#{include}",
+                                      "--zookeeper-lib=#{lib}"
+        system "make", "install"
+      end
+    end
 
     rm_f Dir["bin/*.cmd"]
 
@@ -116,9 +102,9 @@ class Zookeeper < Formula
     end
 
     bin.mkpath
-    (etc+"zookeeper").mkpath
-    (var+"log/zookeeper").mkpath
-    (var+"run/zookeeper/data").mkpath
+    (etc/"zookeeper").mkpath
+    (var/"log/zookeeper").mkpath
+    (var/"run/zookeeper/data").mkpath
 
     Pathname.glob("#{libexec}/bin/*.sh") do |path|
       next if path == libexec+"bin/zkEnv.sh"

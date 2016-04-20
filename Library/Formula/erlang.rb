@@ -2,30 +2,21 @@
 # Homebrew-versions, and only be merged to master when things like couchdb and
 # elixir are compatible.
 class Erlang < Formula
-  homepage "http://www.erlang.org"
+  desc "Programming language for highly scalable real-time systems"
+  homepage "https://www.erlang.org/"
+  head "https://github.com/erlang/otp.git"
 
   stable do
     # Download tarball from GitHub; it is served faster than the official tarball.
-    url "https://github.com/erlang/otp/archive/OTP-17.4.1.tar.gz"
-    sha256 "3ff545f086c541d1d5fefc9777ed5ddc93f3a20bf30d93f38399fba417ccf58e"
+    url "https://github.com/erlang/otp/archive/OTP-18.3.tar.gz"
+    sha256 "8d5436faf37a1273c1b8529c4f02c28af0eccde31e52d474cb740b012d5da7e6"
   end
-
-  head "https://github.com/erlang/otp.git"
 
   bottle do
-    sha1 "6194f633e00ffb805b514ace20ba4d12f51a4e33" => :yosemite
-    sha1 "a6a667c269d067717465de2cc7a3e0cf0901202f" => :mavericks
-    sha1 "cbea1cc87f07cc262cde7ae06ebe55963db8baec" => :mountain_lion
-  end
-
-  resource "man" do
-    url "http://www.erlang.org/download/otp_doc_man_17.4.tar.gz"
-    sha256 "6c1cdb8e9d367c7b6dc6b20706de9fd0a0f0b7dffd66532663b2a24ed7679a58"
-  end
-
-  resource "html" do
-    url "http://www.erlang.org/download/otp_doc_html_17.4.tar.gz"
-    sha256 "dd42b0104418de18e2247608a337bcd3bb24c59bbc36294deb5fae73ab6c90d6"
+    cellar :any
+    sha256 "3df1ac0cb76ea2d0511dbd7d42d536b486098251c84afbf5eb39cd658d229b4d" => :el_capitan
+    sha256 "25d81e60062d18590d837356527bde513fa69a7d82a86fd979dea931545bc8d6" => :yosemite
+    sha256 "c9bb4cf2ad9b4bd8c55518e4dbad390299bc3ec0539a4304f03ee7b00ddaaece" => :mavericks
   end
 
   option "without-hipe", "Disable building hipe; fails on various OS X systems"
@@ -46,6 +37,16 @@ class Erlang < Formula
 
   fails_with :llvm
 
+  resource "man" do
+    url "https://www.erlang.org/download/otp_doc_man_18.3.tar.gz"
+    sha256 "978be100e9016874921b3ad1a65ee46b7b6a1e597b8db2ec4b5ef436d4c9ecc2"
+  end
+
+  resource "html" do
+    url "https://www.erlang.org/download/otp_doc_html_18.3.tar.gz"
+    sha256 "8fd6980fd05367735779a487df107ace7c53733f52fbe56de7ca7844a355676f"
+  end
+
   def install
     # Unset these so that building wx, kernel, compiler and
     # other modules doesn't fail with an unintelligable error.
@@ -54,7 +55,7 @@ class Erlang < Formula
     ENV["FOP"] = "#{HOMEBREW_PREFIX}/bin/fop" if build.with? "fop"
 
     # Do this if building from a checkout to generate configure
-    system "./otp_build autoconf" if File.exist? "otp_build"
+    system "./otp_build", "autoconf" if File.exist? "otp_build"
 
     args = %W[
       --disable-debug
@@ -80,8 +81,8 @@ class Erlang < Formula
 
     if build.without? "hipe"
       # HIPE doesn't strike me as that reliable on OS X
-      # http://syntatic.wordpress.com/2008/06/12/macports-erlang-bus-error-due-to-mac-os-x-1053-update/
-      # http://www.erlang.org/pipermail/erlang-patches/2008-September/000293.html
+      # https://syntatic.wordpress.com/2008/06/12/macports-erlang-bus-error-due-to-mac-os-x-1053-update/
+      # https://www.erlang.org/pipermail/erlang-patches/2008-September/000293.html
       args << "--disable-hipe"
     else
       args << "--enable-hipe"

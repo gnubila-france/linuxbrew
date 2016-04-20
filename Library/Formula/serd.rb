@@ -1,18 +1,18 @@
-require 'formula'
-
 class Serd < Formula
-  homepage 'http://drobilla.net/software/serd/'
-  url 'http://download.drobilla.net/serd-0.18.2.tar.bz2'
-  sha1 '9472be8d6f407affca5c8fa3125a5fbe49af967e'
+  desc "C library for RDF syntax"
+  homepage "https://drobilla.net/software/serd/"
+  url "https://download.drobilla.net/serd-0.22.0.tar.bz2"
+  sha256 "7b030287b4b75f35e6212b145648bec0be6580cc5434caa6d2fe64a38562afd2"
 
   bottle do
     cellar :any
-    sha1 "cf8e4e7cba72fb4d05de1a6f75090aefb24c19a6" => :yosemite
-    sha1 "734bc7cdd91ec765dcfa07404e0635c915fa52f8" => :mavericks
-    sha1 "45ff9722f3d3f774c558c2b4dde77f811c596d0a" => :mountain_lion
+    revision 1
+    sha256 "a07fe04b1663bcf2f0519de97c32e2143645a6cda602ee0481d2483350cdc72e" => :el_capitan
+    sha256 "0a46e8571744e0e4ba1c5e0c931c55202086d7b247defecade3a7464ecf61d2d" => :yosemite
+    sha256 "2691f8f9e47736d734b551917c792f8984cebfc310b983a5b99a7b66916f092f" => :mavericks
   end
 
-  depends_on 'pkg-config' => :build
+  depends_on "pkg-config" => :build
 
   def install
     system "./waf", "configure", "--prefix=#{prefix}"

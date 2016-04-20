@@ -1,17 +1,20 @@
-require "formula"
 require "language/go"
 
 class Aptly < Formula
-  homepage "http://www.aptly.info/"
-  url "https://github.com/smira/aptly/archive/v0.8.tar.gz"
-  sha1 "cf6ec39d2a450d5a7bc4a7ee13cacfba782a324f"
+  desc "Swiss army knife for Debian repository management"
+  homepage "https://www.aptly.info/"
+  url "https://github.com/smira/aptly/archive/v0.9.5.tar.gz"
+  sha256 "43de181dd8770e5c0ffeb4de9f862c22c59381df5d9220a54c680bd2468ff831"
 
   head "https://github.com/smira/aptly.git"
 
   bottle do
-    sha1 "0c8c7a948f123d1a40bc2259d8445021094887b0" => :yosemite
-    sha1 "e9fbdfb93bd116385478176835ca5b848b8c24d2" => :mavericks
-    sha1 "73ee380d7e60ce73dfd37c91fcbdafea446f8910" => :mountain_lion
+    cellar :any_skip_relocation
+    revision 1
+    sha256 "1e64c023404ad78dd260d4c1cca0f080d3ef3903cf61452e698809b32821370f" => :el_capitan
+    sha256 "50233a52a6021e47b50a0280263984fda75bfe8811a384f31fc1975e579646a1" => :yosemite
+    sha256 "c12651d38a4145136c2d8441c0a1a77e4f4da14697ff9983482b4ce95a728683" => :mavericks
+    sha256 "9d3780503b8d9416435f4e8bfd85673e9caf4745657bfaba889ba7000c7e1bb0" => :mountain_lion
   end
 
   depends_on :hg => :build
@@ -41,12 +44,16 @@ class Aptly < Formula
     url "https://code.google.com/p/snappy-go/", :revision => "12e4b4183793", :using => :hg
   end
 
+  go_resource "github.com/AlekSi/pointer" do
+    url "https://github.com/AlekSi/pointer.git", :revision => "5f6d527dae3d678b46fbb20331ddf44e2b841943"
+  end
+
   go_resource "github.com/cheggaaa/pb" do
-    url "https://github.com/cheggaaa/pb.git", :revision => "74be7a1388046f374ac36e93d46f5d56e856f827"
+    url "https://github.com/cheggaaa/pb.git", :revision => "2c1b74620cc58a81ac152ee2d322e28c806d81ed"
   end
 
   go_resource "github.com/gin-gonic/gin" do
-    url "https://github.com/gin-gonic/gin.git", :revision => "0808f8a824cfb9aef6ea4fd664af238544b66fc1"
+    url "https://github.com/gin-gonic/gin.git", :revision => "b1758d3bfa09e61ddbc1c9a627e936eec6a170de"
   end
 
   go_resource "github.com/jlaffaye/ftp" do
@@ -69,6 +76,10 @@ class Aptly < Formula
     url "https://github.com/mkrautz/goar.git", :revision => "36eb5f3452b1283a211fa35bc00c646fd0db5c4b"
   end
 
+  go_resource "github.com/ncw/swift" do
+    url "https://github.com/ncw/swift.git", :revision => "384ef27c70645e285f8bb9d02276bf654d06027e"
+  end
+
   go_resource "github.com/smira/commander" do
     url "https://github.com/smira/commander.git", :revision => "f408b00e68d5d6e21b9f18bd310978dafc604e47"
   end
@@ -82,7 +93,11 @@ class Aptly < Formula
   end
 
   go_resource "github.com/syndtr/goleveldb" do
-    url "https://github.com/syndtr/goleveldb.git", :revision => "e2fa4e6ac1cc41a73bc9fd467878ecbf65df5cc3"
+    url "https://github.com/syndtr/goleveldb.git", :revision => "97e257099d2ab9578151ba85e2641e2cd14d3ca8"
+  end
+
+  go_resource "github.com/syndtr/gosnappy" do
+    url "https://github.com/syndtr/gosnappy.git", :revision => "ce8acff4829e0c2458a67ead32390ac0a381c862"
   end
 
   go_resource "github.com/ugorji/go" do
@@ -99,6 +114,30 @@ class Aptly < Formula
 
   go_resource "github.com/daviddengcn/go-colortext" do
     url "https://github.com/daviddengcn/go-colortext.git", :revision => "b5c0891944c2f150ccc9d02aecf51b76c14c2948"
+  end
+
+  go_resource "golang.org/x/crypto" do
+    url "https://go.googlesource.com/crypto.git", :revision => "a7ead6ddf06233883deca151dffaef2effbf498f"
+  end
+
+  go_resource "github.com/golang/snappy" do
+    url "https://github.com/golang/snappy.git", :revision => "723cc1e459b8eea2dea4583200fd60757d40097a"
+  end
+
+  go_resource "github.com/manucorporat/sse" do
+    url "https://github.com/manucorporat/sse.git", :revision => "fe6ea2c8e398672518ef204bf0fbd9af858d0e15"
+  end
+
+  go_resource "github.com/mattn/go-colorable" do
+    url "https://github.com/mattn/go-colorable.git", :revision => "40e4aedc8fabf8c23e040057540867186712faa5"
+  end
+
+  go_resource "golang.org/x/net" do
+    url "https://github.com/golang/net.git", :revision => "db8e4de5b2d6653f66aea53094624468caad15d2"
+  end
+
+  go_resource "gopkg.in/bluesuncorp/validator.v5" do
+    url "https://github.com/bluesuncorp/validator.git", :revision => "8324129b028239a2d26c4221165e7d4d512ea697"
   end
 
   def install
@@ -118,9 +157,9 @@ class Aptly < Formula
   end
 
   test do
-    assert shell_output("aptly version").include?("aptly version:")
+    assert_match "aptly version:", shell_output("aptly version")
     (testpath/".aptly.conf").write("{}")
     result = shell_output("aptly -config='#{testpath}/.aptly.conf' mirror list")
-    assert result.include? "No mirrors found, create one with"
+    assert_match "No mirrors found, create one with", result
   end
 end

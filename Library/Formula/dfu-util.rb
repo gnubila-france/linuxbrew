@@ -1,20 +1,18 @@
-require "formula"
-
 class DfuUtil < Formula
-  homepage "https://gitorious.org/dfu-util/community"
-  # upstream moved, no releases yet, using debian mirror until then.  see #34047
-  url "http://ftp.de.debian.org/debian/pool/main/d/dfu-util/dfu-util_0.8.orig.tar.gz"
-  sha1 "164551ca40f0c569eb7ae3263a9945a1ef3fed4d"
+  desc "USB programmer"
+  homepage "http://dfu-util.sourceforge.net/"
+  url "https://downloads.sourceforge.net/project/dfu-util/dfu-util-0.9.tar.gz"
+  sha256 "36428c6a6cb3088cad5a3592933385253da5f29f2effa61518ee5991ea38f833"
 
   bottle do
     cellar :any
-    sha1 "285f3043fe09291b4485fe3c4dac36025489bca8" => :yosemite
-    sha1 "ed8be24bc65f7fc2791c42311be08f67649b6e23" => :mavericks
-    sha1 "cd533314e4700a3d746330b12aa08407f693d7a4" => :mountain_lion
+    sha256 "49975a34b6bacad4549871097effce90e376d3cd26ed24b2d7dfd925a199f0f8" => :el_capitan
+    sha256 "776c3ed14def87511f9280201a95490145a9d469e2c1e29873c335e2c39ed279" => :yosemite
+    sha256 "75c7ffa4e2d5067618c41f999f3d0c8a9aac1080e9eb8cd1f9bec8dd154aa1c1" => :mavericks
   end
 
   head do
-    url "git://gitorious.org/dfu-util/dfu-util.git"
+    url "git://git.code.sf.net/p/dfu-util/dfu-util"
     depends_on "autoconf" => :build
     depends_on "automake" => :build
     depends_on "libtool" => :build
@@ -27,6 +25,12 @@ class DfuUtil < Formula
     system "./autogen.sh" if build.head?
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}"
-    system "make install"
+    system "make", "install"
+  end
+
+  test do
+    system bin/"dfu-util", "-V"
+    system bin/"dfu-prefix", "-V"
+    system bin/"dfu-suffix", "-V"
   end
 end

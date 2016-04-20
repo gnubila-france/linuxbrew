@@ -1,15 +1,17 @@
-require "formula"
-
 class ApacheSpark < Formula
-  homepage "http://spark.apache.org/"
+  desc "Engine for large-scale data processing"
+  homepage "https://spark.apache.org/"
+  url "https://www.apache.org/dyn/closer.lua?path=spark/spark-1.6.1/spark-1.6.1-bin-hadoop2.6.tgz"
+  version "1.6.1"
+  sha256 "09f3b50676abc9b3d1895773d18976953ee76945afa72fa57e6473ce4e215970"
   head "https://github.com/apache/spark.git"
-  url "http://d3kbcqa49mib13.cloudfront.net/spark-1.2.0-bin-hadoop2.4.tgz"
-  version "1.2.0"
-  sha1 "57d19d43aa058acefbde32b2304678a8b07eaa80"
 
-  conflicts_with 'hive', :because => 'both install `beeline` binaries'
+  bottle :unneeded
 
   def install
+    # Rename beeline to distinguish it from hive's beeline
+    mv "bin/beeline", "bin/spark-beeline"
+
     rm_f Dir["bin/*.cmd"]
     libexec.install Dir["*"]
     bin.write_exec_script Dir["#{libexec}/bin/*"]

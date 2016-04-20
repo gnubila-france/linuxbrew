@@ -1,17 +1,24 @@
-require "formula"
-
 class Qca < Formula
+  desc "Qt Cryptographic Architecture (QCA)"
   homepage "http://delta.affinix.com/qca/"
-  url "http://delta.affinix.com/download/qca/2.0/qca-2.1.0.tar.gz"
-  sha1 "2b582b3ccc7e6098cd14d6f52a829ae1539e9cc8"
+  head "https://anongit.kde.org/qca.git"
 
-  head "git://anongit.kde.org/qca.git"
+  stable do
+    url "http://delta.affinix.com/download/qca/2.0/qca-2.1.0.tar.gz"
+    sha256 "226dcd76138c3738cdc15863607a96b3758a4c3efd3c47295939bcea4e7a9284"
+
+    # Fixes build with Qt 5.5 by adding a missing include (already fixed in HEAD).
+    patch do
+      url "https://quickgit.kde.org/?p=qca.git&a=commitdiff&h=7207e6285e932044cd66d49d0dc484666cfb0092&o=plain"
+      sha256 "b3ab2eb010f4a16f85349e4b858d0ee17a84ba2927311b79aeeff1bb2465cd3d"
+    end
+  end
 
   bottle do
-    revision 1
-    sha1 "356114a1ff4876b5027c679e05dbbca7a577bbfb" => :yosemite
-    sha1 "96c63fea66bed56cb8c00dcaee425c774aea04db" => :mavericks
-    sha1 "4c2620045877960f797c208b4c68e505fc02a39d" => :mountain_lion
+    revision 3
+    sha256 "62846de848b7e7c4f0b3eb5a045940c8b80554ef388d9646dd7b02b195b1a5c8" => :el_capitan
+    sha256 "a2afc96b7058b81e6b640c480b621434c7b6ba5e82cc0af4e38766d7efe42251" => :yosemite
+    sha256 "c948a6d95b7ff4da029eedeaca69e5b51d9227e9a7cf369daa98cfda5cf73528" => :mavericks
   end
 
   option "with-api-docs", "Build API documentation"

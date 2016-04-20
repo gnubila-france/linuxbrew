@@ -1,12 +1,14 @@
 class Artifactory < Formula
-  homepage "http://www.jfrog.com/artifactory/"
-  url "http://dl.bintray.com/jfrog/artifactory/artifactory-3.5.0.zip"
-  sha1 "b11b34072bb07e956610c6671399fa189b4e59c4"
+  desc "Manages binaries"
+  homepage "https://www.jfrog.com/artifactory/"
+  url "https://dl.bintray.com/jfrog/artifactory/jfrog-artifactory-oss-4.7.0.zip"
+  sha256 "d47bd1965ac1b0c1380d1540801129f9e733e547a5a1c13519a55cec5e390754"
 
-  depends_on :java => "1.7+"
+  bottle :unneeded
 
   option "with-low-heap", "Run artifactory with low Java memory options. Useful for development machines. Do not use in production."
-  option "with-java8", "Adjust memory settings for Java 8"
+
+  depends_on :java => "1.8+"
 
   def install
     # Remove Windows binaries
@@ -17,11 +19,6 @@ class Artifactory < Formula
     inreplace "bin/artifactory.sh",
       'export ARTIFACTORY_HOME="$(cd "$(dirname "${artBinDir}")" && pwd)"',
       "export ARTIFACTORY_HOME=#{libexec}"
-
-    # Remove obsolete parameters for Java 8
-    inreplace "bin/artifactory.default",
-      "-server -Xms512m -Xmx2g -Xss256k -XX:PermSize=128m -XX:MaxPermSize=256m -XX:+UseG1GC",
-      "-server -Xms512m -Xmx2g -Xss256k -XX:+UseG1GC" if build.with? "java8"
 
     # Reduce memory consumption for non production use
     inreplace "bin/artifactory.default",
@@ -70,7 +67,6 @@ class Artifactory < Formula
   end
 
   test do
-    output = shell_output("#{bin}/artifactory.sh check 2>&1", 1)
-    assert output.include?("Checking arguments to Artifactory")
+    assert_match /Checking arguments to Artifactory/, pipe_output("#{bin}/artifactory.sh check")
   end
 end

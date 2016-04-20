@@ -1,14 +1,14 @@
-require "formula"
-
 class Afflib < Formula
+  desc "Advanced Forensic Format"
   homepage "https://github.com/sshock/AFFLIBv3"
-  url "https://github.com/sshock/AFFLIBv3/archive/v3.7.6.tar.gz"
-  sha1 "2793532fb048b145a60f5a2e951e3922bb4e9c96"
+  url "https://github.com/sshock/AFFLIBv3/archive/v3.7.7.tar.gz"
+  sha256 "049acb8b430fc354de0ae8b8c2043c221a213bcb17259eb099e1d5523a9697bf"
 
   bottle do
     cellar :any
-    sha1 "d6147493de42ab17c383c63502ced1c04e3789c2" => :mavericks
-    sha1 "93a0873ab6ce491714623a1a140128252b76b775" => :mountain_lion
+    sha256 "b31a73db6339ce92a10aac22aa087fcbf92c783494e09400b698c7ac5b994345" => :el_capitan
+    sha256 "dc89843c96eafc42c84834a5490169f59facc1d33036139d97009c03ae55592c" => :yosemite
+    sha256 "0293b47792615b7b36e06d55f50d3565d4e6a251b1dad09ad3f7a673f1b856f2" => :mavericks
   end
 
   depends_on "autoconf" => :build
@@ -33,7 +33,11 @@ class Afflib < Formula
     end
 
     system "./configure", *args
-    system "make install"
+    system "make", "install"
+  end
+
+  test do
+    system "#{bin}/affcat", "-v"
   end
 end
 

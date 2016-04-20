@@ -1,14 +1,13 @@
-require "formula"
-
 class Ola < Formula
-  homepage "http://www.openlighting.org/ola/"
-  url "https://github.com/OpenLightingProject/ola/releases/download/0.9.3/ola-0.9.3.tar.gz"
-  sha1 "f6a81087761218063a4bb8006b73ffa407cd0170"
+  desc "Open Lighting Architecture for lighting control information"
+  homepage "https://www.openlighting.org/ola/"
+  url "https://github.com/OpenLightingProject/ola/releases/download/0.10.1/ola-0.10.1.tar.gz"
+  sha256 "621f18f591a418236595d0117b4ab16d8e39a69b03071e62fdae0e9b01533de0"
 
   bottle do
-    sha1 "084b25099b2eaf5d90a69ebc20b43c0cf338b614" => :yosemite
-    sha1 "64e7e1a34c1840a7315449a3cc037f07bb75407a" => :mavericks
-    sha1 "4a4d4b3b9909d0e40b9c4658fc7f41713bc20a0a" => :mountain_lion
+    sha256 "03f1e69ea600927d840a5f1fe1a9932256fbd3b37530cd262caf641b4ae6db89" => :el_capitan
+    sha256 "38cc4502fa98c4afe97a2d1d8919508fda999a08cabc1af2bc19e0a6d6bb69a2" => :yosemite
+    sha256 "fff088b40bc18986aa3dfa1a90500727f90d6ef637890dc4a973e806b67ed525" => :mavericks
   end
 
   head do
@@ -20,16 +19,29 @@ class Ola < Formula
   end
 
   option :universal
+  option "with-ftdi", "Install FTDI USB plugin for OLA."
+  # RDM tests require protobuf-c --with-python to work
+  option "with-rdm-tests", "Install RDM Tests for OLA."
 
   depends_on "pkg-config" => :build
   depends_on "cppunit"
   depends_on "protobuf-c"
   depends_on "libmicrohttpd"
-  depends_on "libusb"
-  depends_on "liblo"
   depends_on "ossp-uuid"
-  depends_on :python => :optional
+  depends_on "libusb" => :recommended
+  depends_on "liblo" => :recommended
   depends_on "doxygen" => :optional
+
+  if build.with? "ftdi"
+    depends_on "libftdi"
+    depends_on "libftdi0"
+  end
+
+  if build.with? "rdm-tests"
+    depends_on :python if MacOS.version <= :snow_leopard
+  else
+    depends_on :python => :optional
+  end
 
   def install
     ENV.universal_binary if build.universal?
@@ -42,9 +54,10 @@ class Ola < Formula
     ]
 
     args << "--enable-python-libs" if build.with? "python"
+    args << "--enable-rdm-tests" if build.with? "rdm-tests"
     args << "--enable-doxygen-man" if build.with? "doxygen"
 
-    system "autoreconf", "-i" if build.head?
+    system "autoreconf", "-fvi" if build.head?
     system "./configure", *args
     system "make", "install"
   end

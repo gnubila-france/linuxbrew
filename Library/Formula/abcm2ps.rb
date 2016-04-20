@@ -1,19 +1,13 @@
-require "formula"
-
 class Abcm2ps < Formula
+  desc "ABC music notation software"
   homepage "http://moinejf.free.fr"
-  url "http://moinejf.free.fr/abcm2ps-7.8.13.tar.gz"
-  sha1 "09bbcde58e358c11a5a28de05d48be3a7eb94a4e"
+  url "http://moinejf.free.fr/abcm2ps-8.11.1.tar.gz"
+  sha256 "992255c11b51b8ebcc0516f1d3caa435e4970eac7bf6dd839fad8d2fef82df01"
 
   bottle do
-    sha1 "217a460210f211fcb7f55298d321c54fa3f6aa06" => :yosemite
-    sha1 "913c288274a40b8d5359384649650de5ec69962f" => :mavericks
-    sha1 "c714244c5af504abb74c1962c5574b6afac25b61" => :mountain_lion
-  end
-
-  devel do
-    url "http://moinejf.free.fr/abcm2ps-8.5.2.tar.gz"
-    sha1 "71362859696c379b371814698d5272964e1aa2bd"
+    sha256 "1892d93a86b59026b4a167345bb553e93e859bf47b9db5e907b779929ba76308" => :el_capitan
+    sha256 "e0553f3feed22c8130f1b3fe101ce1679f7d04f780ebafe1bdbb92144f85d173" => :yosemite
+    sha256 "f50c0bde8c3628df1465cc31f07b66195381d756bb24c8fc79939a54f299df04" => :mavericks
   end
 
   depends_on "pkg-config" => :build
@@ -46,6 +40,7 @@ class Abcm2ps < Formula
       "Trompette"z3|z3 |z3 |z3 |:Mc>BA|PGA/G/F|PE>EF|PEF/E/D|C>CPB,|A,G,F,-|
     EOF
 
-    system "#{bin}/abcm2ps", (testpath/"voices")
+    system "#{bin}/abcm2ps", testpath/"voices"
+    assert File.exist?("Out.ps")
   end
 end

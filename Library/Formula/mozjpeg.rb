@@ -1,7 +1,8 @@
 class Mozjpeg < Formula
+  desc "Improved JPEG encoder"
   homepage "https://github.com/mozilla/mozjpeg"
-  url "https://github.com/mozilla/mozjpeg/releases/download/v3.0/mozjpeg-3.0-release-source.tar.gz"
-  sha1 "9b56af77ce376300e1f6de78b52b2ce9b6f19596"
+  url "https://github.com/mozilla/mozjpeg/releases/download/v3.1/mozjpeg-3.1-release-source.tar.gz"
+  sha256 "deedd88342c5da219f0047d9a290cd58eebe1b7a513564fcd8ebc49670077a1f"
 
   head do
     url "https://github.com/mozilla/mozjpeg.git"
@@ -13,9 +14,10 @@ class Mozjpeg < Formula
 
   bottle do
     cellar :any
-    sha1 "d4c74518254db363f15b9c2211368eb3df856c33" => :yosemite
-    sha1 "1141f9bbb67f3938a3c061bd3adcfc7b7d6a5710" => :mavericks
-    sha1 "684bd946e018dbcd5968301805649ec20bc4a496" => :mountain_lion
+    revision 1
+    sha256 "3e588bc24506e4b4a15dad591c57b5f937c0bf0c830244b4a9980502bee6c0fd" => :el_capitan
+    sha256 "b9b41960802e6a31de189de73d013c750317fb4b6b64cdab7fc40af8aaecb651" => :yosemite
+    sha256 "4670747d1beb2e197386e7e07ecc6fa3087818d6c305d23b688487d0038faab7" => :mavericks
   end
 
   depends_on "pkg-config" => :build

@@ -1,9 +1,10 @@
-require "formula"
-
 class Modman < Formula
+  desc "Module deployment script geared towards Magento development"
   homepage "https://github.com/colinmollenhour/modman"
-  url "https://github.com/colinmollenhour/modman/archive/1.10.tar.gz"
-  sha1 "6469426438d4f932f6863d6e2669a264b254944d"
+  url "https://github.com/colinmollenhour/modman/archive/1.12.tar.gz"
+  sha256 "437547bb54f62101215038a678506e87b1e9d5a8f04eed68e0c823198dd0b6ec"
+
+  bottle :unneeded
 
   def install
     bin.install "modman"

@@ -1,28 +1,33 @@
-require "formula"
-
 class Libbluray < Formula
+  desc "Blu-Ray disc playback library for media players like VLC"
   homepage "https://www.videolan.org/developers/libbluray.html"
-  url "ftp://ftp.videolan.org/pub/videolan/libbluray/0.6.2/libbluray-0.6.2.tar.bz2"
-  sha1 "a1ab8c8c9310680fb1fe6a58f9fc5430613600fe"
+  url "https://download.videolan.org/pub/videolan/libbluray/0.9.2/libbluray-0.9.2.tar.bz2"
+  sha256 "efc994f42d2bce6af2ce69d05ba89dbbd88bcec7aca065de094fb3a7880ce7ea"
+  revision 2
 
   bottle do
     cellar :any
     revision 1
-    sha1 "a223bd0799d7dc26a05ad0d5751569c4964c248e" => :yosemite
-    sha1 "050786aa8393d98e0e72249f4933efa590c69a17" => :mavericks
-    sha1 "9170f553e8df68758d0ccddea706b1b2b0e16109" => :mountain_lion
+    sha256 "511cb44fcba46fa25f3ceca929b61e869f83371e0c31763d4ad6040dc1e6cc8d" => :el_capitan
+    sha256 "5e15b1228092358f8681b0ab446159e6018d861b03c29662ddcd03255fedc894" => :yosemite
+    sha256 "99d884c4fa47063e6fd3afd4ca9472cc2eec22ca476646e0f00f1e72567ce2dc" => :mavericks
   end
 
   head do
-    url "git://git.videolan.org/libbluray.git"
+    url "https://git.videolan.org/git/libbluray.git"
 
     depends_on "autoconf" => :build
     depends_on "automake" => :build
     depends_on "libtool" => :build
   end
 
+  option "without-ant", "Disable Support for BD Java"
+
   depends_on "pkg-config" => :build
   depends_on "freetype" => :recommended
+  depends_on "fontconfig"
+  depends_on "ant" => [:build, :optional]
+  depends_on "libxml2" unless OS.mac?
 
   def install
     # https://mailman.videolan.org/pipermail/libbluray-devel/2014-April/001401.html
@@ -31,10 +36,11 @@ class Libbluray < Formula
 
     args = %W[--prefix=#{prefix} --disable-dependency-tracking]
     args << "--without-freetype" if build.without? "freetype"
+    args << "--disable-bdjava" if build.without? "ant"
 
     system "./bootstrap" if build.head?
     system "./configure", *args
     system "make"
-    system "make install"
+    system "make", "install"
   end
 end

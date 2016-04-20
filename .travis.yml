@@ -1,14 +1,31 @@
 language: ruby
+rvm:
+  - 2.0.0
+
+before_install:
+  # Fix error: Incorrect file permissions (664)
+  - chmod 644 Library/Formula/*.rb
+  - umask 022
+  - if [ -f ".git/shallow" ]; then
+      travis_retry git fetch --unshallow;
+    fi
+
 install:
- - unset DYLD_LIBRARY_PATH
- # Warning: You have a non-Homebrew 'pkg-config' in your PATH
- - sudo rm -f /usr/bin/pkg-config
- # Warning: "config" scripts exist outside your system or Homebrew directories.
- - sudo rm -f /usr/local/clang-3.4/bin/llvm-config
- # Incorrect file permissions: chmod 644
- - chmod 644 Library/Formula/*.rb
- - PATH=$PWD/bin:$PATH
+  - PATH=$PWD/bin:$PATH
+  - export HOMEBREW_DEVELOPER="1"
+
 script:
- - brew test-bot --dry-run $TRAVIS_COMMIT |sed -n 's/^==> //p' |sh -ex
+  - brew test-bot
+
 notifications:
-    email: false
+  email:
+    on_success: never
+    on_failure: always
+
+addons:
+  artifacts:
+    s3_region: "us-west-2"
+    debug: true
+    paths:
+      - $(echo *.bottle.rb *.tar.gz)
+      - $(git ls-files -m Library/Formula | tr "\n" ":")

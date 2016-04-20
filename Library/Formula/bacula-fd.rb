@@ -1,18 +1,17 @@
-require 'formula'
-
 class BaculaFd < Formula
-  homepage 'http://www.bacula.org/'
-  url 'https://downloads.sourceforge.net/project/bacula/bacula/7.0.5/bacula-7.0.5.tar.gz'
-  sha256 '1457849eb33011b43371801b62ffa13d29bebe51be8d5a36da563b87bb094a49'
+  desc "Network backup solution"
+  homepage "http://www.bacula.org/"
+  url "https://downloads.sourceforge.net/project/bacula/bacula/7.4.0/bacula-7.4.0.tar.gz"
+  sha256 "fe850b783523edb19fb4dbfa8c44752d20955121b71a52b0740a9e765bfd73cb"
 
   bottle do
-    sha1 "aa312ee016437c22b7e4955c67defa51c7703540" => :yosemite
-    sha1 "400280627f03404732bf3db7a5612bfab5fe3876" => :mavericks
-    sha1 "9ac0bc82522ce93b349a71d2f0cfeac4d6501545" => :mountain_lion
+    sha256 "4442ef7ae75951cf59f07dec86638799e8905ddcfc1384f917656a85acfaf703" => :el_capitan
+    sha256 "9fe5f23706dd4ba5f9654f71a80fce372b296247fb560aaa1b4334d3a9020adf" => :yosemite
+    sha256 "88f23b78925f81db0b64ae60aaccbad872efbb133041b627effeba048c55df35" => :mavericks
   end
 
-  depends_on 'readline'
-  depends_on 'openssl'
+  depends_on "readline"
+  depends_on "openssl"
 
   def install
     # * sets --disable-conio in order to force the use of readline
@@ -24,17 +23,41 @@ class BaculaFd < Formula
                           "--sbindir=#{bin}",
                           "--with-working-dir=#{var}/lib/bacula",
                           "--with-pid-dir=#{HOMEBREW_PREFIX}/var/run",
+                          "--with-logdir=#{var}/log/bacula",
                           "--enable-client-only",
                           "--disable-conio",
                           "--with-readline=#{readline}"
 
     system "make"
-    system "make install"
+    system "make", "install"
 
     # Ensure var/run exists:
-    (var + 'run').mkpath
+    (var + "run").mkpath
 
     # Create the working directory:
-    (var + 'lib/bacula').mkpath
+    (var + "lib/bacula").mkpath
+  end
+
+  plist_options :startup => true, :manual => "bacula-fd"
+
+  def plist; <<-EOS.undent
+    <?xml version="0.0" encoding="UTF-8"?>
+    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    <plist version="1.0">
+      <dict>
+        <key>Label</key>
+        <string>#{plist_name}</string>
+        <key>RunAtLoad</key>
+        <true/>
+        <key>ProgramArguments</key>
+        <array>
+          <string>#{opt_bin}/bacula-fd</string>
+          <string>-f</string>
+        </array>
+        <key>UserName</key>
+        <string>root</string>
+      </dict>
+    </plist>
+  EOS
   end
 end

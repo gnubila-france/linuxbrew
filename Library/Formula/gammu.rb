@@ -1,39 +1,30 @@
-require 'formula'
-
 class Gammu < Formula
-  homepage 'http://wammu.eu/gammu/'
-  url 'https://downloads.sourceforge.net/project/gammu/gammu/1.33.0/gammu-1.33.0.tar.bz2'
-  sha1 'b7ee28e7398ea578290588d94d69c295491ff86a'
+  desc "Command-line utility to control a phone"
+  homepage "https://wammu.eu/gammu/"
+  url "https://dl.cihar.com/gammu/releases/gammu-1.37.0.tar.xz"
+  mirror "https://mirrors.kernel.org/debian/pool/main/g/gammu/gammu_1.37.0.orig.tar.xz"
+  sha256 "f0a597be5c5138691606b78a82a17c76769c6ed445b4b541fcc06520f3bea61f"
+  head "https://github.com/gammu/gammu.git"
 
-  depends_on 'cmake' => :build
-  depends_on 'glib' => :recommended
-  depends_on 'gettext' => :optional
-
-  # Fixes issue https://github.com/gammu/gammu/issues/13
-  patch :DATA
-
-  def install
-    args = std_cmake_args
-    args << '-DINSTALL_BASH_COMPLETION=OFF'
-    args << "-DWITH_PYTHON=OFF"
-
-    system 'cmake', *args
-    system 'make'
-    system 'make install'
+  bottle do
+    sha256 "d58b0d51e5994f6560376a05e2ccb66ffa0d14728ca6a305d5936bf83ecd2aa6" => :el_capitan
+    sha256 "8b9c699089f4545d3c18a7bb30a408f06e3677bfbe4b216ee8db6a48677c425e" => :yosemite
+    sha256 "9357d5c1785ec7670bb3e935b30d1ac5bc732ec0f5f9e20647f6a0b61a066e52" => :mavericks
   end
 
-end
+  depends_on "cmake" => :build
+  depends_on "glib" => :recommended
+  depends_on "gettext" => :optional
+  depends_on "openssl"
 
-__END__
-diff --git a/python/setup.py b/python/setup.py
-index feb66e8..0982927 100755
---- a/python/setup.py
-+++ b/python/setup.py
-@@ -282,6 +282,7 @@ gammumodule = Extension('gammu._gammu',
-         'gammu/src/convertors/file.c',
-         'gammu/src/convertors/call.c',
-         'gammu/src/convertors/wap.c',
-+        'gammu/src/convertors/diverts.c',
-         'gammu/src/gammu.c',
-         'gammu/src/smsd.c',
-         ])
+  def install
+    mkdir "build" do
+      system "cmake", "..", "-DBASH_COMPLETION_COMPLETIONSDIR:PATH=#{bash_completion}", *std_cmake_args
+      system "make", "install"
+    end
+  end
+
+  test do
+    system bin/"gammu", "--help"
+  end
+end

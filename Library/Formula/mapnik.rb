@@ -1,47 +1,41 @@
-require "formula"
-
 class Mapnik < Formula
+  desc "Toolkit for developing mapping applications"
   homepage "http://www.mapnik.org/"
+  url "https://github.com/mapnik/mapnik/archive/v3.0.9.tar.gz"
+  sha256 "f0242606096e2c4ca2cd0caac1ff0fd5f8054a38b5f288ba38b0e397b5b311b2"
+
   head "https://github.com/mapnik/mapnik.git"
-  url "http://mapnik.s3.amazonaws.com/dist/v2.2.0/mapnik-v2.2.0.tar.bz2"
-  sha1 "e493ad87ca83471374a3b080f760df4b25f7060d"
-  revision 4
 
   bottle do
-    sha1 "e9a4adde844d0cd895f4ff07c81f9ae3dc761d55" => :mavericks
-    sha1 "4d0bc356c681e2a4337e281a5ae0e01e1f4983c7" => :mountain_lion
-    sha1 "359a96c8206039098c149e30ac7e7d97a73039f7" => :lion
-  end
-
-  stable do
-    # can be removed at Mapnik > 2.2.0
-    # https://github.com/mapnik/mapnik/issues/1973
-    patch :DATA
-
-    # boost 1.56 compatibility
-    # concatenated from https://github.com/mapnik/mapnik/issues/2428
-    patch do
-      url "https://gist.githubusercontent.com/tdsmith/22aeb0bfb9691de91463/raw/3064c193466a041d82e011dc5601312ccadc9e15/mapnik-boost-megadiff.diff"
-      sha1 "63939ad5e197c83f7fe09e321484248dfd96d0f3"
-    end
+    cellar :any
+    sha256 "82e145962067bfe676c2ea8ce9caf82fa3de26496079dda9ac05cb16130ddbf1" => :el_capitan
+    sha256 "78fad8f64e9fe57730809dce924f43917bbf2eaf4a0a046e0beffe3b472a4161" => :yosemite
+    sha256 "960999bc14e4e551ef8ffcb3fab0c8aa34f22a4b4cec4a02f39c11696f2583e6" => :mavericks
   end
 
   depends_on "pkg-config" => :build
   depends_on "freetype"
+  depends_on "harfbuzz"
   depends_on "libpng"
   depends_on "libtiff"
   depends_on "proj"
   depends_on "icu4c"
   depends_on "jpeg"
-  depends_on "boost"
-  depends_on "boost-python"
+  depends_on "webp"
   depends_on "gdal" => :optional
   depends_on "postgresql" => :optional
   depends_on "cairo" => :optional
 
-  depends_on "py2cairo" if build.with? "cairo"
+  if MacOS.version < :mavericks
+    depends_on "boost" => "c++11"
+  else
+    depends_on "boost"
+  end
+
+  needs :cxx11
 
   def install
+    ENV.cxx11
     icu = Formula["icu4c"].opt_prefix
     boost = Formula["boost"].opt_prefix
     proj = Formula["proj"].opt_prefix
@@ -49,30 +43,33 @@ class Mapnik < Formula
     libpng = Formula["libpng"].opt_prefix
     libtiff = Formula["libtiff"].opt_prefix
     freetype = Formula["freetype"].opt_prefix
+    harfbuzz = Formula["harfbuzz"].opt_prefix
+    webp = Formula["webp"].opt_prefix
 
-    # mapnik compiles can take ~1.5 GB per job for some .cpp files
-    # so lets be cautious by limiting to CPUS/2
-    jobs = ENV.make_jobs.to_i
-    jobs /= 2 if jobs > 2
-
-    args = [ "CC=\"#{ENV.cc}\"",
-             "CXX=\"#{ENV.cxx}\"",
-             "JOBS=#{jobs}",
-             "PREFIX=#{prefix}",
-             "ICU_INCLUDES=#{icu}/include",
-             "ICU_LIBS=#{icu}/lib",
-             "PYTHON_PREFIX=#{prefix}",  # Install to Homebrew's site-packages
-             "JPEG_INCLUDES=#{jpeg}/include",
-             "JPEG_LIBS=#{jpeg}/lib",
-             "PNG_INCLUDES=#{libpng}/include",
-             "PNG_LIBS=#{libpng}/lib",
-             "TIFF_INCLUDES=#{libtiff}/include",
-             "TIFF_LIBS=#{libtiff}/lib",
-             "BOOST_INCLUDES=#{boost}/include",
-             "BOOST_LIBS=#{boost}/lib",
-             "PROJ_INCLUDES=#{proj}/include",
-             "PROJ_LIBS=#{proj}/lib",
-             "FREETYPE_CONFIG=#{freetype}/bin/freetype-config"
+    args = ["CC=\"#{ENV.cc}\"",
+            "CXX=\"#{ENV.cxx}\"",
+            "PREFIX=#{prefix}",
+            "CUSTOM_CXXFLAGS=\"-DBOOST_EXCEPTION_DISABLE\"",
+            "ICU_INCLUDES=#{icu}/include",
+            "ICU_LIBS=#{icu}/lib",
+            "JPEG_INCLUDES=#{jpeg}/include",
+            "JPEG_LIBS=#{jpeg}/lib",
+            "PNG_INCLUDES=#{libpng}/include",
+            "PNG_LIBS=#{libpng}/lib",
+            "HB_INCLUDES=#{harfbuzz}/include",
+            "HB_LIBS=#{harfbuzz}/lib",
+            "WEBP_INCLUDES=#{webp}/include",
+            "WEBP_LIBS=#{webp}/lib",
+            "TIFF_INCLUDES=#{libtiff}/include",
+            "TIFF_LIBS=#{libtiff}/lib",
+            "BOOST_INCLUDES=#{boost}/include",
+            "BOOST_LIBS=#{boost}/lib",
+            "PROJ_INCLUDES=#{proj}/include",
+            "PROJ_LIBS=#{proj}/lib",
+            "FREETYPE_CONFIG=#{freetype}/bin/freetype-config",
+            "NIK2IMG=False",
+            "CPP_TESTS=False", # too long to compile to be worth it
+            "INPUT_PLUGINS=all",
            ]
 
     if build.with? "cairo"
@@ -83,26 +80,8 @@ class Mapnik < Formula
     args << "GDAL_CONFIG=#{Formula["gdal"].opt_bin}/gdal-config" if build.with? "gdal"
     args << "PG_CONFIG=#{Formula["postgresql"].opt_bin}/pg_config" if build.with? "postgresql"
 
-    system "python", "scons/scons.py", "configure", *args
-    system "python", "scons/scons.py", "install"
+    system "./configure", *args
+    system "make"
+    system "make", "install"
   end
 end
-
-__END__
-diff --git a/bindings/python/mapnik_text_placement.cpp b/bindings/python/mapnik_text_placement.cpp
-index 0520132..4897c28 100644
---- a/bindings/python/mapnik_text_placement.cpp
-+++ b/bindings/python/mapnik_text_placement.cpp
-@@ -194,7 +194,11 @@ struct ListNodeWrap: formatting::list_node, wrapper<formatting::list_node>
-     ListNodeWrap(object l) : formatting::list_node(), wrapper<formatting::list_node>()
-     {
-         stl_input_iterator<formatting::node_ptr> begin(l), end;
--        children_.insert(children_.end(), begin, end);
-+        while (begin != end)
-+        {
-+            children_.push_back(*begin);
-+            ++begin;
-+        }
-     }
-
-     /* TODO: Add constructor taking variable number of arguments.

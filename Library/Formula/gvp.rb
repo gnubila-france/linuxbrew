@@ -1,15 +1,15 @@
-require "formula"
-
 class Gvp < Formula
+  desc "Go versioning packager"
   homepage "https://github.com/pote/gvp"
-  url "https://github.com/pote/gvp/archive/v0.1.0.tar.gz"
-  sha1 "c48bae47f8589e9bfd8addc94a9073be4c004305"
+  url "https://github.com/pote/gvp/archive/v0.2.0.tar.gz"
+  sha256 "ede10a32889cf284eaa4c4a9ed4e6bc0a85e0663246bf2fb7c1cf3965db661ea"
 
   bottle do
-    cellar :any
-    sha1 "06092cbaeda1a2e565868dd27eb8d71ce62d0477" => :mavericks
-    sha1 "79eadbc9c59afd18e6406773892269519ecbfc6e" => :mountain_lion
-    sha1 "ae36dae26ce09281e6bf173f53eca9a7da56d97b" => :lion
+    cellar :any_skip_relocation
+    sha256 "40e7e581961e3e16ba97125accab5eae8d2eb24d0e06b1ef80feb88a35ed6727" => :el_capitan
+    sha256 "739213d2dc13b931215f65f95569d3078b3a5927b9e44c6a3728d5eae3f2ff4c" => :yosemite
+    sha256 "5bb08f53cdb878f398a57560aca0a4cb8908fbb9cd5ca1cfecf5b627c6e37014" => :mavericks
+    sha256 "d940a179bae92e734b725f27e766abe525cd82c98599e52ae201f4be2bd1787f" => :mountain_lion
   end
 
   def install
@@ -18,10 +18,7 @@ class Gvp < Formula
   end
 
   test do
-    assert Kernel.system("#{bin}/gvp init"), "`gvp init` exited with a non-zero status"
-    assert File.directory?(".godeps"), "`gvp init` did not create the .godeps directory"
-    assert_equal `#{bin}/gvp in 'echo $GOPATH' | grep -v '>> Local GOPATH set.'`.chomp, "#{testpath}/.godeps:#{testpath}", "`gvp in` did not change the GOPATH"
-    assert_equal `#{bin}/gvp in 'echo $GOBIN' | grep -v '>> Local GOPATH set.'`.chomp, "#{testpath}/.godeps/bin", "`gvp in` did not change the GOBIN"
-    assert_equal `#{bin}/gvp in 'echo $PATH' | grep -v '>> Local GOPATH set.'`.chomp, "#{testpath}/.godeps/bin:#{ENV["PATH"]}", "`gvp in` did not change the PATH"
+    system "#{bin}/gvp", "init"
+    assert File.directory? ".godeps/src"
   end
 end

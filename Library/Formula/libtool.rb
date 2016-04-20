@@ -2,29 +2,37 @@
 # This is not the same so as a result we must install this as glibtool.
 
 class Libtool < Formula
+  desc "Generic library support script"
   homepage "https://www.gnu.org/software/libtool/"
-  url "http://ftpmirror.gnu.org/libtool/libtool-2.4.5.tar.xz"
-  mirror "https://ftp.gnu.org/gnu/libtool/libtool-2.4.5.tar.xz"
-  sha1 "b75650190234ed898757ec8ca033ffabbee89e7c"
+  url "http://ftpmirror.gnu.org/libtool/libtool-2.4.6.tar.xz"
+  mirror "https://ftp.gnu.org/gnu/libtool/libtool-2.4.6.tar.xz"
+  sha256 "7c87a8c2c8c0fc9cd5019e402bed4292462d00a718a7cd5f11218153bf28b26f"
 
   bottle do
     cellar :any
-    sha1 "a0a8f63f52eb81731873f05336c194b1ef31fc3b" => :yosemite
-    sha1 "21dbadc74ca8bd189e981813dc7acc586640a934" => :mavericks
-    sha1 "5af44fab5def8f1ddcd8e1cf97cc9aba52652af0" => :mountain_lion
+    sha256 "6cb942b57a00f038100af861b4e835a79dae305c13aee550be21b71c4dfc48ed" => :el_capitan
+    sha256 "3b240bf5f3bb91aa3a61d91827573f902da6ba57ca4a0d026e54a789453ac2d7" => :yosemite
+    sha256 "de922636432ee49070e8b5208c095d9c0390781db38c887f77f8b657f4a94e14" => :mavericks
+    sha256 "8508d1f8e6b92dac8418fc881bd3009419a53a7ac15a685ba4eb9e6b7be9e532" => :mountain_lion
   end
 
   keg_only :provided_until_xcode43
 
   option :universal
+  option "with-default-names", "Do not prepend 'g' to the binary"
 
   def install
     ENV.universal_binary if build.universal?
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
-                          "--program-prefix=g",
+                          ("--program-prefix=g" if build.without? "default-names"),
                           "--enable-ltdl-install"
     system "make", "install"
+
+    if build.with? "default-names"
+      bin.install_symlink "libtool" => "glibtool"
+      bin.install_symlink "libtoolize" => "glibtoolize"
+    end
   end
 
   def caveats; <<-EOS.undent

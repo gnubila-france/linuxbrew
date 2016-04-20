@@ -1,37 +1,31 @@
 class Pyenv < Formula
+  desc "Python version management"
   homepage "https://github.com/yyuu/pyenv"
+  url "https://github.com/yyuu/pyenv/archive/v20160310.tar.gz"
+  sha256 "886e386110bc24e4bfdd560bff0b22db34627fe4be203eacd28ca9e9c2491fcf"
   head "https://github.com/yyuu/pyenv.git"
-  url "https://github.com/yyuu/pyenv/archive/v20150204.tar.gz"
-  sha1 "bba8eb5995897256ea8f038010be9a71bfb1f2cf"
+
+  bottle :unneeded
 
   depends_on "autoconf" => [:recommended, :run]
   depends_on "pkg-config" => [:recommended, :run]
+  depends_on "openssl" => :recommended
+  depends_on "readline" => [:recommended, :run]
 
   def install
     inreplace "libexec/pyenv", "/usr/local", HOMEBREW_PREFIX
-    prefix.install "bin", "completions", "libexec"
-    prefix.install "plugins" => "default-plugins"
-
-    var_lib = "#{HOMEBREW_PREFIX}/var/lib/pyenv"
-    %w[plugins versions].each do |dir|
-      var_dir = "#{var_lib}/#{dir}"
-      mkdir_p var_dir
-      ln_sf var_dir, "#{prefix}/#{dir}"
-    end
-
-    rm_f "#{var_lib}/plugins/python-build"
-    ln_sf "#{prefix}/default-plugins/python-build", "#{var_lib}/plugins/python-build"
+    prefix.install Dir["*"]
     %w[pyenv-install pyenv-uninstall python-build].each do |cmd|
-      bin.install_symlink "#{prefix}/default-plugins/python-build/bin/#{cmd}"
+      bin.install_symlink "#{prefix}/plugins/python-build/bin/#{cmd}"
     end
   end
 
   def caveats; <<-EOS.undent
+    To use Homebrew's directories rather than ~/.pyenv add to your profile:
+      export PYENV_ROOT=#{var}/pyenv
+
     To enable shims and autocompletion add to your profile:
       if which pyenv > /dev/null; then eval "$(pyenv init -)"; fi
-
-    To use Homebrew's directories rather than ~/.pyenv add to your profile:
-      export PYENV_ROOT=#{opt_prefix}
     EOS
   end
 

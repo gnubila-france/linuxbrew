@@ -1,28 +1,21 @@
-require "formula"
-
 class Carthage < Formula
+  desc "Decentralized dependency manager for Cocoa"
   homepage "https://github.com/Carthage/Carthage"
-  url "https://github.com/Carthage/Carthage.git", :tag => "0.5.2",
+  url "https://github.com/Carthage/Carthage.git", :tag => "0.15.2",
+                                                  :revision => "f811a275aaa06df53119bbfad42af754fb7b6ff7",
                                                   :shallow => false
   head "https://github.com/Carthage/Carthage.git", :shallow => false
 
-  depends_on :xcode => ["6.1.1", :build]
-
   bottle do
     cellar :any
-    sha1 "a65e585157e3a58e1496dedc85705694c5c2191c" => :yosemite
-    sha1 "1e5237464a5a2923739864f195e4eca3e184924e" => :mavericks
+    sha256 "f69638fb6e0abbb7d8b95ad83eba19aaac4112bbe21cad0a09876b30de894945" => :el_capitan
+    sha256 "7411d6b369e1462f4c9b5da2aa17e9203e5e4168549328b2d8f8f7444ce5aeb4" => :yosemite
   end
 
+  depends_on :xcode => ["7.1", :build]
+
   def install
-    # Carthage likes to do stuff with submodules itself so we need a "real"
-    # git clone rather than letting it play with our cache.
-    cp_r cached_download/".git", "."
-
     system "make", "prefix_install", "PREFIX=#{prefix}"
-
-    # Carthage puts some stuff in /tmp so clean it up after we're done.
-    system "make", "clean"
   end
 
   test do

@@ -1,14 +1,14 @@
-require "formula"
-
 class Kakasi < Formula
-  homepage "http://www.namazu.org/"
+  desc "Convert Kanji characters to Hiragana, Katakana, or Romaji"
+  homepage "http://kakasi.namazu.org/"
   url "http://kakasi.namazu.org/stable/kakasi-2.3.6.tar.gz"
-  sha1 "5f2e02264dda11940fb7b5387c327d4c4324bdb3"
+  sha256 "004276fd5619c003f514822d82d14ae83cd45fb9338e0cb56a44974b44961893"
 
   bottle do
-    sha1 "8deab85f96629c49900ae301aeacaed1a4f8891f" => :mavericks
-    sha1 "a116a8ecbf84ad1a5955b134f2f2f8ff05319660" => :mountain_lion
-    sha1 "d8245a504319b627cc2c28cc0f012f7f2a898732" => :lion
+    revision 1
+    sha256 "da407c10d807cf72679df6555d29b53f388dd32abf674f1ae0ecbace44fc3372" => :yosemite
+    sha256 "86403b2e2a45e2ea81b78bbe7edc7bf2b01d464f351ea265441413e63bf85822" => :mavericks
+    sha256 "7c4bb01289baeee60544acf6fd81e9b0f5522428938ac9cd5b6ed2b3bc6619bf" => :mountain_lion
   end
 
   def install
@@ -18,8 +18,8 @@ class Kakasi < Formula
   end
 
   test do
-    hiragana = `echo '\xa4\xa2 \xa4\xab \xa4\xb5'`.chomp
-    romanji = `echo '#{hiragana}' | kakasi -rh -ieuc -Ha`.chomp
+    hiragana = "\xa4\xa2 \xa4\xab \xa4\xb5"
+    romanji = pipe_output("kakasi -rh -ieuc -Ha", hiragana).chomp
     assert_equal "a ka sa", romanji
   end
 end

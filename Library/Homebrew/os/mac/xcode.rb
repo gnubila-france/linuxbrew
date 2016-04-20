@@ -13,14 +13,15 @@ module OS
         when "10.6"  then "3.2.6"
         when "10.7"  then "4.6.3"
         when "10.8"  then "5.1.1"
-        when "10.9"  then "6.1.1"
-        when "10.10" then "6.1.1"
+        when "10.9"  then "6.2"
+        when "10.10" then "7.2.1"
+        when "10.11" then "7.2.1"
         else
           # Default to newest known version of Xcode for unreleased OSX versions.
-          if MacOS.version > "10.10"
-            "6.1.1"
+          if OS::Mac.prerelease?
+            "7.2.1"
           else
-            raise "Mac OS X '#{MacOS.version}' is invalid"
+            raise "OS X '#{MacOS.version}' is invalid"
           end
         end
       end
@@ -33,6 +34,8 @@ module OS
         installed? && version >= "4.3" && !MacOS::CLT.installed?
       end
 
+      # Returns a Pathname object corresponding to Xcode.app's Developer
+      # directory or nil if Xcode.app is not installed
       def prefix
         @prefix ||=
           begin
@@ -42,7 +45,8 @@ module OS
               path = bundle_path
               path.join("Contents", "Developer") if path
             else
-              Pathname.new(dir)
+              # Use cleanpath to avoid pathological trailing slash
+              Pathname.new(dir).cleanpath
             end
           end
       end
@@ -59,7 +63,7 @@ module OS
       end
 
       def installed?
-        not prefix.nil?
+        !prefix.nil?
       end
 
       def version
@@ -74,6 +78,8 @@ module OS
         # if return is used in the middle, which we do many times in here.
 
         return "0" unless OS.mac?
+
+        return nil if !MacOS::Xcode.installed? && !MacOS::CLT.installed?
 
         %W[#{prefix}/usr/bin/xcodebuild #{which("xcodebuild")}].uniq.each do |path|
           if File.file? path
@@ -117,7 +123,9 @@ module OS
           when 50      then "5.0"
           when 51      then "5.1"
           when 60      then "6.0"
-          else "6.0"
+          when 61      then "6.1"
+          when 70      then "7.0"
+          else "7.0"
           end
         end
       end
@@ -137,9 +145,9 @@ module OS
 
       def default_prefix?
         if version < "4.3"
-          %r{^/Developer} === prefix
+          prefix.to_s.start_with? "/Developer"
         else
-          %r{^/Applications/Xcode.app} === prefix
+          prefix.to_s == "/Applications/Xcode.app/Contents/Developer"
         end
       end
     end
@@ -162,8 +170,9 @@ module OS
 
       def latest_version
         case MacOS.version
-        when "10.10" then "600.0.56"
-        when "10.9"  then "600.0.56"
+        when "10.11" then "700.1.81"
+        when "10.10" then "700.1.81"
+        when "10.9"  then "600.0.57"
         when "10.8"  then "503.0.40"
         else
           "425.0.28"
@@ -176,7 +185,7 @@ module OS
         else
           version = `/usr/bin/clang --version`
         end
-        version = version[%r{clang-(\d+\.\d+\.\d+)}, 1] || "0"
+        version = version[/clang-(\d+\.\d+\.\d+(\.\d+)?)/, 1] || "0"
         version < latest_version
       end
 

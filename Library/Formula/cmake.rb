@@ -1,51 +1,24 @@
-class NoExpatFramework < Requirement
-  def expat_framework
-    "/Library/Frameworks/expat.framework"
-  end
-
-  satisfy :build_env => false do
-    !File.exist? expat_framework
-  end
-
-  def message; <<-EOS.undent
-    Detected #{expat_framework}
-
-    This will be picked up by CMake's build system and likely cause the
-    build to fail, trying to link to a 32-bit version of expat.
-
-    You may need to move this file out of the way to compile CMake.
-    EOS
-  end
-end
-
 class Cmake < Formula
-  homepage "http://www.cmake.org/"
-  head "http://cmake.org/cmake.git"
-  revision 1
-
-  stable do
-    url "http://www.cmake.org/files/v3.1/cmake-3.1.1.tar.gz"
-    sha1 "e96098e402903e09f56d0c4cfef516e591088d78"
-
-    # Patching CMake for OpenSSL 1.0.2
-    # Already commited upstream. Should be in next release.
-    # http://www.cmake.org/gitweb?p=cmake.git;a=commit;h=de4ccee75a89519f95fcbcca75abc46577bfefea
-    patch do
-      url "https://github.com/Kitware/CMake/commit/c5d9a828.diff"
-      sha1 "61b15b638c1409233f36e6e3383b98cab514c3bb"
-    end
-  end
+  desc "Cross-platform make"
+  homepage "https://www.cmake.org/"
+  url "https://cmake.org/files/v3.5/cmake-3.5.1.tar.gz"
+  sha256 "93d651a754bcf6f0124669646391dd5774c0fc4d407c384e3ae76ef9a60477e8"
+  head "https://cmake.org/cmake.git"
 
   bottle do
-    cellar :any
-    sha1 "4b2f2b564e8714815bcf7f2e739ecbee06880453" => :yosemite
-    sha1 "4819694722d8330444915b1696cb1b3f56c78881" => :mavericks
-    sha1 "ed7d6626d1c1685ff4a4bc795a3b559fab7aeb01" => :mountain_lion
+    cellar :any_skip_relocation
+    sha256 "be1164384380a996c9233fffdaf919c93a0e5bccb1c04e26bb3ba449067abc05" => :el_capitan
+    sha256 "fe2f9efc496738dd3da3baa22e8e75ea629fd5e4fb3c891117b866592547dc6f" => :yosemite
+    sha256 "2cfe0cca180054794fff3818c2bcba49900eed68e4dd7ce0b79ac5b915e2cf7b" => :mavericks
+    sha256 "04b6c1489a02cfed4a7f2f2f8b41fa5257251db7b75a5699c48322e481adb9fc" => :x86_64_linux
   end
 
   option "without-docs", "Don't build man pages"
-  depends_on :python => :build if OS.mac? && MacOS.version <= :snow_leopard && build.with?("docs")
-  depends_on "xz" # For LZMA
+  option "with-completion", "Install Bash completion (Has potential problems with system bash)"
+
+  depends_on "sphinx-doc" => :build if build.with? "docs"
+  depends_on "bzip2" unless OS.mac?
+  depends_on "curl" unless OS.mac?
 
   # The `with-qt` GUI option was removed due to circular dependencies if
   # CMake is built with Qt support and Qt is built with MySQL support as MySQL uses CMake.
@@ -78,56 +51,57 @@ class Cmake < Formula
 
   depends_on NoExpatFramework
 
-  # Temporary patch to prevent:
-  # -- extracting... [tar xfz]
-  # CMake Error: Problem with archive_write_finish_entry(): Can't restore time
-  # CMake Error: Problem extracting tar: /tmp/sailfish-n30248/sailfish-0.6.3/external/cmph-2.0.tar.gz
-  #
-  patch :DATA
-
   def install
-    if build.with? "docs"
-      ENV.prepend_create_path "PYTHONPATH", buildpath+"sphinx/lib/python2.7/site-packages"
-      resources.each do |r|
-        r.stage do
-          system "python", *Language::Python.setup_install_args(buildpath/"sphinx")
-        end
-      end
-
-      # There is an existing issue around OS X & Python locale setting
-      # See http://bugs.python.org/issue18378#msg215215 for explanation
-      ENV["LC_ALL"] = "en_US.UTF-8"
-    end
-
     args = %W[
       --prefix=#{prefix}
-      --system-libs
+      --no-system-libs
       --parallel=#{ENV.make_jobs}
-      --no-system-libarchive
       --datadir=/share/cmake
       --docdir=/share/doc/cmake
       --mandir=/share/man
+      --system-zlib
+      --system-bzip2
     ]
 
-    if build.with? "docs"
-      args << "--sphinx-man" << "--sphinx-build=#{buildpath}/sphinx/bin/sphinx-build"
+    # https://github.com/Homebrew/homebrew/issues/45989
+    if MacOS.version <= :lion
+      args << "--no-system-curl"
+    else
+      args << "--system-curl"
     end
 
-    #Find X11 library
-    system "sed -i '/\s*set(X11_INC_SEARCH_PATH/a #{HOMEBREW_PREFIX}/include' Modules/FindX11.cmake"
-    system "sed -i '/\s*set(X11_LIB_SEARCH_PATH/a #{HOMEBREW_PREFIX}/lib' Modules/FindX11.cmake"
-    #Find prefix unix path
-    system "sed -i -e '/list(APPEND CMAKE_SYSTEM_PREFIX_PATH/a   #LinuxBrew\\n  #{HOMEBREW_PREFIX}' Modules/Platform/UnixPaths.cmake"
-    #Find include unix path
-    system "sed -i -e '/list(APPEND CMAKE_SYSTEM_INCLUDE_PATH/a   #LinuxBrew\\n  #{HOMEBREW_PREFIX}/include' Modules/Platform/UnixPaths.cmake"
-    #Find library unix path
-    system "sed -i -e '/list(APPEND CMAKE_SYSTEM_LIBRARY_PATH/a   #LinuxBrew\\n  #{HOMEBREW_PREFIX}/lib' Modules/Platform/UnixPaths.cmake"
-    # Default include directories. Only search include dire inside linuxbrew (might break non standalone installation)
-    system "sed -i -e 's# /usr/include$# #{HOMEBREW_PREFIX}/include#g' Modules/Platform/UnixPaths.cmake"
+    if build.with? "docs"
+      # There is an existing issue around OS X & Python locale setting
+      # See https://bugs.python.org/issue18378#msg215215 for explanation
+      ENV["LC_ALL"] = "en_US.UTF-8"
+      args << "--sphinx-man" << "--sphinx-build=#{Formula["sphinx-doc"].opt_bin}/sphinx-build"
+    end
+
+   # #Find X11 library
+   # system "sed -i '/\s*set(X11_INC_SEARCH_PATH/a #{HOMEBREW_PREFIX}/include' Modules/FindX11.cmake"
+   # system "sed -i '/\s*set(X11_LIB_SEARCH_PATH/a #{HOMEBREW_PREFIX}/lib' Modules/FindX11.cmake"
+   # #Find prefix unix path
+   # system "sed -i -e '/list(APPEND CMAKE_SYSTEM_PREFIX_PATH/a   #LinuxBrew\\n  #{HOMEBREW_PREFIX}' Modules/Platform/UnixPaths.cmake"
+   # #Find include unix path
+   # system "sed -i -e '/list(APPEND CMAKE_SYSTEM_INCLUDE_PATH/a   #LinuxBrew\\n  #{HOMEBREW_PREFIX}/include' Modules/Platform/UnixPaths.cmake"
+   # #Find library unix path
+   # system "sed -i -e '/list(APPEND CMAKE_SYSTEM_LIBRARY_PATH/a   #LinuxBrew\\n  #{HOMEBREW_PREFIX}/lib' Modules/Platform/UnixPaths.cmake"
+   # # Default include directories. Only search include dire inside linuxbrew (might break non standalone installation)
+   # system "sed -i -e 's# /usr/include$# #{HOMEBREW_PREFIX}/include#g' Modules/Platform/UnixPaths.cmake"
 
     system "./bootstrap", *args
     system "make"
     system "make", "install"
+
+    if build.with? "completion"
+      cd "Auxiliary/bash-completion/" do
+        bash_completion.install "ctest", "cmake", "cpack"
+      end
+    end
+
+    (share/"emacs/site-lisp/cmake").install "Auxiliary/cmake-mode.el"
+
+    rm_f pkgshare/"Modules/CPack.OSXScriptLauncher.in" unless OS.mac?
   end
 
   test do
@@ -135,27 +109,3 @@ class Cmake < Formula
     system "#{bin}/cmake", "."
   end
 end
-
-__END__
-diff --git a/Utilities/cmlibarchive/libarchive/archive_write_disk_posix.c b/Utilities/cmlibarchive/libarchive/archive_write_disk_posix.c
-index a7cf53f..feeaf3c 100644
---- a/Utilities/cmlibarchive/libarchive/archive_write_disk_posix.c	2014-09-11 15:24:02.000000000 +0200
-+++ b/Utilities/cmlibarchive/libarchive/archive_write_disk_posix.c	2014-12-18 14:07:04.000000000 +0100
-@@ -1730,7 +1730,7 @@
-                return (a->lookup_gid)(a->lookup_gid_data, name, id);
-        return (id);
- }
--
-+
- int64_t
- archive_write_disk_uid(struct archive *_a, const char *name, int64_t id)
- {
-@@ -2938,7 +2938,7 @@
- 	if (r1 != 0 || r2 != 0) {
- 		archive_set_error(&a->archive, errno,
- 				  "Can't restore time");
--		return (ARCHIVE_WARN);
-+		return (ARCHIVE_OK);
- 	}
- 	return (ARCHIVE_OK);
- }

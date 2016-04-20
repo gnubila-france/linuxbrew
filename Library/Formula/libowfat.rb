@@ -1,15 +1,16 @@
 class Libowfat < Formula
-  homepage 'http://www.fefe.de/libowfat/'
+  desc "Reimplements libdjb"
+  homepage "https://www.fefe.de/libowfat/"
+  url "https://dl.fefe.de/libowfat-0.29.tar.bz2"
+  sha256 "4badbdeed6bef4337f1edd6b86fb7154c5592509c272dcdc09c693161cbc6427"
   head ":pserver:cvs:@cvs.fefe.de:/cvs", :using => :cvs
-  url 'http://dl.fefe.de/libowfat-0.29.tar.bz2'
-  sha1 'f944ebac326f4a8bd1437ff995d0b8201280434c'
 
   bottle do
-    cellar :any
-    revision 1
-    sha1 "e586ec2dc7100d76ab4e497cbacbe758f71615d1" => :yosemite
-    sha1 "7b9763c60837442c76969807ea9ac4d0b6e90a61" => :mavericks
-    sha1 "e19086b40e28e750e907d14ee89806819c48d964" => :mountain_lion
+    cellar :any_skip_relocation
+    revision 2
+    sha256 "b8f9b6f14ef4ca9e703ef458659604738f2f6b11899fb9546d8764dde47de4c0" => :el_capitan
+    sha256 "f84024088302c6452f32f2398d0c39a59ee7f2a2eda117e516608e0299763dda" => :yosemite
+    sha256 "a05b57c64730e4780012a06b61224a63e492173e3d6fa191516e408e9578a105" => :mavericks
   end
 
   def install

@@ -1,29 +1,37 @@
-require 'formula'
-
 class Ssdb < Formula
-  homepage "http://ssdb.io/?lang=en"
-  url "https://github.com/ideawu/ssdb/archive/1.8.0.tar.gz"
-  sha1 "ed9f016bdfef9543a866144fee4a37544f39155e"
+  desc "NoSQL database supporting many data structures: Redis alternative"
+  homepage "http://ssdb.io/"
+  url "https://github.com/ideawu/ssdb/archive/1.9.2.tar.gz"
+  sha256 "9387ebeaf24f4e3355967ba2459b59be683f75d6423f408ce4cefed2596b4736"
   head "https://github.com/ideawu/ssdb.git"
 
   bottle do
-    sha1 "b1a7566fcd83d479a03e7b47be9a68359b36cc77" => :yosemite
-    sha1 "b68643eb0c93132b41c8f09fca4005e683db9d73" => :mavericks
-    sha1 "99f7b2b71217e236fa6dee657562b3efbf4a9750" => :mountain_lion
+    cellar :any_skip_relocation
+    sha256 "8155bfa1e0c35747998a505072afec2427e66535844a41053463612ca2fb487a" => :el_capitan
+    sha256 "a933b076c4db3cf375f4a56c4c92e7e56ac608384d24b538563e1ee2707cdc3a" => :yosemite
+    sha256 "d997f3f17d79e1485389eb4f6c86ba6a5dd60f0d690852dfd689d292877bc8f0" => :mavericks
   end
 
   def install
-    inreplace "Makefile", "PREFIX=/usr/local/ssdb", "PREFIX=#{prefix}"
+    inreplace "tools/ssdb-cli", "DIR=`dirname $0`", "DIR=#{prefix}"
 
-    system "make", "prefix=#{prefix} CC=#{ENV.cc} CXX=#{ENV.cxx}"
-    system "make", "install"
+    system "make", "CC=#{ENV.cc}", "CXX=#{ENV.cxx}"
+    system "make", "install", "PREFIX=#{prefix}"
 
-    ["bench", "dump", "ins.sh", "repair", "server"].each do |suffix|
+    inreplace "#{prefix}/ssdb-ins.sh" do |s|
+      # Fix path to ssdb-server.
+      s.gsub! "/usr/local/ssdb", bin
+      # Fix handling of absolute pid path in config.
+      s.gsub! "dir=`dirname $config`\n", ""
+      s.gsub! %r{\$dir/`(.*?) \| sed -n 's/\^\\.\\///p'`}, '`\1`'
+    end
+
+    ["bench", "cli", "dump", "ins.sh", "repair", "server"].each do |suffix|
       bin.install "#{prefix}/ssdb-#{suffix}"
     end
 
-    ["run", "db/ssdb", "log"].each do |dir|
-      (var+dir).mkpath
+    ["run", "db/ssdb", "db/ssdb_slave", "log"].each do |dir|
+      (var/dir).mkpath
     end
 
     inreplace "ssdb.conf" do |s|
@@ -33,7 +41,7 @@ class Ssdb < Formula
     end
 
     inreplace "ssdb_slave.conf" do |s|
-      s.gsub! "work_dir = ./var_slave", "work_dir = #{var}/db/ssdb/"
+      s.gsub! "work_dir = ./var_slave", "work_dir = #{var}/db/ssdb_slave/"
       s.gsub! "pidfile = ./var_slave/ssdb.pid", "pidfile = #{var}/run/ssdb_slave.pid"
       s.gsub! "\toutput: log_slave.txt", "\toutput: #{var}/log/ssdb_slave.log"
     end
@@ -76,7 +84,10 @@ class Ssdb < Formula
 
   test do
     pid = fork do
-      Signal.trap("TERM") { system("#{bin}/ssdb-server -d #{HOMEBREW_PREFIX}/etc/ssdb.conf"); exit }
+      Signal.trap("TERM") do
+        system("#{bin}/ssdb-server -d #{HOMEBREW_PREFIX}/etc/ssdb.conf")
+        exit
+      end
     end
     sleep(3)
     Process.kill("TERM", pid)

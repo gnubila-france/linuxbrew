@@ -1,58 +1,32 @@
-require "formula"
-
 class FreeradiusServer < Formula
+  desc "High-performance and highly configurable RADIUS server"
   homepage "http://freeradius.org/"
-  url "ftp://ftp.freeradius.org/pub/freeradius/freeradius-server-2.2.6.tar.gz"
-  sha1 "25b0a057b1fffad5a030946e8af0c6170e5cdf46"
-  revision 1
-
-  devel do
-    url "ftp://ftp.freeradius.org/pub/freeradius/freeradius-server-3.0.5.tar.bz2"
-    sha1 "53432d83618f0719f8cab5957567fc173959f6e7"
-    depends_on "talloc" => :build
-  end
+  url "ftp://ftp.freeradius.org/pub/freeradius/freeradius-server-3.0.11.tar.bz2"
+  mirror "http://ftp.cc.uoc.gr/mirrors/ftp.freeradius.org/freeradius-server-3.0.11.tar.bz2"
+  sha256 "2b6109b61fc93e9fcdd3dd8a91c3abbf0ce8232244d1d214d71a4e5b7faadb80"
+  head "https://github.com/FreeRADIUS/freeradius-server.git"
 
   bottle do
-    sha1 "3a583d46e2c12badc7addf99fa1db83a8d5315b4" => :yosemite
-    sha1 "ee905079281616a48339201938d11fe525d8b23f" => :mavericks
-    sha1 "2e8de634e8fcf37a2a4d969d33371281667e5d2d" => :mountain_lion
+    sha256 "f9af8bbc1e73b136d2c0ae4249657ad262f84dc1b5ad6e898232f892da12439f" => :el_capitan
+    sha256 "e375d987b6b7e1c74d4f53ea86a86dfa7c503a241c6fe0bccb3d7bc09619f09d" => :yosemite
+    sha256 "ee57bf27930bdc253145a00069fe35ac7204f5437220e874d9b9df0e1eb31a63" => :mavericks
   end
 
   depends_on "openssl"
-
-  # libtool is glibtool on OS X
-  stable do
-    depends_on "autoconf" => :build
-    depends_on "automake" => :build
-    depends_on "libtool" => :build
-    patch :DATA
-  end
+  depends_on "talloc"
 
   def install
-    openssl = Formula["openssl"]
-
     ENV.deparallelize
 
-    args = [
-      "--prefix=#{prefix}",
-      "--sbindir=#{bin}",
-      "--localstatedir=#{var}",
-      "--with-openssl-includes=#{openssl.opt_include}",
-      "--with-openssl-libraries=#{openssl.opt_lib}",
+    args = %W[
+      --prefix=#{prefix}
+      --sbindir=#{bin}
+      --localstatedir=#{var}
+      --with-openssl-includes=#{Formula["openssl"].opt_include}
+      --with-openssl-libraries=#{Formula["openssl"].opt_lib}
+      --with-talloc-lib-dir=#{Formula["talloc"].opt_lib}
+      --with-talloc-include-dir=#{Formula["talloc"].opt_include}
     ]
-
-    if build.stable?
-      args << "--with-system-libtool"
-      args << "--with-system-libltdl"
-      inreplace "autogen.sh", "libtool", "glibtool"
-      system "./autogen.sh"
-    end
-
-    if build.devel?
-      talloc = Formula["talloc"]
-      args << "--with-talloc-lib-dir=#{talloc.opt_lib}"
-      args << "--with-talloc-include-dir=#{talloc.opt_include}"
-    end
 
     system "./configure", *args
     system "make"
@@ -63,19 +37,8 @@ class FreeradiusServer < Formula
     (var/"run/radiusd").mkpath
     (var/"log/radius").mkpath
   end
-end
 
-__END__
-diff --git a/configure.in b/configure.in
-index 62b0de8..97e0243 100644
---- a/configure.in
-+++ b/configure.in
-@@ -101,7 +101,7 @@ AC_SUBST(LTDL_SUBDIRS)
- dnl use system-wide libtool, if it exists
- AC_ARG_WITH(system-libtool,
- [  --with-system-libtool   Use the libtool installed in your system (default=use our own)],
--[ AC_PATH_PROG(LIBTOOL, libtool,,$PATH:/usr/local/bin) AC_LIBTOOL_DLOPEN
-+[ AC_PATH_PROG(LIBTOOL, glibtool,,$PATH:/usr/local/bin) AC_LIBTOOL_DLOPEN
-  AC_PROG_LIBTOOL],
- [
-   LIBTOOL="`pwd`/libtool"
+  test do
+    assert_match /77C8009C912CFFCF3832C92FC614B7D1/, shell_output("#{bin}/smbencrypt homebrew")
+  end
+end

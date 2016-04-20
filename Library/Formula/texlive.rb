@@ -1,11 +1,11 @@
-require "formula"
-
 class Texlive < Formula
+  desc "TeX Live is a free software distribution for the TeX typesetting system"
   homepage "http://www.tug.org/texlive/"
+  # tag "linuxbrew"
 
-  url "https://downloads.sourceforge.net/project/linuxbrew/mirror/texlive-20141204.tar.gz"
-  mirror "http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz"
-  sha1 "bff2fd78c9c4c0818fe3d0c1c795813777d6a5d0"
+  url "http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz"
+  version "20160306"
+  sha256 "794f5f7fc889fe6e55b70cfb826b1b2b07196ad13e679813801048b337d6343f"
 
   option "with-full", "install everything"
   option "with-medium", "install small + more packages and languages"
@@ -14,9 +14,9 @@ class Texlive < Formula
   option "with-minimal", "install plain only"
 
   def install
-    scheme = %w[full medium small basic minimal].find {
-      |x| build.with? x
-    } || "small"
+    scheme = %w[full medium small basic minimal].find do |x|
+      build.with? x
+    end || "small"
 
     ohai "Downloading and installing TeX Live. This will take a few minutes."
     ENV["TEXLIVE_INSTALL_PREFIX"] = prefix
@@ -29,6 +29,6 @@ class Texlive < Formula
   end
 
   test do
-    system "#{bin}/tex --version"
+    system "#{bin}/tex", "--version"
   end
 end

@@ -1,15 +1,13 @@
-require "formula"
-
 class Mercury < Formula
-  homepage "http://mercurylang.org/"
-  url "http://dl.mercurylang.org/release/mercury-srcdist-14.01.tar.gz"
-  sha1 "619680675c68a0b953024b7ee4d3886a885d94de"
+  desc "Logic/functional programming language"
+  homepage "https://mercurylang.org/"
+  url "http://dl.mercurylang.org/release/mercury-srcdist-14.01.1.tar.gz"
+  sha256 "98f7cbde7a7425365400feef3e69f1d6a848b25dc56ba959050523d546c4e88b"
 
   bottle do
-    revision 1
-    sha1 "b9f481aecf1ecb6032b09c8434b86b87fd1f67c0" => :mavericks
-    sha1 "92798069609393c4d0d558080e93db63d60738ff" => :mountain_lion
-    sha1 "5319c3fa8a318136d9c9ffc4818a22ebe38e9aeb" => :lion
+    sha256 "cd513a5ca92a2dc2162db2f87208129cb5b3ab0ce6d85e0da0c4b54498278144" => :yosemite
+    sha256 "bcf3147bb1480f1f99f4af7b43a0b4a217b7f2192ec621c8b2c6777a4df8dba3" => :mavericks
+    sha256 "ebef2e58fbf08029606fba423f6e689231af0fe2d96f3baff270f1a47ed2003c" => :mountain_lion
   end
 
   depends_on "erlang" => :optional
@@ -31,12 +29,12 @@ class Mercury < Formula
 
     # The build system doesn't quite honour the mandir/infodir autoconf
     # parameters.
-    system "make", "install", "PARALLEL=-j", "INSTALL_MAN_DIR=#{man}", "INSTALL_INFO_DIR=#{info}"
+    system "make", "install", "PARALLEL=-j",
+                              "INSTALL_MAN_DIR=#{man}",
+                              "INSTALL_INFO_DIR=#{info}"
 
     # Remove batch files for windows.
-    Dir.glob("#{bin}/*.bat") do |path|
-      rm path
-    end
+    rm Dir.glob("#{bin}/*.bat")
   end
 
   test do
@@ -54,8 +52,6 @@ class Mercury < Formula
     system "#{bin}/mmc", "--make", "hello"
     assert File.exist?(testpath/"hello")
 
-    output = `#{testpath}/hello`
-    assert_equal test_string, output
-    assert_equal 0, $?.exitstatus
+    assert_equal test_string, shell_output("#{testpath}/hello")
   end
 end

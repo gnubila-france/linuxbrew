@@ -1,28 +1,40 @@
-require "formula"
-
 class Dos2unix < Formula
-  homepage "http://waterlan.home.xs4all.nl/dos2unix.html"
-  url "http://waterlan.home.xs4all.nl/dos2unix/dos2unix-7.1.tar.gz"
-  mirror "https://downloads.sourceforge.net/project/dos2unix/dos2unix/7.1/dos2unix-7.1.tar.gz"
-  sha1 "f8247eda06aab93fbbe84b78fe6d14bd319f0fcd"
+  desc "Convert text between DOS, UNIX, and Mac formats"
+  homepage "https://waterlan.home.xs4all.nl/dos2unix.html"
+  url "https://waterlan.home.xs4all.nl/dos2unix/dos2unix-7.3.3.tar.gz"
+  mirror "https://downloads.sourceforge.net/project/dos2unix/dos2unix/7.3.3/dos2unix-7.3.3.tar.gz"
+  sha256 "5c910aea2eae96663c67e87627998c4fe3cded403be5819b4c190e56c82ff0fb"
 
   bottle do
-    sha1 "1c82d8e4870beac2033ed0675cf4534c68425ec7" => :yosemite
-    sha1 "ae53df227748c6d0b0e7f5d8aab49b29a56b6b8b" => :mavericks
-    sha1 "48039984312f59e77b5df9a3e6601acb96743a1d" => :mountain_lion
+    cellar :any_skip_relocation
+    revision 1
+    sha256 "d039be7c3fbfed7196887792433d3838e8fe7df2c49a2af7112a0116e419146a" => :el_capitan
+    sha256 "7c2523cbddc1427e7070820215ce8ffd0eaddeb855202334a000d1604b0fb996" => :yosemite
+    sha256 "75ec10f6c40f4173643989f4d5a7c134f059e24432a1ac1647610da9a6d16ef5" => :mavericks
   end
 
-  depends_on "gettext"
+  option "with-gettext", "Build with Native Language Support"
+
+  depends_on "gettext" => :optional
 
   def install
-    gettext = Formula["gettext"]
-    system "make", "prefix=#{prefix}",
-                   "CC=#{ENV.cc}",
-                   "CPP=#{ENV.cc}",
-                   "CFLAGS=#{ENV.cflags}",
-                   "CFLAGS_OS=-I#{gettext.include}",
-                   "LDFLAGS_EXTRA=-L#{gettext.lib} #{"-lintl" if OS.mac?}",
-                   "install"
+    args = %W[
+      prefix=#{prefix}
+      CC=#{ENV.cc}
+      CPP=#{ENV.cc}
+      CFLAGS=#{ENV.cflags}
+      install
+    ]
+
+    if build.without? "gettext"
+      args << "ENABLE_NLS="
+    else
+      gettext = Formula["gettext"]
+      args << "CFLAGS_OS=-I#{gettext.include}"
+      args << "LDFLAGS_EXTRA=-L#{gettext.lib} -lintl"
+    end
+
+    system "make", *args
   end
 
   test do

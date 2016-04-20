@@ -1,7 +1,10 @@
 class Galen < Formula
+  desc "Automated testing of look and feel for responsive websites"
   homepage "http://galenframework.com/"
-  url "https://github.com/galenframework/galen/releases/download/galen-1.5.3/galen-bin-1.5.3.zip"
-  sha1 "a955e9fc131d03c6404e22e81452533261086bde"
+  url "https://github.com/galenframework/galen/releases/download/galen-2.2.3/galen-bin-2.2.3.zip"
+  sha256 "1857c44261dd7211318d572fa2c253f6349df374e4a5bbd0ce023d64f8ea7b8e"
+
+  bottle :unneeded
 
   depends_on :java => "1.6+"
 
@@ -10,7 +13,7 @@ class Galen < Formula
     (bin/"galen").write <<-EOS.undent
       #!/bin/sh
       set -e
-      java -cp "#{libexec}/galen.jar:lib/*:libs/*" net.mindengine.galen.GalenMain "$@"
+      java -cp "#{libexec}/galen.jar:lib/*:libs/*" com.galenframework.GalenMain "$@"
     EOS
   end
 

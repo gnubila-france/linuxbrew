@@ -1,17 +1,20 @@
 class Libxml2 < Formula
+  desc "GNOME XML library"
   homepage "http://xmlsoft.org"
-  url "http://xmlsoft.org/sources/libxml2-2.9.2.tar.gz"
-  mirror "ftp://xmlsoft.org/libxml2/libxml2-2.9.2.tar.gz"
-  sha256 "5178c30b151d044aefb1b08bf54c3003a0ac55c59c866763997529d60770d5bc"
+  url "http://xmlsoft.org/sources/libxml2-2.9.3.tar.gz"
+  mirror "ftp://xmlsoft.org/libxml2/libxml2-2.9.3.tar.gz"
+  sha256 "4de9e31f46b44d34871c22f54bfc54398ef124d6f7cafb1f4a5958fbcd3ba12d"
 
   bottle do
-    sha1 "c5718c3b2a05f295e15d9b983eab3ddd1ec32ca2" => :yosemite
-    sha1 "24867f49b7680fbb56641d5738cf9d86062d9839" => :mavericks
-    sha1 "07d2f3f63fd909d1ad0b51fdb51c09b1163180eb" => :mountain_lion
+    cellar :any
+    sha256 "543d5ad733130bca7640900cd04cce0d499d6eb858ec2d17a0cd49b428b4c8d1" => :el_capitan
+    sha256 "3df0a8327d236e67e77075f108702e444169321716c430380ef99f93f6d7bc32" => :yosemite
+    sha256 "87ec20eb4dc74d17f6fa1b9ef2f14bbf08449457e08fd061411c7504b609c2f0" => :mavericks
+    sha256 "5c42f4a8cfd1fcd51de65d499907541721e8e6dbaa4cd907ef224c00a2ec3121" => :x86_64_linux
   end
 
   head do
-    url "https://git.gnome.org/browse/libxml2", :using => :git
+    url "https://git.gnome.org/browse/libxml2.git"
 
     depends_on "autoconf" => :build
     depends_on "automake" => :build
@@ -47,7 +50,8 @@ class Libxml2 < Formula
     if build.with? "python"
       cd "python" do
         # We need to insert our include dir first
-        inreplace "setup.py", "includes_dir = [", "includes_dir = ['#{include}', '#{MacOS.sdk_path}/usr/include',"
+        inreplace "setup.py", "includes_dir = [",
+          "includes_dir = ['#{include}', '#{OS.mac? ? MacOS.sdk_path/"usr" : HOMEBREW_PREFIX}/include',"
         system "python", "setup.py", "install", "--prefix=#{prefix}"
       end
     end
@@ -66,8 +70,7 @@ class Libxml2 < Formula
         return 0;
       }
     EOS
-    args = `#{bin}/xml2-config --cflags --libs`.split
-    args += %w[test.c -o test]
+    args = %w[test.c -o test] + `#{bin}/xml2-config --cflags --libs`.split
     system ENV.cc, *args
     system "./test"
   end

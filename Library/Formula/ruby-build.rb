@@ -1,10 +1,12 @@
-require "formula"
-
 class RubyBuild < Formula
-  head "https://github.com/sstephenson/ruby-build.git"
-  homepage "https://github.com/sstephenson/ruby-build"
-  url "https://github.com/sstephenson/ruby-build/archive/v20150130.tar.gz"
-  sha1 "bf45df80e07d611425980df0511668eee9bccf3c"
+  desc "Install various Ruby versions and implementations"
+  homepage "https://github.com/rbenv/ruby-build"
+  url "https://github.com/rbenv/ruby-build/archive/v20160330.tar.gz"
+  sha256 "e6cbc01f6db45675927a4a75f3d52cd94f6f397f63dc6ddd7643a0c23c46bcab"
+
+  head "https://github.com/rbenv/ruby-build.git"
+
+  bottle :unneeded
 
   depends_on "autoconf" => [:recommended, :run]
   depends_on "pkg-config" => [:recommended, :run]
@@ -16,6 +18,6 @@ class RubyBuild < Formula
   end
 
   test do
-    system "#{bin}/ruby-build", "--version"
+    system "#{bin}/ruby-build", "--definitions"
   end
 end

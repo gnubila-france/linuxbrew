@@ -1,20 +1,21 @@
-require 'formula'
-
 class Qscintilla2 < Formula
-  homepage 'http://www.riverbankcomputing.co.uk/software/qscintilla/intro'
-  url "https://downloads.sf.net/project/pyqt/QScintilla2/QScintilla-2.8.3/QScintilla-gpl-2.8.3.tar.gz"
-  sha1 "d3b4f0dc7358591c122518d932f797ae3e3dd9d4"
+  desc "Port to Qt of the Scintilla editing component"
+  homepage "https://www.riverbankcomputing.com/software/qscintilla/intro"
+  url "https://downloads.sf.net/project/pyqt/QScintilla2/QScintilla-2.8.4/QScintilla-gpl-2.8.4.tar.gz"
+  sha256 "9b7b2d7440cc39736bbe937b853506b3bd218af3b79095d4f710cccb0fabe80f"
 
   bottle do
-    sha1 "fa508a94662ed80738179efb88c8d9a80ce1e349" => :yosemite
-    sha1 "76f43d61489d59c0df78c2b206f132842b1e893c" => :mavericks
-    sha1 "1f5d86d06e559fa543611121701eb88098e6d2d4" => :mountain_lion
+    cellar :any
+    revision 1
+    sha256 "4f277db7d148508ed19c15deb5be481a259fb9484f8228b8beef8d5deb62e3e8" => :el_capitan
+    sha256 "c671e7416f6cb55f7eaf3fabeed866dc0abefe7921470dc592ff515fb1c90bef" => :yosemite
+    sha256 "372eb0774903e20c4e3bcf67fbebb9ae7b880e5d12729c50e9eca264b2b7c96e" => :mavericks
   end
+
+  option "without-plugin", "Skip building the Qt Designer plugin"
 
   depends_on :python => :recommended
   depends_on :python3 => :optional
-
-  option "without-plugin", "Skip building the Qt Designer plugin"
 
   if build.with? "python3"
     depends_on "pyqt" => "with-python3"
@@ -23,28 +24,24 @@ class Qscintilla2 < Formula
   end
 
   def install
-    if OS.mac?
-      # On Mavericks we want to target libc++, this requires a unsupported/macx-clang-libc++ flag
-      if ENV.compiler == :clang and MacOS.version >= :mavericks
-        spec = "unsupported/macx-clang-libc++"
-      else
-        spec = "macx-g++"
-      end
-      args = %W[-config release -spec #{spec}]
+    # On Mavericks we want to target libc++, this requires a unsupported/macx-clang-libc++ flag
+    if ENV.compiler == :clang && MacOS.version >= :mavericks
+      spec = "unsupported/macx-clang-libc++"
     else
-      args = %W[-config release ]
+      spec = "macx-g++"
     end
+    args = %W[-config release -spec #{spec}]
 
-    cd 'Qt4Qt5' do
-      inreplace 'qscintilla.pro' do |s|
-        s.gsub! '$$[QT_INSTALL_LIBS]', lib
+    cd "Qt4Qt5" do
+      inreplace "qscintilla.pro" do |s|
+        s.gsub! "$$[QT_INSTALL_LIBS]", lib
         s.gsub! "$$[QT_INSTALL_HEADERS]", include
         s.gsub! "$$[QT_INSTALL_TRANSLATIONS]", "#{prefix}/trans"
         s.gsub! "$$[QT_INSTALL_DATA]", "#{prefix}/data"
       end
 
       inreplace "features/qscintilla2.prf" do |s|
-        s.gsub! '$$[QT_INSTALL_LIBS]', lib
+        s.gsub! "$$[QT_INSTALL_LIBS]", lib
         s.gsub! "$$[QT_INSTALL_HEADERS]", include
       end
 
@@ -56,7 +53,7 @@ class Qscintilla2 < Formula
     # Add qscintilla2 features search path, since it is not installed in Qt keg's mkspecs/features/
     ENV["QMAKEFEATURES"] = "#{prefix}/data/mkspecs/features"
 
-    cd 'Python' do
+    cd "Python" do
       Language::Python.each_python(build) do |python, version|
         (share/"sip").mkpath
         system python, "configure.py", "-o", lib, "-n", include,
@@ -65,8 +62,8 @@ class Qscintilla2 < Formula
                          "--qsci-sipdir=#{share}/sip",
                          "--pyqt-sipdir=#{HOMEBREW_PREFIX}/share/sip",
                          "--spec=#{spec}"
-        system 'make'
-        system 'make', 'install'
+        system "make"
+        system "make", "install"
         system "make", "clean"
       end
     end
@@ -75,16 +72,13 @@ class Qscintilla2 < Formula
       mkpath prefix/"plugins/designer"
       cd "designer-Qt4Qt5" do
         inreplace "designer.pro" do |s|
-          s.sub! "$$[QT_INSTALL_PLUGINS]", "#{prefix}/plugins"
+          s.sub! "$$[QT_INSTALL_PLUGINS]", "#{lib}/qt4/plugins"
           s.sub! "$$[QT_INSTALL_LIBS]", "#{lib}"
         end
         system "qmake", "designer.pro", *args
         system "make"
         system "make", "install"
       end
-      # symlink Qt Designer plugin (note: not removed on qscintilla2 formula uninstall)
-      ln_sf prefix/"plugins/designer/libqscintillaplugin.dylib",
-            Formula["qt"].opt_prefix/"plugins/designer/"
     end
   end
 
@@ -93,7 +87,7 @@ class Qscintilla2 < Formula
       import PyQt4.Qsci
       assert("QsciLexer" in dir(PyQt4.Qsci))
     EOS
-    Language::Python.each_python(build) do |python, version|
+    Language::Python.each_python(build) do |python, _version|
       system python, "test.py"
     end
   end

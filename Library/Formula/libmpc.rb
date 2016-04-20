@@ -1,16 +1,17 @@
 class Libmpc < Formula
+  desc "C library for the arithmetic of high precision complex numbers"
   homepage "http://multiprecision.org"
-  url "http://ftpmirror.gnu.org/mpc/mpc-1.0.2.tar.gz"
-  mirror "http://multiprecision.org/mpc/download/mpc-1.0.2.tar.gz"
-  sha1 "5072d82ab50ec36cc8c0e320b5c377adb48abe70"
+  url "http://ftpmirror.gnu.org/mpc/mpc-1.0.3.tar.gz"
+  mirror "http://multiprecision.org/mpc/download/mpc-1.0.3.tar.gz"
+  sha256 "617decc6ea09889fb08ede330917a00b16809b8db88c29c31bfbb49cbf88ecc3"
 
   bottle do
     cellar :any
-    revision 3
-    sha1 "6113e69eea132dfeb82db6edc10fdb964047f85d" => :yosemite
-    sha1 "206544ff8ee4234e456ab778bb4c7e9d84878582" => :mavericks
-    sha1 "5fe23420d4647f9447d976d19e402dbcea198c47" => :mountain_lion
-    sha1 "22284cde961b626fbe774ee2285d964e4789bf26" => :x86_64_linux
+    sha256 "04280215d9638c3e4dd0296cb1a0fe0e3e159088ebd59b6ab0c16585ada91f87" => :el_capitan
+    sha256 "afc56d4ba864a701495e7a8787d53a6375e808fed19fc056a8afea417f924958" => :yosemite
+    sha256 "8e20b94ef5014396801c5d3a99899cfd116e6f0e9873b239901f561bb9ff789d" => :mavericks
+    sha256 "040e6c55e3b641a1c8775eeb7416d6f9e20698d8670dc51e81d8175abd05283a" => :mountain_lion
+    sha256 "46c1bca77ee4c00ff63cbb2b6aa5a6dda7b5fcfa4254d5858364d8b8345c8345" => :x86_64_linux
   end
 
   depends_on "gmp"

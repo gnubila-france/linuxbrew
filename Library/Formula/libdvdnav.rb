@@ -1,23 +1,22 @@
-require "formula"
-
 class Libdvdnav < Formula
+  desc "DVD navigation library"
   homepage "https://dvdnav.mplayerhq.hu/"
-  url "http://download.videolan.org/pub/videolan/libdvdnav/5.0.1/libdvdnav-5.0.1.tar.bz2"
-  sha256 "72b1cb8266f163d4a1481b92c7b6c53e6dc9274d2a6befb08ffc351fe7a4a2a9"
-
-  head do
-    url "git://git.videolan.org/libdvdnav.git"
-    depends_on "autoconf" => :build
-    depends_on "automake" => :build
-    depends_on "libtool" => :build
-  end
+  url "https://download.videolan.org/pub/videolan/libdvdnav/5.0.3/libdvdnav-5.0.3.tar.bz2"
+  sha256 "5097023e3d2b36944c763f1df707ee06b19dc639b2b68fb30113a5f2cbf60b6d"
 
   bottle do
     cellar :any
     revision 1
-    sha1 "8c2db56f7b72fb9dc3ab3c671895f849d6afd686" => :yosemite
-    sha1 "6719c51ec9f3d7746cc23996603ab7e66ea739c7" => :mavericks
-    sha1 "7a08652f39426feefc93525ecb6aceab4d3aa720" => :mountain_lion
+    sha256 "c154d3b9579441836cac120264fcc61212347fdb39c9e52a95d22bb10bd5ec59" => :el_capitan
+    sha256 "eba1770d502af4fb840ed14fd26e0da38641b1a4d6f7dbe04388fe57e17cf8e2" => :yosemite
+    sha256 "c808f52803ee2b8d9644121d9d5a6016e4974cc91d4be54422d7c46be7276031" => :mavericks
+  end
+
+  head do
+    url "https://git.videolan.org/git/libdvdnav.git"
+    depends_on "autoconf" => :build
+    depends_on "automake" => :build
+    depends_on "libtool" => :build
   end
 
   depends_on "pkg-config" => :build

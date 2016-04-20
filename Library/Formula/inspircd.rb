@@ -1,18 +1,20 @@
 class Inspircd < Formula
+  desc "Modular C++ Internet Relay Chat daemon"
   homepage "http://www.inspircd.org"
-  url "https://github.com/inspircd/inspircd/archive/v2.0.18.tar.gz"
-  sha1 "40039d9be51ad28493be16b27c9f20bc7fe617a4"
-
-  head "https://github.com/inspircd/inspircd.git"
+  url "https://github.com/inspircd/inspircd/archive/v2.0.21.tar.gz"
+  sha256 "bc2f861d754754a108797699319186130ef7d909204eb56ab2c3b1ae80c9d6c5"
+  head "https://github.com/inspircd/inspircd.git", :branch => "insp20"
 
   bottle do
-    sha1 "b1def0c5b281422dbe37e89b2104321b33f685d0" => :yosemite
-    sha1 "18db9b5143d5f63677f3dc2fb2eeda09b24334dd" => :mavericks
-    sha1 "5cce454e59cf0a0e67e5d4c2bb1d5d94fe8e831d" => :mountain_lion
+    sha256 "ca450ea591b9e69aa0d2632225eabd9cf88cbd212d91beb49da38ccb80cc6bf0" => :el_capitan
+    sha256 "20f8be014a3d417d5ef68c896862c9670825b41c670a36e9684d10ac6f84f294" => :yosemite
+    sha256 "7a6ce74d3bdbe759fc229e84bdfe5fde5680252c195ac9417ba837d3b4785780" => :mavericks
   end
 
   skip_clean "data"
   skip_clean "logs"
+
+  option "without-ldap", "Build without ldap support"
 
   depends_on "pkg-config" => :build
   depends_on "geoip" => :optional
@@ -24,16 +26,13 @@ class Inspircd < Formula
   depends_on "sqlite" => :optional
   depends_on "tre" => :optional
 
-  option "without-ldap", "Build without ldap support"
-
   def install
     modules = []
     modules << "m_geoip.cpp" if build.with? "geoip"
     modules << "m_ssl_gnutls.cpp" if build.with? "gnutls"
     modules << "m_mysql.cpp" if build.with? "mysql"
     modules << "m_ssl_openssl.cpp" if build.with? "openssl"
-    modules << "m_ldapauth.cpp" if build.with? "ldap"
-    modules << "m_ldapoper.cpp" if build.with? "ldap"
+    modules << "m_ldapauth.cpp" << "m_ldapoper.cpp" if build.with? "ldap"
     modules << "m_regex_pcre.cpp" if build.with? "pcre"
     modules << "m_pgsql.cpp" if build.with? "postgresql"
     modules << "m_sqlite3.cpp" if build.with? "sqlite"
@@ -42,7 +41,9 @@ class Inspircd < Formula
     system "./configure", "--enable-extras=#{modules.join(",")}" unless modules.empty?
     system "./configure", "--prefix=#{prefix}", "--with-cc=#{ENV.cc}"
     system "make", "install"
+  end
 
+  def post_install
     inreplace "#{prefix}/org.inspircd.plist", "ircdaemon", ENV["USER"]
   end
 

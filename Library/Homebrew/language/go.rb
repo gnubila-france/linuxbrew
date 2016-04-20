@@ -6,7 +6,8 @@ module Language
     # building go software.
     # The resource names should be the import name of the package,
     # e.g. `resource "github.com/foo/bar"`
-    def self.stage_deps resources, target
+    def self.stage_deps(resources, target)
+      opoo "tried to stage empty resources array" if resources.empty?
       resources.grep(Resource::Go) { |resource| resource.stage(target) }
     end
   end

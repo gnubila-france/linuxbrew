@@ -1,23 +1,16 @@
-require "formula"
-
 class Pdf2htmlex < Formula
+  desc "PDF to HTML converter"
   homepage "https://coolwanglu.github.io/pdf2htmlEX/"
-  url "https://github.com/coolwanglu/pdf2htmlEX/archive/v0.12.tar.gz"
-  sha256 "7868ff5cd69758d094fd6076e4d0888e5033bf8799a5355bf4470e91967147a8"
+  url "https://github.com/coolwanglu/pdf2htmlEX/archive/v0.14.6.tar.gz"
+  sha256 "320ac2e1c2ea4a2972970f52809d90073ee00a6c42ef6d9833fb48436222f0e5"
+  revision 1
 
   head "https://github.com/coolwanglu/pdf2htmlEX.git"
 
   bottle do
-    revision 1
-    sha1 "aac4350489fa9a23b583d509d83090f748e7bc2f" => :yosemite
-    sha1 "be836dde13e65eaf128d3fff264b9ba2eb34f6bf" => :mavericks
-    sha1 "45ed0a997274e332200a0bdd9f00ae7eb6663596" => :mountain_lion
-  end
-
-  # Pdf2htmlex use an outdated, customised Fontforge installation.
-  # See https://github.com/coolwanglu/pdf2htmlEX/wiki/Building
-  resource "fontforge" do
-    url "https://github.com/coolwanglu/fontforge.git", :branch => "pdf2htmlEX"
+    sha256 "7fb9a99daaea6f372d7ea2bc2511114bb719deb3b8a35f589a547211d053c22a" => :el_capitan
+    sha256 "3e8730530fe8eae8ff63b8eb3539fd6e55f959d6edd10a5fbb2fdd605221c57e" => :yosemite
+    sha256 "ed3f86c149d5ce601e6d63dcae147f541a0745623244a7bc0a88941ec5963b5f" => :mavericks
   end
 
   depends_on :macos => :lion
@@ -38,6 +31,12 @@ class Pdf2htmlex < Formula
   depends_on "jpeg"     => :recommended
   depends_on "libtiff"  => :recommended
 
+  # Pdf2htmlex use an outdated, customised Fontforge installation.
+  # See https://github.com/coolwanglu/pdf2htmlEX/wiki/Building
+  resource "fontforge" do
+    url "https://github.com/coolwanglu/fontforge.git", :branch => "pdf2htmlEX"
+  end
+
   # And failures
   fails_with :llvm do
     build 2336
@@ -46,15 +45,16 @@ class Pdf2htmlex < Formula
 
   def install
     resource("fontforge").stage do
-      args = ["--prefix=#{prefix}/fontforge",
-              "--without-libzmq",
-              "--without-x",
-              "--without-iconv",
-              "--disable-python-scripting",
-              "--disable-python-extension",
+      args = %W[
+        --prefix=#{prefix}/fontforge
+        --without-libzmq
+        --without-x
+        --without-iconv
+        --disable-python-scripting
+        --disable-python-extension
       ]
 
-      # Fix linker error; see: http://trac.macports.org/ticket/25012
+      # Fix linker error; see: https://trac.macports.org/ticket/25012
       ENV.append "LDFLAGS", "-lintl"
 
       # Reset ARCHFLAGS to match how we build
@@ -76,7 +76,6 @@ class Pdf2htmlex < Formula
   end
 
   test do
-    curl "-O", "http://partners.adobe.com/public/developer/en/xml/AdobeXMLFormsSamples.pdf"
-    system "#{bin}/pdf2htmlEX", "AdobeXMLFormsSamples.pdf"
+    system "#{bin}/pdf2htmlEX", test_fixtures("test.pdf")
   end
 end

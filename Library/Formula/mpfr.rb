@@ -1,40 +1,45 @@
 class Mpfr < Formula
+  desc "C library for multiple-precision floating-point computations"
   homepage "http://www.mpfr.org/"
-  # Upstream is down a lot, so use the GNU mirror + Gist for patches
-  url "http://ftpmirror.gnu.org/mpfr/mpfr-3.1.2.tar.bz2"
-  mirror "https://ftp.gnu.org/gnu/mpfr/mpfr-3.1.2.tar.bz2"
-  sha1 "46d5a11a59a4e31f74f73dd70c5d57a59de2d0b4"
-  version "3.1.2-p10"
+  # Upstream is down a lot, so use mirrors
+  url "https://mirrors.ocf.berkeley.edu/debian/pool/main/m/mpfr4/mpfr4_3.1.3.orig.tar.xz"
+  mirror "https://ftp.gnu.org/gnu/mpfr/mpfr-3.1.3.tar.xz"
+  sha256 "6835a08bd992c8257641791e9a6a2b35b02336c8de26d0a8577953747e514a16"
 
   bottle do
     cellar :any
-    revision 1
-    sha1 "7950d0c8f2e68673099516b7c2026055e75d1f9d" => :yosemite
-    sha1 "6e63f815013d281187fd6017aeb8ee9f24ca9ad2" => :mavericks
-    sha1 "40956fd01c8882333cdaf447eb637480ac8520e8" => :mountain_lion
-    sha1 "04cc102aaf925a955435a976e84a0205d8b20aef" => :x86_64_linux
+    sha256 "a5028a476fb01f6f5ee89d635e2cf926c233d6620f036fcfeda2fd963cac369a" => :el_capitan
+    sha256 "5047806085670ca9f39de8e9afdec2ab82eddb7d1d3154208262f844b43b4dcd" => :yosemite
+    sha256 "f1c281e854533cf7fab36396591516d48a61626096f152ea828eaae9f7c09238" => :mavericks
+    sha256 "5a98a6a8dd768c845602cabb31db527a0efecdbae3eaa1148db8010ae5420a97" => :mountain_lion
+    sha256 "d8ed215ca31fa7a295d55fa6d06431df05e3688adee161e429b8f81ca62c23b2" => :x86_64_linux
   end
 
   # http://www.mpfr.org/mpfr-current/allpatches
   patch do
-    url "https://gist.githubusercontent.com/jacknagel/7f276cd60149a1ffc9a7/raw/39116c674a8c340fef880a393d7c7bdc6d73c59e/mpfr-3.1.2-p10.diff"
-    sha1 "c101708c6f7d86a3f7309c2e046d907ac36d6aa4"
+    url "https://gist.github.com/anonymous/3a7d24cf2c68f21eb940/raw/471e928fcdbfb5c2fa7428cfb496496e6ee469aa/mpfr-3.1.3.diff"
+    sha256 "1ca002acc121413b9ce39e9f12bb6efe4bed4ec45cf3f3ffcff122b94f6694de"
   end
 
-  depends_on "gmp"
-
   option "32-bit"
+
+  depends_on "gmp"
 
   fails_with :clang do
     build 421
     cause <<-EOS.undent
       clang build 421 segfaults while building in superenv;
       see https://github.com/Homebrew/homebrew/issues/15061
-      EOS
+    EOS
   end
 
   def install
     ENV.m32 if build.build_32_bit?
+
+    # Fix error makeinfo: command not found
+    # The mpfr.info timestamp is older than the mpfr.texi timestamp.
+    touch "doc/mpfr.info"
+
     system "./configure", "--disable-dependency-tracking", "--prefix=#{prefix}"
     system "make"
     system "make", "check"

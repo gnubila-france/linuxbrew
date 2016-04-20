@@ -1,9 +1,10 @@
-require 'formula'
-
 class Javarepl < Formula
+  desc "Read Eval Print Loop (REPL) for Java"
   homepage "https://github.com/albertlatacz/java-repl"
-  url "http://albertlatacz.published.s3.amazonaws.com/repo/javarepl/javarepl/272/javarepl-272.jar"
-  sha1 "d9528b0def103694c83bdded0a8d103edb175b4e"
+  url "https://s3.amazonaws.com/albertlatacz.published/repo/javarepl/javarepl/282/javarepl-282.jar"
+  sha256 "7e53bd10ff9395e3114ed10a65b5bfbe0e7280a0d67620787e330244e7f26644"
+
+  bottle :unneeded
 
   def install
     libexec.install "javarepl-#{version}.jar"
@@ -11,6 +12,6 @@ class Javarepl < Formula
   end
 
   test do
-    assert pipe_output("#{bin}/javarepl", "System.out.println(64*1024)\n:quit\n").include?("65536")
+    assert_match "65536", pipe_output("#{bin}/javarepl", "System.out.println(64*1024)\n:quit\n")
   end
 end

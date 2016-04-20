@@ -1,9 +1,14 @@
-require "formula"
-
 class Pdns < Formula
-  homepage "http://www.powerdns.com"
-  url "http://downloads.powerdns.com/releases/pdns-3.4.1.tar.bz2"
-  sha1 "e4d807b4dc27ef130a49e0efaf82a74cb66f5b11"
+  desc "Authoritative nameserver"
+  homepage "https://www.powerdns.com"
+  url "https://downloads.powerdns.com/releases/pdns-3.4.8.tar.bz2"
+  sha256 "4f818fd09bff89625b4317cc7c05445f6e7bd9ea8d21e7eefeaaca07b8b0cd9f"
+
+  bottle do
+    sha256 "f6ecaa7fdac97b5d0210c5b245b6d322c3fbbabe9f1de7d1be7a05e50c5731ff" => :el_capitan
+    sha256 "eeb9f40d26d2c433c65ce9bbbdb0766159ee1a8d7636abf3752bf49e8a79ddc4" => :yosemite
+    sha256 "01bfafddc5e3cea395c093869b890101d8a1e3d590646111db06211eb849d14d" => :mavericks
+  end
 
   head do
     url "https://github.com/powerdns/pdns.git"
@@ -14,19 +19,15 @@ class Pdns < Formula
     depends_on "ragel"
   end
 
-  bottle do
-    sha1 "e39b0c25f869f94fa5b8d86af210baa980fce2ce" => :yosemite
-    sha1 "62bcb4ddeb59d8ef5b8dad7cfa9fdbebf698a9f0" => :mavericks
-    sha1 "e297580e0699c5d3c4aba341a7ad95c4945993bb" => :mountain_lion
-  end
+  option "with-pgsql", "Enable the PostgreSQL backend"
 
-  option "pgsql", "Enable the PostgreSQL backend"
+  deprecated_option "pgsql" => "with-pgsql"
 
   depends_on "pkg-config" => :build
   depends_on "boost"
   depends_on "lua"
   depends_on "sqlite"
-  depends_on :postgresql if build.include? "pgsql"
+  depends_on :postgresql if build.with? "pgsql"
 
   def install
     # https://github.com/Homebrew/homebrew/pull/33739
@@ -37,7 +38,7 @@ class Pdns < Formula
             "--with-sqlite3"]
 
     # Include the PostgreSQL backend if requested
-    if build.include? "pgsql"
+    if build.with? "pgsql"
       args << "--with-modules=gsqlite3 gpgsql"
     else
       # SQLite3 backend only is the default

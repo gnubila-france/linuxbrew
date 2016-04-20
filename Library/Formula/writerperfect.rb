@@ -1,19 +1,19 @@
-require "formula"
-
 class Writerperfect < Formula
-  homepage "http://libwpd.sourceforge.net/"
-  url "https://downloads.sourceforge.net/project/libwpd/writerperfect/writerperfect-0.9.1/writerperfect-0.9.1.tar.bz2"
-  sha1 "3a71d699dfdcd5a74639c092d62f0566ecd0dce5"
+  desc "Library for importing WordPerfect documents"
+  homepage "https://sourceforge.net/p/libwpd/wiki/writerperfect/"
+  url "https://downloads.sourceforge.net/project/libwpd/writerperfect/writerperfect-0.9.5/writerperfect-0.9.5.tar.xz"
+  sha256 "aa01122659482627f9adcff91bb242c37092c7f8537bfa5dc44e1a3c89aad9e2"
 
   bottle do
     cellar :any
-    sha1 "f6787986d7acf9d615f128792842e76e5b996c34" => :mavericks
-    sha1 "a75fac916f334c5edd38d8636d25460a9cd8041e" => :mountain_lion
-    sha1 "9d2e62a9eb89f353f236a7e086fcd03829a12bb6" => :lion
+    sha256 "5443a58b0fe10cfadaf3977fca423c0289e2eba665244a5ebc020cbbbdfc78d6" => :el_capitan
+    sha256 "9f7253806ba136c75dc4920f6eca864258a1b1021fce2e7ff5b772573b3b742e" => :yosemite
+    sha256 "763ae44dd67dbbdb4b5d1efd8a749fd9c9ee32fb040aceb76696923a5b6ca815" => :mavericks
   end
 
   depends_on "pkg-config" => :build
   depends_on "boost" => :build
+  depends_on "libmwaw" => :optional
   depends_on "libodfgen"
   depends_on "libwps"
   depends_on "libwpg"
@@ -21,6 +21,8 @@ class Writerperfect < Formula
   depends_on "libetonyek" => :optional
   depends_on "libvisio" => :optional
   depends_on "libmspub" => :optional
+  depends_on "libfreehand" => :optional
+  depends_on "libcdr" => :optional
 
   def install
     system "./configure", "--disable-debug", "--disable-dependency-tracking",

@@ -1,30 +1,109 @@
-require 'formula'
-
 class Rust < Formula
-  homepage 'http://www.rust-lang.org/'
-  url 'https://static.rust-lang.org/dist/rustc-1.0.0-alpha-src.tar.gz'
-  version "1.0.0-alpha"
-  sha256 '3a2285726e839fc57ad49ed8907a50bab2d29d8f898e2d5a02f620a0477fc25c'
+  desc "Safe, concurrent, practical language"
+  homepage "https://www.rust-lang.org/"
 
-  head 'https://github.com/rust-lang/rust.git'
+  stable do
+    url "https://static.rust-lang.org/dist/rustc-1.7.0-src.tar.gz"
+    sha256 "6df96059d87b718676d9cd879672e4e22418b6093396b4ccb5b5b66df37bf13a"
+
+    resource "cargo" do
+      # git required because of submodules
+      url "https://github.com/rust-lang/cargo.git", :tag => "0.9.0", :revision => "8fc3fd8df3857f3e77454c992458cd7baeeb622b"
+    end
+
+    # name includes date to satisfy cache
+    resource "cargo-nightly-2015-09-17" do
+      if OS.mac?
+        url "https://static-rust-lang-org.s3.amazonaws.com/cargo-dist/2015-09-17/cargo-nightly-x86_64-apple-darwin.tar.gz"
+        sha256 "02ba744f8d29bad84c5e698c0f316f9e428962b974877f7f582cd198fdd807a8"
+      else
+        url "https://static-rust-lang-org.s3.amazonaws.com/cargo-dist/2015-09-17/cargo-nightly-x86_64-unknown-linux-gnu.tar.gz"
+        sha256 "500d1af7c5f54074fef5e393195e9dfd6d42b41bb709caa81a3b52cfd8d27ea4"
+      end
+    end
+  end
+
+  head do
+    url "https://github.com/rust-lang/rust.git"
+    resource "cargo" do
+      url "https://github.com/rust-lang/cargo.git"
+    end
+  end
 
   bottle do
-    sha1 "5277e1c21e09bebde2c721be9b21680ba85d78bf" => :yosemite
-    sha1 "b46ed4b2cc08432f45cb9f28b2e5ee66280787ff" => :mavericks
-    sha1 "7d8e4945fffaf1844f166c7450d068e0860962b2" => :mountain_lion
+    sha256 "d494a5570ef0203c6072d38e97d8cc799c13da65bc97e448e2b8da4137bff032" => :el_capitan
+    sha256 "508af8e550717eb07676979675e69cff842563685caba68c1f00523463b036e1" => :yosemite
+    sha256 "56199b13a9822d6a617b998b2a0c5b8d68cac5520ca76fff88d41e44bf2cba6e" => :mavericks
+  end
+
+  option "with-llvm", "Build with brewed LLVM. By default, Rust's LLVM will be used."
+
+  depends_on "cmake" => :build
+  depends_on "pkg-config" => :run
+  depends_on "llvm" => :optional
+  depends_on "openssl"
+  depends_on "libssh2"
+
+  conflicts_with "multirust", :because => "both install rustc, rustdoc, cargo, rust-lldb, rust-gdb"
+
+  # According to the official readme, GCC 4.7+ is required
+  fails_with :gcc_4_0
+  fails_with :gcc
+  ("4.3".."4.6").each do |n|
+    fails_with :gcc => n
   end
 
   def install
+    # Because we copy the source tree to a temporary build directory,
+    # the absolute paths written to the `gitdir` files of the
+    # submodules are no longer accurate, and running `git submodule
+    # update` during the configure step fails.
+    ENV["CFG_DISABLE_MANAGE_SUBMODULES"] = "1" if build.head?
+
     args = ["--prefix=#{prefix}"]
     args << "--disable-rpath" if build.head?
     args << "--enable-clang" if ENV.compiler == :clang
+    args << "--llvm-root=#{Formula["llvm"].opt_prefix}" if build.with? "llvm"
+    if build.head?
+      args << "--release-channel=nightly"
+    else
+      args << "--release-channel=stable"
+    end
     system "./configure", *args
     system "make"
-    system "make install"
+    system "make", "install"
+
+    resource("cargo").stage do
+      cargo_stage_path = pwd
+
+      if build.stable?
+        resource("cargo-nightly-2015-09-17").stage do
+          system "./install.sh", "--prefix=#{cargo_stage_path}/target/snapshot/cargo"
+          # satisfy make target to skip download
+          touch "#{cargo_stage_path}/target/snapshot/cargo/bin/cargo"
+        end
+      end
+
+      system "./configure", "--prefix=#{prefix}", "--local-rust-root=#{prefix}", "--enable-optimize"
+      system "make"
+      system "make", "install"
+    end
+
+    rm_rf prefix/"lib/rustlib/uninstall.sh"
+    rm_rf prefix/"lib/rustlib/install.log"
   end
 
   test do
-    system "#{bin}/rustc"
     system "#{bin}/rustdoc", "-h"
+    (testpath/"hello.rs").write <<-EOS.undent
+    fn main() {
+      println!("Hello World!");
+    }
+    EOS
+    system "#{bin}/rustc", "hello.rs"
+    assert_equal "Hello World!\n", `./hello`
+    system "#{bin}/cargo", "new", "hello_world", "--bin"
+    assert_equal "Hello, world!",
+                 (testpath/"hello_world").cd { `#{bin}/cargo run`.split("\n").last }
   end
 end

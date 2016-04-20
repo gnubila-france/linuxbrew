@@ -1,40 +1,39 @@
-require 'formula'
-
 class Orientdb < Formula
-  homepage 'http://www.orientdb.org/index.htm'
-  url 'http://www.orientechnologies.com/download.php?email=unknown@unknown.com&file=orientdb-community-2.0.1.tar.gz&os=mac'
-  version '2.0.1'
-  sha1 '6e31c99406453b7f0fb115f83a7cfd20eb1e318f'
+  desc "Graph database"
+  homepage "https://orientdb.com"
+  url "https://orientdb.com/download.php?email=unknown@unknown.com&file=orientdb-community-2.1.13.tar.gz&os=mac"
+  version "2.1.13"
+  sha256 "33f68db630dae88c097bdc5444918de81143c9a6eb1bf5c2aee045df392deb6e"
 
   bottle do
-    cellar :any
-    sha1 "99a13c6db4471d17f9aa2722fb6a81a81b2f00bf" => :yosemite
-    sha1 "70fd98d6e48743a4a1abdbf306f48c8212fd3256" => :mavericks
-    sha1 "d8442c4547b6a77cf767e7618b1319a6fc3f1c4f" => :mountain_lion
+    cellar :any_skip_relocation
+    sha256 "839bd7d0e4f498d4db1dd76a1c06aa79f2140310af0eba4a564c0f8d8e5e49d8" => :el_capitan
+    sha256 "ed07b75759fc93914f8591fc9669513a6236ded2e399c808da912a5d808ac9e0" => :yosemite
+    sha256 "10a4bd26417fe23c03d86475cc237690e4b2529254fa82f01114265cdab9643a" => :mavericks
   end
 
   # Fixing OrientDB init scripts
   patch do
     url "https://gist.githubusercontent.com/maggiolo00/84835e0b82a94fe9970a/raw/1ed577806db4411fd8b24cd90e516580218b2d53/orientdbsh"
-    sha1 "280284f3a8b6e280e46078b746f8250aa5648979"
+    sha256 "d8b89ecda7cb78c940b3c3a702eee7b5e0f099338bb569b527c63efa55e6487e"
   end
 
   def install
-    rm_rf Dir['{bin,benchmarks}/*.{bat,exe}']
+    rm_rf Dir["{bin,benchmarks}/*.{bat,exe}"]
 
     inreplace %W[bin/orientdb.sh bin/console.sh bin/gremlin.sh],
       '"YOUR_ORIENTDB_INSTALLATION_PATH"', libexec
 
     chmod 0755, Dir["bin/*"]
-    libexec.install Dir['*']
+    libexec.install Dir["*"]
 
     mkpath "#{libexec}/log"
     touch "#{libexec}/log/orientdb.err"
     touch "#{libexec}/log/orientdb.log"
 
-    bin.install_symlink "#{libexec}/bin/orientdb.sh" => 'orientdb'
-    bin.install_symlink "#{libexec}/bin/console.sh" => 'orientdb-console'
-    bin.install_symlink "#{libexec}/bin/gremlin.sh" => 'orientdb-gremlin'
+    bin.install_symlink "#{libexec}/bin/orientdb.sh" => "orientdb"
+    bin.install_symlink "#{libexec}/bin/console.sh" => "orientdb-console"
+    bin.install_symlink "#{libexec}/bin/gremlin.sh" => "orientdb-gremlin"
   end
 
   def caveats

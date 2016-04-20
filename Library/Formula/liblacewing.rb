@@ -1,18 +1,17 @@
-require "formula"
-
 class Liblacewing < Formula
+  desc "Cross-platform, high-level C/C++ networking library"
   homepage "http://lacewing-project.org/"
-  head "https://github.com/udp/lacewing.git"
   url "https://github.com/udp/lacewing/archive/0.5.4.tar.gz"
-  sha1 "078486a4dcd6ce33c2c881954c5dc82843411ac9"
+  sha256 "c24370f82a05ddadffbc6e79aaef4a307de926e9e4def18fb2775d48e4804f5c"
   revision 1
+  head "https://github.com/udp/lacewing.git"
 
   bottle do
     cellar :any
-    revision 2
-    sha1 "9b3c6627a900002583cd2d179997f507c23e2967" => :yosemite
-    sha1 "13c32999ea5cdb9e5c231cd3854d35ebb5bb82d2" => :mavericks
-    sha1 "dd1d9ee994fe2a4114063a382712c341591da3f5" => :mountain_lion
+    revision 3
+    sha256 "8521b6bdb48855fb5e87d3354d65db5d476c56b416807145c9e9f05500ae91d5" => :el_capitan
+    sha256 "8df9b4bab55b90fe7892187dd711aa40898ff83c6b66a02a18bdbef87ad2fa6c" => :yosemite
+    sha256 "af978e720eafc9106c8dcb9391b341ec984339fd87db419f54229c5ae3a03d8c" => :mavericks
   end
 
   depends_on "openssl"

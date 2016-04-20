@@ -1,15 +1,21 @@
-require "formula"
-
 class Psqlodbc < Formula
-  homepage "http://www.postgresql.org/"
-  url "http://ftp.postgresql.org/pub/odbc/versions/src/psqlodbc-09.03.0300.tar.gz"
-  sha1 "0f41b4678b513aa70f14b03803af92a7abf1e179"
+  desc "Official PostgreSQL ODBC driver"
+  homepage "https://odbc.postgresql.org"
+  url "https://ftp.postgresql.org/pub/odbc/versions/src/psqlodbc-09.05.0100.tar.gz"
+  sha256 "c53612db422826bfa3023ea8c75cb6c61f113a797a3323002ed645133491d1bd"
 
   bottle do
     cellar :any
-    sha1 "f24bdc4d51cd85e391be2e483e9c48858ee71d83" => :mavericks
-    sha1 "9b3f60310f063bb416ecaf32343b31b7f09b1445" => :mountain_lion
-    sha1 "6f463b33df349d2fe20bcb71ec340dc6f425dc36" => :lion
+    sha256 "4796f1ee0250a872f4c677a38ef19d5f707a8f869ab8131a17c81cf1a8dfd87b" => :el_capitan
+    sha256 "dfe0350fc6da092fdef7c6247eda42001e9848a4468b485fcb8e391e1ff8a10f" => :yosemite
+    sha256 "04ed0b32b3904384e211933d8ecf52759437792d0f4181296e0dd9144f702440" => :mavericks
+  end
+
+  head do
+    url "http://git.postgresql.org/git/psqlodbc.git"
+    depends_on "automake" => :build
+    depends_on "autoconf" => :build
+    depends_on "libtool" => :build
   end
 
   depends_on "openssl"
@@ -17,15 +23,15 @@ class Psqlodbc < Formula
   depends_on :postgresql
 
   def install
+    system "./bootstrap" if build.head?
     system "./configure", "--prefix=#{prefix}",
-                          "--with-unixodbc=#{Formula["unixodbc"].prefix}"
+                          "--with-unixodbc=#{Formula["unixodbc"].opt_prefix}"
     system "make"
     system "make", "install"
   end
 
   test do
-    output = `#{Formula['unixodbc'].bin}/dltest #{lib}/psqlodbcw.so`
+    output = shell_output("#{Formula["unixodbc"].bin}/dltest #{lib}/psqlodbcw.so")
     assert_equal "SUCCESS: Loaded #{lib}/psqlodbcw.so\n", output
-    assert_equal 0, $?.exitstatus
   end
 end

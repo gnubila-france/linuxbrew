@@ -1,41 +1,47 @@
-require 'formula'
-
 class Jmeter < Formula
-  homepage 'http://jmeter.apache.org/'
-  url 'http://www.apache.org/dyn/closer.cgi?path=jmeter/binaries/apache-jmeter-2.12.tgz'
-  sha1 '2b3de1d1ebc4c85a1fc5da12279649d97ca45788'
+  desc "Load testing and performance measurement application"
+  homepage "https://jmeter.apache.org/"
+  url "https://www.apache.org/dyn/closer.cgi?path=jmeter/binaries/apache-jmeter-2.13.tgz"
+  sha256 "9fe33d3d6e381103d3ced2962cdef5c164a06fc58c55e247eadf5a5dbcd4d8fe"
+
+  bottle do
+    cellar :any_skip_relocation
+    sha256 "d3399e640d2c7951271a5bedb4e0741cc1286b33c61c068518233d56709b94b7" => :el_capitan
+    sha256 "ba692230f928b309d7460c043ac6e58f6ee8a65c4125d2682e30886c8c885434" => :yosemite
+    sha256 "b1f29631e5920214ae3e881d49d384ae26650a8f4543e635c319a783305daf38" => :mavericks
+  end
+
+  option "with-plugins", "add JMeterPlugins Standard, Extras, ExtrasLibs, WebDriver and Hadoop"
 
   resource "jmeterplugins-standard" do
-    url "http://jmeter-plugins.org/downloads/file/JMeterPlugins-Standard-1.2.0.zip"
-    sha1 "1700158e5ce23748db5f59b8c5b9b608a345eef7"
+    url "http://jmeter-plugins.org/downloads/file/JMeterPlugins-Standard-1.3.1.zip"
+    sha256 "33ed06ce794819a50d57eda8624f41a97b9901c17c7bb5aec89bc4a7959edffe"
   end
 
   resource "serveragent" do
     url "http://jmeter-plugins.org/downloads/file/ServerAgent-2.2.1.zip"
-    sha1 "c8ee7015b10f48acf4664ec33733e0c1eb025cb7"
+    sha256 "2d5cfd6d579acfb89bf16b0cbce01c8817cba52ab99b3fca937776a72a8f95ec"
   end
 
   resource "jmeterplugins-extras" do
-    url "http://jmeter-plugins.org/downloads/file/JMeterPlugins-Extras-1.2.0.zip"
-    sha1 "abd19f4befbd2dc992cc41abbb6f8a772b2fb4d6"
+    url "http://jmeter-plugins.org/downloads/file/JMeterPlugins-Extras-1.3.1.zip"
+    sha256 "e921f55c2e838990e4fcd08e55b66f2bea3ba4ebe365284cb6e633c020f6917f"
   end
 
   resource "jmeterplugins-extraslibs" do
-    url "http://jmeter-plugins.org/downloads/file/JMeterPlugins-ExtrasLibs-1.2.0.zip"
-    sha1 "549ec55da3b7a2bcf73b9ceecd0d66c1e7675d53"
+    url "http://jmeter-plugins.org/downloads/file/JMeterPlugins-ExtrasLibs-1.3.1.zip"
+    sha256 "95c7bd3c1d3352a775a5ee3152a6e200829435afa6b6dd5ba6ccdd20cdacca19"
   end
 
   resource "jmeterplugins-webdriver" do
-    url "http://jmeter-plugins.org/downloads/file/JMeterPlugins-WebDriver-1.2.0.zip"
-    sha1 "6519c05d9cd93d1f44fc733b772f232bb4568846"
+    url "http://jmeter-plugins.org/downloads/file/JMeterPlugins-WebDriver-1.3.1.zip"
+    sha256 "1ada9fad0e4613b5b385fa0b5f08072af0fdfd5a0b8cebb3a728d12d2b6fa76c"
   end
 
   resource "jmeterplugins-hadoop" do
-    url "http://jmeter-plugins.org/downloads/file/JMeterPlugins-Hadoop-1.2.0.zip"
-    sha1 "83ce7b84349acb40c5f8f63c7bbc8f9eaf38c542"
+    url "http://jmeter-plugins.org/downloads/file/JMeterPlugins-Hadoop-1.3.1.zip"
+    sha256 "0478ed7198f65d070eb3c9c28f94118272693a9689a406746c4bdd9e7d028ab4"
   end
-
-  option "with-plugins", "add JMeterPlugins Standard, Extras, ExtrasLibs, WebDriver and Hadoop"
 
   def install
     # Remove windows files

@@ -1,29 +1,33 @@
 class Patchutils < Formula
+  desc "Small collection of programs that operate on patch files"
   homepage "http://cyberelk.net/tim/software/patchutils/"
-  url "http://cyberelk.net/tim/data/patchutils/stable/patchutils-0.3.3.tar.xz"
-  sha1 "89d3f8a454bacede1b9a112b3a13701ed876fcc1"
+  url "http://cyberelk.net/tim/data/patchutils/stable/patchutils-0.3.4.tar.xz"
+  mirror "https://mirrors.kernel.org/debian/pool/main/p/patchutils/patchutils_0.3.4.orig.tar.xz"
+  sha256 "cf55d4db83ead41188f5b6be16f60f6b76a87d5db1c42f5459d596e81dabe876"
 
   bottle do
-    cellar :any
-    sha1 "e339d44549d5adaf0907752d87a15c74fdc14892" => :yosemite
-    sha1 "1d2ef386ca2d3f17574ecdb8ca2cf3dbde142296" => :mavericks
-    sha1 "56c838384a5712786d2a424a57ce69b168e1f66e" => :mountain_lion
+    cellar :any_skip_relocation
+    revision 1
+    sha256 "08689727cdf1f89cc075ec2e6e71ac456c5429067899ccb5dac12848a6c2abcd" => :el_capitan
+    sha256 "df5a0b90219fe01b6934696d27782920c3e9c45152980e72a1c542006c625ae9" => :yosemite
+    sha256 "84cae8e92f1e9b3f377fd6584c0811a3c3989fb898bb7596ba0d1192ae10a834" => :mavericks
   end
 
-  # Fix 'filterdiff --exclude-from-file...' crashes
-  # https://fedorahosted.org/patchutils/ticket/30
-  patch do
-    url "https://fedorahosted.org/patchutils/raw-attachment/ticket/30/0001-Provide-NULL-pointer-to-getline-to-avoid-realloc-ing.patch"
-    sha1 "e787c8df1501feea5c895cdf9e8e01441035bdcf"
+  head do
+    url "https://github.com/twaugh/patchutils.git"
+    depends_on "automake" => :build
+    depends_on "autoconf" => :build
   end
+
+  depends_on "xmlto" => :build
 
   def install
+    system "./bootstrap" if build.head?
     system "./configure", "--disable-dependency-tracking", "--prefix=#{prefix}"
     system "make", "install"
   end
 
   test do
-    assert_match /a\/libexec\/NOOP/,
-          shell_output("#{bin}/lsdiff #{HOMEBREW_LIBRARY.join("Homebrew", "test", "patches", "noop-a.diff")}")
+    assert_match %r{a\/libexec\/NOOP}, shell_output("#{bin}/lsdiff #{test_fixtures("test.diff")}")
   end
 end

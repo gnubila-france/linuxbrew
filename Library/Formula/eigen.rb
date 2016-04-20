@@ -1,30 +1,29 @@
 class Eigen < Formula
+  desc "C++ template library for linear algebra"
   homepage "http://eigen.tuxfamily.org/"
-  url "http://bitbucket.org/eigen/eigen/get/3.2.3.tar.bz2"
-  sha1 "303e8241aaa879a328d675de368525a591c42e51"
-
-  bottle do
-    cellar :any
-    sha1 "c5186ca59c192a26ace3775c6da18d7afc0a4669" => :yosemite
-    sha1 "83ea196f29660928719ba2ea2537b8b674a0f3b5" => :mavericks
-    sha1 "af6cc494f7082b18d88ffa61630d387575fd5e8f" => :mountain_lion
-  end
-
+  url "https://bitbucket.org/eigen/eigen/get/3.2.8.tar.bz2"
+  sha256 "722a63d672b70f39c271c5e2a4a43ba14d12015674331790414fcb167c357e55"
   head "https://bitbucket.org/eigen/eigen", :using => :hg
 
-  depends_on "cmake" => :build
+  bottle do
+    cellar :any_skip_relocation
+    sha256 "28e7161064b8d297df044d27b4677348d039ce45d3b4ea9a08bb856dc7c687ba" => :el_capitan
+    sha256 "727c2ee0d0c4db05699a69b7df364441944361fdad5b74f885a0ac50935c7d9d" => :yosemite
+    sha256 "d4b39c9f304c4f75e7b9a9b02bd69849f4e4400a9b7cc10df7d3f61b4777ab32" => :mavericks
+  end
 
   option :universal
 
+  depends_on "cmake" => :build
+
   def install
     ENV.universal_binary if build.universal?
+
     mkdir "eigen-build" do
       args = std_cmake_args
-      args.delete "-DCMAKE_BUILD_TYPE=None"
-      args << "-DCMAKE_BUILD_TYPE=Release"
       args << "-Dpkg_config_libdir=#{lib}" << ".."
       system "cmake", *args
-      system "make install"
+      system "make", "install"
     end
     (share/"cmake/Modules").install "cmake/FindEigen3.cmake"
   end
@@ -45,6 +44,6 @@ class Eigen < Formula
       }
     EOS
     system ENV.cxx, "test.cpp", "-I#{include}/eigen3", "-o", "test"
-    assert_equal `./test`.split, %w[3 -1 2.5 1.5]
+    assert_equal %w[3 -1 2.5 1.5], shell_output("./test").split
   end
 end

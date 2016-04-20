@@ -1,13 +1,18 @@
-require 'formula'
-
 class Zinc < Formula
-  homepage 'https://github.com/typesafehub/zinc'
-  url 'http://downloads.typesafe.com/zinc/0.3.5/zinc-0.3.5.tgz'
-  sha1 '1ae45236fdf0ad91e739889bffb7829d9308cdea'
+  desc "Stand-alone version of sbt's Scala incremental compiler"
+  homepage "https://github.com/typesafehub/zinc"
+  url "https://downloads.typesafe.com/zinc/0.3.9/zinc-0.3.9.tgz"
+  sha256 "29dd3078d8b01c14231ed92f2d1abfca62cd4b63fd69505ff7abaa39f1193325"
+
+  bottle :unneeded
 
   def install
     rm_f Dir["bin/ng/{linux,win}*"]
-    libexec.install Dir['*']
+    libexec.install Dir["*"]
     bin.install_symlink libexec/"bin/zinc"
+  end
+
+  test do
+    system "#{bin}/zinc", "-version"
   end
 end

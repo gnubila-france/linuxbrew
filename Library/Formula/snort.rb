@@ -1,16 +1,19 @@
-require "formula"
-
 class Snort < Formula
+  desc "Flexible Network Intrusion Detection System"
   homepage "https://www.snort.org"
-  url "https://www.snort.org/downloads/snort/snort-2.9.7.0.tar.gz"
-  sha1 "29eddcfaf8a4d02a4d68d88fa97c0275e4f0cc75"
+  url "https://www.snort.org/downloads/snort/snort-2.9.8.0.tar.gz"
+  sha256 "bddd5d01d10d20c182836fa0199cd3549239b7a9d0fd5bbb10226feb8b42d231"
 
   bottle do
     cellar :any
-    sha1 "f5a8dbb0d53f814778b275f81e5837e2b8112329" => :yosemite
-    sha1 "c990b24ed535f1999f2330b008829b5ce30ec257" => :mavericks
-    sha1 "3e3d16beb12cbeda1d6d9191c342c50b09bf5450" => :mountain_lion
+    sha256 "488b341548299f7506e074bda07cd250110f68693a51552a801cb513d3c06912" => :el_capitan
+    sha256 "c5de68e295f5ecfdbc6019a2fc307023c7b1a163850be7e4347fa30329cc6599" => :yosemite
+    sha256 "17a3390ad63726fa4505f60bb6d6b8acb112d70e4dd1db7889ecbfe05c96d629" => :mavericks
   end
+
+  option "with-debug", "Compile Snort with debug options enabled"
+
+  deprecated_option "enable-debug" => "with-debug"
 
   depends_on "pkg-config" => :build
   depends_on "luajit"
@@ -19,13 +22,12 @@ class Snort < Formula
   depends_on "pcre"
   depends_on "openssl"
 
-  option "enable-debug", "Compile Snort with --enable-debug and --enable-debug-msgs"
-
   def install
     openssl = Formula["openssl"]
 
     args = %W[
       --prefix=#{prefix}
+      --sysconfdir=#{etc}/snort
       --disable-dependency-tracking
       --disable-silent-rules
       --enable-gre
@@ -41,7 +43,7 @@ class Snort < Formula
       --enable-flexresp3
     ]
 
-    if build.include? "enable-debug"
+    if build.with? "debug"
       args << "--enable-debug"
       args << "--enable-debug-msgs"
     else
@@ -50,6 +52,9 @@ class Snort < Formula
 
     system "./configure", *args
     system "make", "install"
+
+    rm Dir[buildpath/"etc/Makefile*"]
+    (etc/"snort").install Dir[buildpath/"etc/*"]
   end
 
   def caveats; <<-EOS.undent
@@ -58,5 +63,9 @@ class Snort < Formula
         sudo chmod 644 /dev/bpf*
     or you could create a startup item to do this for you.
     EOS
+  end
+
+  test do
+    system bin/"snort", "-V"
   end
 end

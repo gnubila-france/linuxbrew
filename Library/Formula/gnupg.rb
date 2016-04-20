@@ -1,22 +1,21 @@
 class Gnupg < Formula
-  homepage "http://www.gnupg.org/"
-  url "ftp://ftp.gnupg.org/gcrypt/gnupg/gnupg-1.4.18.tar.bz2"
-  mirror "http://mirror.switch.ch/ftp/mirror/gnupg/gnupg/gnupg-1.4.18.tar.bz2"
-  mirror "ftp://mirror.tje.me.uk/pub/mirrors/ftp.gnupg.org/gnupg/gnupg-1.4.18.tar.bz2"
-  sha1 "41462d1a97f91abc16a0031b5deadc3095ce88ae"
-  revision 1
+  desc "GNU Pretty Good Privacy (PGP) package"
+  homepage "https://www.gnupg.org/"
+  url "https://gnupg.org/ftp/gcrypt/gnupg/gnupg-1.4.20.tar.bz2"
+  mirror "https://www.mirrorservice.org/sites/ftp.gnupg.org/gcrypt/gnupg/gnupg-1.4.20.tar.bz2"
+  sha256 "04988b1030fa28ddf961ca8ff6f0f8984e0cddcb1eb02859d5d8fe0fe237edcc"
 
   bottle do
-    revision 2
-    sha1 "e1ea1c3bd682a15370f596a31297eb19ff87998e" => :yosemite
-    sha1 "71e3618e2f4ea550e194938f6742772fb7d376d9" => :mavericks
-    sha1 "f933064e91d20ebdb48f6f2180fdf7b99e814b8c" => :mountain_lion
+    sha256 "6b0fe0f18f74c998ffb1e0007c8bf9d10a133447f67f6222cb1d324b65502163" => :el_capitan
+    sha256 "e776605dc881882bf2da67c3cf187d8266cd48748d191224bf7cccd78b84ddc6" => :yosemite
+    sha256 "b38cad22c27ea36eab4c29501ca7f85769caf56b71e25d8f55e8783bd32e940b" => :mavericks
   end
 
   depends_on "curl" if MacOS.version <= :mavericks
 
   def install
     system "./configure", "--disable-dependency-tracking",
+                          "--disable-silent-rules",
                           "--prefix=#{prefix}",
                           "--disable-asm"
     system "make"
@@ -38,9 +37,9 @@ class Gnupg < Formula
       Name-Email: test@example.com
       Expire-Date: 0
     EOS
-    system "#{bin}/gpg", "--batch", "--gen-key", "gen-key-script"
+    system bin/"gpg", "--batch", "--gen-key", "gen-key-script"
     (testpath/"test.txt").write ("Hello World!")
-    system "#{bin}/gpg", "--armor", "--sign", "test.txt"
-    system "#{bin}/gpg", "--verify", "test.txt.asc"
+    system bin/"gpg", "--armor", "--sign", "test.txt"
+    system bin/"gpg", "--verify", "test.txt.asc"
   end
 end

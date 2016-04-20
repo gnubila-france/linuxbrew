@@ -1,38 +1,38 @@
-require "formula"
-
 class Libssh2 < Formula
-  homepage "http://www.libssh2.org/"
-  url "http://www.libssh2.org/download/libssh2-1.4.3.tar.gz"
-  sha1 "c27ca83e1ffeeac03be98b6eef54448701e044b0"
-  revision 1
+  desc "C library implementing the SSH2 protocol"
+  homepage "https://libssh2.org/"
+  url "https://libssh2.org/download/libssh2-1.7.0.tar.gz"
+  sha256 "e4561fd43a50539a8c2ceb37841691baf03ecb7daf043766da1b112e4280d584"
 
-  option "with-libressl", "build with LibreSSL instead of OpenSSL"
+  bottle do
+    cellar :any
+    sha256 "3b9cef10df7eb69305daaf5a2f3bc13bd16b42e318f742de31541592a3da1f36" => :el_capitan
+    sha256 "5bcdd6ec9369bebadeef640262e7034a92024b353122ab40a1a26d1d5dcc7761" => :yosemite
+    sha256 "75a02f552af40d6ed0802a610daf4b86f14dec925b671fe86deb24c8eaacfb22" => :mavericks
+  end
 
   head do
-    url "git://git.libssh2.org/libssh2.git"
+    url "https://github.com/libssh2/libssh2.git"
 
     depends_on "autoconf" => :build
     depends_on "automake" => :build
     depends_on "libtool" => :build
   end
 
-  bottle do
-    cellar :any
-    revision 2
-    sha1 "6e9fd52d513692ea5db968de524dbe2b81e2f018" => :yosemite
-    sha1 "bbe16ac0d85f7aed7794ba5f2220aa3a533298aa" => :mavericks
-    sha1 "6de15a0a9400554c51858092e0276bb9ddd15c42" => :mountain_lion
-  end
+  option "with-libressl", "build with LibreSSL instead of OpenSSL"
 
   depends_on "openssl" => :recommended
   depends_on "libressl" => :optional
 
   def install
-    args = [ "--prefix=#{prefix}",
-             "--disable-debug",
-             "--disable-dependency-tracking",
-             "--with-openssl",
-             "--with-libz"
+    args = %W[
+      --prefix=#{prefix}
+      --disable-debug
+      --disable-dependency-tracking
+      --disable-silent-rules
+      --disable-examples-build
+      --with-openssl
+      --with-libz
     ]
 
     if build.with? "libressl"
@@ -44,5 +44,20 @@ class Libssh2 < Formula
     system "./buildconf" if build.head?
     system "./configure", *args
     system "make", "install"
+  end
+
+  test do
+    (testpath/"test.c").write <<-EOS.undent
+      #include <libssh2.h>
+
+      int main(void)
+      {
+      libssh2_exit();
+      return 0;
+      }
+    EOS
+
+    system ENV.cc, "test.c", "-L#{lib}", "-lssh2", "-o", "test"
+    system "./test"
   end
 end

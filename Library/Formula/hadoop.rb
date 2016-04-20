@@ -1,9 +1,13 @@
-require "formula"
-
 class Hadoop < Formula
-  homepage "http://hadoop.apache.org/"
-  url "http://www.apache.org/dyn/closer.cgi?path=hadoop/common/hadoop-2.6.0/hadoop-2.6.0.tar.gz"
-  sha1 "5b5fb72445d2e964acaa62c60307168c009d57c5"
+  desc "Framework for distributed processing of large data sets"
+  homepage "https://hadoop.apache.org/"
+  url "https://www.apache.org/dyn/closer.cgi?path=hadoop/common/hadoop-2.7.2/hadoop-2.7.2.tar.gz"
+  mirror "https://archive.apache.org/dist/hadoop/common/hadoop-2.7.2/hadoop-2.7.2.tar.gz"
+  sha256 "49ad740f85d27fa39e744eb9e3b1d9442ae63d62720f0aabdae7aa9a718b03f7"
+
+  bottle :unneeded
+
+  depends_on :java => "1.7+"
 
   def install
     rm_f Dir["bin/*.cmd", "sbin/*.cmd", "libexec/*.cmd", "etc/hadoop/*.cmd"]
@@ -34,4 +38,8 @@ class Hadoop < Formula
       /usr/libexec/java_home
     EOS
   end if OS.mac?
+
+  test do
+    system bin/"hadoop", "fs", "-ls"
+  end
 end

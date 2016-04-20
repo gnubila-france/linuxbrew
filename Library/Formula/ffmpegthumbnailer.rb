@@ -1,26 +1,39 @@
-require 'formula'
-
 class Ffmpegthumbnailer < Formula
-  homepage 'http://code.google.com/p/ffmpegthumbnailer/'
-  url 'https://ffmpegthumbnailer.googlecode.com/files/ffmpegthumbnailer-2.0.8.tar.gz'
-  sha1 '2c54ca16efd953f46547e22799cfc40bd9c24533'
+  desc "Create thumbnails for your video files"
+  homepage "https://github.com/dirkvdb/ffmpegthumbnailer"
+  url "https://github.com/dirkvdb/ffmpegthumbnailer/archive/2.1.1.tar.gz"
+  sha256 "e43d8aae7e80771dc700b3d960a0717d5d28156684a8ddc485572cbcbc4365e9"
+  revision 1
+  head "https://github.com/dirkvdb/ffmpegthumbnailer.git"
+
   bottle do
     cellar :any
-    sha1 "b33cd322e1dd892c3ff492647a9d7fc4b8766388" => :mavericks
-    sha1 "18607817d97b20f2fa3a886ac472f3b63e6cb62d" => :mountain_lion
-    sha1 "052f2227429e215db559dcbddb2cdca838111d59" => :lion
+    sha256 "7865ae4c722196f8bb9700d4f36f875832cfd6d53e1adec4711b313e2c2d539d" => :el_capitan
+    sha256 "79a11e926a3333c7d310e1b04a3bdc6de539ab0db5bdb9e1ae68eecd0f8491c1" => :yosemite
+    sha256 "ff2f37d29fdcee104e219718ba94b53118b85b4b6cc862a55bb3885607957c71" => :mavericks
   end
 
-  revision 2
-
-  depends_on 'pkg-config' => :build
-  depends_on 'jpeg'
-  depends_on 'libpng'
-  depends_on 'ffmpeg'
+  depends_on "cmake" => :build
+  depends_on "pkg-config" => :build
+  depends_on "jpeg"
+  depends_on "libpng"
+  depends_on "ffmpeg"
 
   def install
-    system "./configure", "--disable-debug", "--disable-dependency-tracking",
-                          "--prefix=#{prefix}"
-    system "make install"
+    ENV.cxx11 if MacOS.version < :mavericks
+
+    args = std_cmake_args
+    args << "-DENABLE_GIO=ON"
+    args << "-DENABLE_THUMBNAILER=ON"
+
+    system "cmake", *args
+    system "make"
+    system "make", "install"
+  end
+
+  test do
+    system "#{bin}/ffmpegthumbnailer", "-i", test_fixtures("test.jpg"),
+      "-o", "out.jpg"
+    assert File.exist?(testpath/"out.jpg")
   end
 end

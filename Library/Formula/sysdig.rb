@@ -1,38 +1,42 @@
-require "formula"
-
 class Sysdig < Formula
+  desc "System-level exploration and troubleshooting tool"
   homepage "http://www.sysdig.org/"
-  url "https://github.com/draios/sysdig/archive/0.1.96.tar.gz"
-  sha1 "86a8b1d21a7cbb392f3127b98b08f1d56b0f3927"
-
-  head "https://github.com/draios/sysdig.git"
+  url "https://github.com/draios/sysdig/archive/0.8.0.tar.gz"
+  sha256 "b90dacb27a101526cd21c78a43b336e6752b7cc45f03bb424de0754ed99869a4"
 
   bottle do
-    sha1 "8b73abcdb344fc8f0439f54d34b549bbfb6baed0" => :yosemite
-    sha1 "15cf5d1a4d222fa21cd060575e787ff12f30b32b" => :mavericks
-    sha1 "d865dbde4d287c142a0f8c42a7a75cb55c30fd68" => :mountain_lion
+    sha256 "74c39b4da58d955066e2dea2ba8289a8e442eee6e50dffd96301e7ca726ccf0e" => :el_capitan
+    sha256 "c4c3de501f493428b1182e8306fe3bd2949fb0ed7cbaf234e22be1885e8d0c53" => :yosemite
+    sha256 "cde8850408ad936f0f446a8a7ed0dbe86b8ae99287bbae9c547f60316499c220" => :mavericks
   end
 
   depends_on "cmake" => :build
+  depends_on "luajit"
 
   # More info on https://gist.github.com/juniorz/9986999
   resource "sample_file" do
     url "https://gist.githubusercontent.com/juniorz/9986999/raw/a3556d7e93fa890a157a33f4233efaf8f5e01a6f/sample.scap"
-    sha1 "0aa3c30b954f9fb0d7320d900d3a103ade6b1cec"
+    sha256 "efe287e651a3deea5e87418d39e0fe1e9dc55c6886af4e952468cd64182ee7ef"
   end
 
   def install
     ENV.libcxx if MacOS.version < :mavericks
 
     mkdir "build" do
-      system "cmake", "..", "-DSYSDIG_VERSION=#{version}", *std_cmake_args
+      args = %W[
+        -DSYSDIG_VERSION=#{version}
+        -DUSE_BUNDLED_LUAJIT=OFF
+        -DUSE_BUNDLED_ZLIB=OFF
+      ] + std_cmake_args
+
+      system "cmake", "..", *args
       system "make", "install"
     end
+
+    (share/"demos").install resource("sample_file").files("sample.scap")
   end
 
   test do
-    (share/"demos").install resource("sample_file").files("sample.scap")
-
     # tests if it can load chisels
     `#{bin}/sysdig -cl`
     assert_equal 0, $?.exitstatus

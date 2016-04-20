@@ -1,23 +1,21 @@
-require 'formula'
-
 class Jags < Formula
-  homepage 'http://mcmc-jags.sourceforge.net'
-  url 'https://downloads.sourceforge.net/project/mcmc-jags/JAGS/3.x/Source/JAGS-3.4.0.tar.gz'
-  sha1 '129a8f97da91877473f209c67f1f9c5b04173586'
+  desc "Just Another Gibbs Sampler for Bayesian MCMC simulation"
+  homepage "http://mcmc-jags.sourceforge.net"
+  url "https://downloads.sourceforge.net/project/mcmc-jags/JAGS/4.x/Source/JAGS-4.2.0.tar.gz"
+  sha256 "af3e9d2896d3e712f99e2a0c81091c6b08f096650af6aa9d0c631c0790409cf7"
+
   bottle do
     cellar :any
-    sha1 "ea59e194feb354ef474a6bd58d4556d0e68adfb0" => :yosemite
-    sha1 "e3d0935caaf8a06b11efd1338d5444fdce87dc63" => :mavericks
-    sha1 "49977edf0dc1571ae846f758c3ba74cf59a2f0f5" => :mountain_lion
+    sha256 "3a097289424b68d96d21eebaba46c72919d14fd69d696ce2bd879d309dd3a662" => :el_capitan
+    sha256 "998b753d66f973ac321b95c73a630ff325e5543f911ad2c66b782bb6d36fa63e" => :yosemite
+    sha256 "07da5d6b1faff0492d3e808d08529b1466dada956ce0454fbe89b522e3dfda9f" => :mavericks
   end
-
-  revision 1
 
   depends_on :fortran
 
   def install
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}"
-    system "make install"
+    system "make", "install"
   end
 end

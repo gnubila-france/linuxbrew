@@ -1,16 +1,11 @@
 class Sqlmap < Formula
+  desc "Penetration testing for SQL injection and database servers"
   homepage "http://sqlmap.org"
-  url "https://github.com/sqlmapproject/sqlmap/archive/0.9.tar.gz"
-  sha1 "25d7c13fc6e8bb55a1b4d9ba60a7ebd558ad0374"
+  url "https://github.com/sqlmapproject/sqlmap/archive/1.0.tar.gz"
+  sha256 "6818c74d6bd5525879beedc9baaef404534cd5b8c0f671476367783fb3ef64a6"
   head "https://github.com/sqlmapproject/sqlmap.git"
-  bottle do
-    cellar :any
-    sha1 "7873a7afe52b4799d46aabcb33f70e034b892153" => :yosemite
-    sha1 "2ac99f9ed995d834cb31022f557599edf0e3776d" => :mavericks
-    sha1 "db0f7c28bcd5dcc58f0af60608d5f4e67cee149f" => :mountain_lion
-  end
 
-  revision 1
+  bottle :unneeded
 
   def install
     libexec.install Dir["*"]
@@ -18,10 +13,8 @@ class Sqlmap < Formula
     bin.install_symlink libexec/"sqlmap.py"
     bin.install_symlink bin/"sqlmap.py" => "sqlmap"
 
-    if build.head?
-      bin.install_symlink libexec/"sqlmapapi.py"
-      bin.install_symlink bin/"sqlmapapi.py" => "sqlmapapi"
-    end
+    bin.install_symlink libexec/"sqlmapapi.py"
+    bin.install_symlink bin/"sqlmapapi.py" => "sqlmapapi"
   end
 
   test do

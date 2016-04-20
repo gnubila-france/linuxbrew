@@ -1,14 +1,24 @@
 class Pcre < Formula
+  desc "Perl compatible regular expressions library"
   homepage "http://www.pcre.org/"
-  url "https://downloads.sourceforge.net/project/pcre/pcre/8.36/pcre-8.36.tar.bz2"
-  mirror "ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.36.tar.bz2"
-  sha256 "ef833457de0c40e82f573e34528f43a751ff20257ad0e86d272ed5637eb845bb"
+  url "https://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-8.38.tar.bz2"
+  mirror "https://www.mirrorservice.org/sites/downloads.sourceforge.net/p/pc/pcre/pcre/8.38/pcre-8.38.tar.bz2"
+  sha256 "b9e02d36e23024d6c02a2e5b25204b3a4fa6ade43e0a5f869f254f49535079df"
 
   bottle do
     cellar :any
-    sha1 "b3e7d1cb382ab41fe260cb8c75e96ba45167044f" => :yosemite
-    sha1 "3b585fa4fdcd0e1906f6a732809c2e6b015fec2c" => :mavericks
-    sha1 "4d48f013859cc1ca72467d4802d1d5d6b06ad542" => :mountain_lion
+    sha256 "ef6908428e587406f50eb4d09813c823f8a6748324425930681bfcee271211df" => :el_capitan
+    sha256 "96b7b6dc6b5e5efb1d736f3a035ca2c01f045f3ba80b80744548e5de6b1c5fe1" => :yosemite
+    sha256 "fb5e4de4665dd83c6516a14d1d8ad41e80a1de608212e2aac14fd4e04b1d4341" => :mavericks
+    sha256 "38d15959fa7d8e14b6b3d030d7c1c8d32e56ea12324bba99496d675a7056368a" => :x86_64_linux
+  end
+
+  head do
+    url "svn://vcs.exim.org/pcre/code/trunk"
+
+    depends_on "automake" => :build
+    depends_on "autoconf" => :build
+    depends_on "libtool" => :build
   end
 
   option "without-check", "Skip build-time tests (not recommended)"
@@ -19,9 +29,13 @@ class Pcre < Formula
     cause "Bus error in ld on SL 10.6.4"
   end
 
+  depends_on "bzip2" unless OS.mac?
+  depends_on "zlib" unless OS.mac?
+
   def install
     ENV.universal_binary if build.universal?
 
+    system "./autogen.sh" if build.head?
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}",
                           "--enable-utf8",

@@ -1,23 +1,22 @@
-require 'formula'
-
 class Mogenerator < Formula
-  homepage 'http://rentzsch.github.io/mogenerator/'
-  url 'https://github.com/rentzsch/mogenerator/archive/1.28.tar.gz'
-  sha1 '2c92204c76cbe88091494d0730cf986efab8ef1a'
+  desc "Generate Objective-C code for Core Data custom classes"
+  homepage "https://rentzsch.github.io/mogenerator/"
+  url "https://github.com/rentzsch/mogenerator/archive/1.30.tar.gz"
+  sha256 "a89fa68c9ede26b505259a009e1c342fd32f29bc0e9bff8657985637c9f05967"
 
-  head 'https://github.com/rentzsch/mogenerator.git'
+  head "https://github.com/rentzsch/mogenerator.git"
 
   bottle do
-    cellar :any
-    sha1 "6a0c63e99ecae49d70b569b5b4507b8352ada961" => :mavericks
-    sha1 "abc1bcf2e7d1ebbb3258023f57e082052061a19c" => :mountain_lion
-    sha1 "fc60b8470f7e5441a599496aa637fd21da83934a" => :lion
+    cellar :any_skip_relocation
+    sha256 "1835c91592254987fc8350e2f03259b3161129eb0015d5a6ddc162bfe8d09af8" => :el_capitan
+    sha256 "5b2640442b4f9e5d7d1fd0b7b495e100fa14bb0f42a287af5bec25b8305a3dc1" => :yosemite
   end
 
   depends_on :xcode => :build
+  depends_on :macos => :yosemite
 
   def install
-    xcodebuild "-target", "mogenerator", "-configuration", "Release","SYMROOT=symroot", "OBJROOT=objroot"
+    xcodebuild "-target", "mogenerator", "-configuration", "Release", "SYMROOT=symroot", "OBJROOT=objroot"
     bin.install "symroot/Release/mogenerator"
   end
 end

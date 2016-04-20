@@ -1,14 +1,17 @@
 class Libav < Formula
+  desc "Audio and video processing tools"
   homepage "https://libav.org/"
-  url "https://libav.org/releases/libav-11.2.tar.xz"
-  sha1 "52ba52cabe5d86b45ce62f56e11fa7912c6e5083"
+  url "https://libav.org/releases/libav-11.4.tar.xz"
+  sha256 "0b7dabc2605f3a254ee410bb4b1a857945696aab495fe21b34c3b6544ff5d525"
+  revision 2
 
-  head "git://git.libav.org/libav.git"
+  head "https://git.libav.org/libav.git"
 
   bottle do
-    sha1 "7c3f6d6c2510250f6719e8a5296c9c3de317854e" => :yosemite
-    sha1 "7c1495d6c2a4826843f5c0ce13ce75204ac2a284" => :mavericks
-    sha1 "764442e2f6be9bb482809948448c7c21e55bf7bb" => :mountain_lion
+    revision 1
+    sha256 "3223c7dd692ab5f842161c25bd000dc7e35e4dbd115075e689f24761917c3b28" => :el_capitan
+    sha256 "918a06af5462bb2854099ff9df522f03d86d2913961305a0ea250cae48058f95" => :yosemite
+    sha256 "4d67498870e513e072c2ccbbf43f23657bb90dc6c2871d52221902823bcfbf40" => :mavericks
   end
 
   option "without-faac", "Disable AAC encoder via faac"
@@ -40,6 +43,7 @@ class Libav < Formula
   depends_on "x264" => :recommended
   depends_on "xvid" => :recommended
 
+  depends_on "fontconfig" => :optional
   depends_on "freetype" => :optional
   depends_on "fdk-aac" => :optional
   depends_on "frei0r" => :optional
@@ -55,6 +59,13 @@ class Libav < Formula
   depends_on "sdl" => :optional
   depends_on "speex" => :optional
   depends_on "theora" => :optional
+
+  # Fixes the use of a removed identifier in libvpx;
+  # will be fixed in the next release.
+  patch do
+    url "https://github.com/libav/libav/commit/4d05e9392f84702e3c833efa86e84c7f1cf5f612.patch"
+    sha256 "78f02e231f3931a6630ec4293994fc6933c6a1c3d1dd501989155236843c47f9"
+  end
 
   def install
     args = [
@@ -75,6 +86,7 @@ class Libav < Formula
     args << "--enable-gnutls" if build.with? "gnutls"
     args << "--enable-libfaac" if build.with? "faac"
     args << "--enable-libfdk-aac" if build.with? "fdk-aac"
+    args << "--enable-libfontconfig" if build.with? "fontconfig"
     args << "--enable-libfreetype" if build.with? "freetype"
     args << "--enable-libmp3lame" if build.with? "lame"
     args << "--enable-libopencore-amrnb" if build.with? "opencore-amr"

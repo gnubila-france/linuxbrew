@@ -1,20 +1,21 @@
-require 'formula'
-
 class Gocr < Formula
-  homepage 'http://jocr.sourceforge.net/'
-  url 'http://www-e.uni-magdeburg.de/jschulen/ocr/gocr-0.50.tar.gz'
-  sha1 '2018ddf7be1c95dcc12f63f7ac40ad98da06f8a4'
+  desc "Optical Character Recognition (OCR), converts images back to text"
+  homepage "http://jocr.sourceforge.net/"
+  url "https://www-e.uni-magdeburg.de/jschulen/ocr/gocr-0.50.tar.gz"
+  sha256 "bc261244f887419cba6d962ec1ad58eefd77176885093c4a43061e7fd565f5b5"
 
   bottle do
-    cellar :any
-    sha1 "f230e6056541648f1e0c0a869fbb4a5e1715822d" => :mavericks
-    sha1 "2f07d5b621f299c7faaa992127fc106637a4e90c" => :mountain_lion
-    sha1 "7137e18511cfd756baa7d19e81ce33cd5bdbf8c5" => :lion
+    cellar :any_skip_relocation
+    revision 1
+    sha256 "3b3a0351d949f3f798dc973e0f31a283b8df3f73d1c7f251c7f15229ceb2fb20" => :el_capitan
+    sha256 "94207525e139ef275415f46ff50baab26fef6a2ba52ca71a6a00aa3035ced71c" => :yosemite
+    sha256 "467ce3a1411e022f44b60691bf71bf8a7b86ba234b21dad23cc1f2b258d92e9b" => :mavericks
   end
 
-  option 'with-lib', 'Install library and headers'
+  option "with-lib", "Install library and headers"
 
-  depends_on 'netpbm' => :optional
+  depends_on "netpbm" => :optional
+  depends_on "jpeg" => :optional
 
   # Edit makefile to install libs per developer documentation
   patch :DATA if build.with? "lib"
@@ -26,15 +27,15 @@ class Gocr < Formula
 
     # --mandir doesn't work correctly; fix broken Makefile
     inreplace "man/Makefile" do |s|
-      s.change_make_var! 'mandir', '/share/man'
+      s.change_make_var! "mandir", "/share/man"
     end
 
-    system "make libs" if build.with? "lib"
-    system "make install"
+    system "make", "libs" if build.with? "lib"
+    system "make", "install"
   end
 
   test do
-    system "#{bin}/gocr -h"
+    system "#{bin}/gocr", "-h"
   end
 end
 

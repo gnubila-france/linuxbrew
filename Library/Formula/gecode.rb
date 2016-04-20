@@ -1,19 +1,19 @@
-require 'formula'
-
 class Gecode < Formula
-  homepage 'http://www.gecode.org/'
-  url 'http://www.gecode.org/download/gecode-4.3.2.tar.gz'
-  sha1 '05c79e185197d85bf38dd074fe7c299d4976f552'
+  desc "Toolkit for developing constraint-based systems and applications"
+  homepage "http://www.gecode.org/"
+  url "http://www.gecode.org/download/gecode-4.4.0.tar.gz"
+  sha256 "430398d6900b999f92c6329636f3855f2d4e985fed420a6c4d42b46bfc97782a"
 
   bottle do
     cellar :any
-    sha1 "ba6eb629c7c589313b01f7f1fa9e7efaa982e484" => :yosemite
-    sha1 "0e92784b621811737eabc4a002452fdf549e015c" => :mavericks
-    sha1 "e63ad8a3f8313fbf61a6d58b8db5bc82cb9b562e" => :mountain_lion
+    sha256 "4aa4d7b036da2e4976b469fc6b7addf44778a24fcc85d9fdec80e50d28dd50c8" => :el_capitan
+    sha256 "4df88b3f67a4d188f00883f182f3893b9df99b90637635abf18441ebfbeb0c9c" => :yosemite
+    sha256 "b48b0a8755542484f5eeb5647e41db0824cfb769060c28c118df6267fa98aaab" => :mavericks
+    sha256 "a6cf500df618c42f0668bb227c090e6c1d3d3369c8b4537220d3deb78d5f8286" => :mountain_lion
   end
 
   def install
     system "./configure", "--prefix=#{prefix}", "--disable-examples"
-    system "make install"
+    system "make", "install"
   end
 end

@@ -15,6 +15,10 @@ class KegOnlyReason
       OS.mac?
     when :provided_pre_mountain_lion
       OS.mac? && MacOS.version < :mountain_lion
+    when :provided_pre_mavericks
+      OS.mac? && MacOS.version < :mavericks
+    when :provided_pre_el_capitan
+      OS.mac? && MacOS.version < :el_capitan
     when :provided_until_xcode43
       OS.mac? && MacOS::Xcode.version < "4.3"
     when :provided_until_xcode5
@@ -25,30 +29,57 @@ class KegOnlyReason
   end
 
   def to_s
+    return @explanation unless @explanation.empty?
     case @reason
     when :provided_by_osx then <<-EOS
-Mac OS X already provides this software and installing another version in
+OS X already provides this software and installing another version in
 parallel can cause all kinds of trouble.
-
-#{@explanation}
 EOS
     when :shadowed_by_osx then <<-EOS
-Mac OS X provides similar software, and installing this software in
+OS X provides similar software and installing this software in
 parallel can cause all kinds of trouble.
-
-#{@explanation}
 EOS
     when :provided_pre_mountain_lion then <<-EOS
-Mac OS X already provides this software in versions before Mountain Lion.
-
-#{@explanation}
+OS X already provides this software in versions before Mountain Lion.
+EOS
+    when :provided_pre_mavericks then <<-EOS
+OS X already provides this software in versions before Mavericks.
+EOS
+    when :provided_pre_el_capitan then <<-EOS
+OS X already provides this software in versions before El Capitan.
 EOS
     when :provided_until_xcode43
-      "Xcode provides this software prior to version 4.3.\n\n#{@explanation}"
+      "Xcode provides this software prior to version 4.3."
     when :provided_until_xcode5
-      "Xcode provides this software prior to version 5.\n\n#{@explanation}"
+      "Xcode provides this software prior to version 5."
     else
       @reason
     end.strip
+  end
+end
+
+# Used to annotate formulae that don't require compiling or cannot build bottle.
+class BottleDisableReason
+  SUPPORTED_TYPES = [:unneeded, :disable]
+
+  def initialize(type, reason)
+    @type = type
+    @reason = reason
+  end
+
+  def unneeded?
+    @type == :unneeded
+  end
+
+  def valid?
+    SUPPORTED_TYPES.include? @type
+  end
+
+  def to_s
+    if @type == :unneeded
+      "This formula doesn't require compiling."
+    else
+      @reason
+    end
   end
 end

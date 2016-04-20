@@ -1,14 +1,20 @@
-require 'formula'
-
 class JbossForge < Formula
-  homepage 'http://forge.jboss.org/'
-  url 'https://repository.jboss.org/nexus/service/local/artifact/maven/redirect?r=releases&g=org.jboss.forge&a=forge-distribution&v=2.14.0.Final&e=zip&c=offline'
-  version '2.14.0.Final'
-  sha1 'bef394531988406eb5a94f478069cc2b89c875dd'
+  desc "Tools to help set up and configure a project"
+  homepage "http://forge.jboss.org/"
+  url "https://downloads.jboss.org/forge/releases/3.0.1.Final/forge-distribution-3.0.1.Final-offline.zip"
+  version "3.0.1.Final"
+  sha256 "2a3ee9702d3e9b32b0696920607e7a067d14b6d87fbbba634b6583089a4897c7"
+
+  bottle :unneeded
 
   def install
     rm_f Dir["bin/*.bat"]
-    libexec.install %w{ addons bin img lib logging.properties }
-    bin.install_symlink libexec/'bin/forge'
+    libexec.install %w[addons bin lib logging.properties]
+    bin.install_symlink libexec/"bin/forge"
+  end
+
+  test do
+    ENV["FORGE_OPTS"] = "-Duser.home=#{testpath}"
+    assert_match "org.jboss.forge.addon:core", shell_output("#{bin}/forge --list")
   end
 end

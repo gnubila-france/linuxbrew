@@ -1,37 +1,23 @@
-require "formula"
-
 class Pazpar2 < Formula
-  homepage "http://www.indexdata.com/pazpar2"
-  url "http://ftp.indexdata.dk/pub/pazpar2/pazpar2-1.8.2.tar.gz"
-  sha1 "a322e6a668c283aa43570fafbc63c7f4bafb1399"
+  desc "Metasearching middleware webservice"
+  homepage "https://www.indexdata.com/pazpar2"
+  url "http://ftp.indexdata.dk/pub/pazpar2/pazpar2-1.12.5.tar.gz"
+  sha256 "a526ac9a91f6ac4683af3e27d58adb70755d82da7ad909eb98edf68dd07062d3"
 
   bottle do
     cellar :any
-    sha1 "3913c1102f8eb27357a6ff823aa3c67694877943" => :yosemite
-    sha1 "e811a8a27ec51af194963940717f3aa389e45f6b" => :mavericks
-    sha1 "eeced70f699a306ea414f1be027a6b248806beff" => :mountain_lion
+    sha256 "e9f9d2c673695192d7ae17edebaab7250424c770b46b4cfd1d21a51ee8e5d208" => :el_capitan
+    sha256 "1908559c2937827579f5acd97e0c18d6bad701dac2bc50af0600d832c648ce0a" => :yosemite
+    sha256 "4cfa57e70f207ac60f53596d6359b7c39e4c54abd49dc7069d8765b171d605e7" => :mavericks
   end
 
   depends_on "pkg-config" => :build
+  depends_on "icu4c" => :recommended
   depends_on "yaz"
 
   def install
     system "./configure", "--disable-dependency-tracking",
                           "--prefix=#{prefix}"
     system "make", "install"
-  end
-
-  test do
-    (testpath/"test-config.xml").write <<-EOS.undent
-    <?xml version="1.0" encoding="UTF-8"?>
-    <pazpar2 xmlns="http://www.indexdata.com/pazpar2/1.0">
-      <threads number="2"/>
-      <server>
-        <listen port="8004"/>
-      </server>
-    </pazpar2>
-    EOS
-
-    system "#{sbin}/pazpar2", "-t", "-f", "#{testpath}/test-config.xml"
   end
 end

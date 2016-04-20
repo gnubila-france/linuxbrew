@@ -1,13 +1,15 @@
 class Flatbuffers < Formula
+  desc "Serialization library for C++, supporting Java, C#, and Go"
   homepage "https://google.github.io/flatbuffers"
-  url "https://github.com/google/flatbuffers/archive/v1.0.3.tar.gz"
-  sha1 "8daba5be5436b7cb99f1883e3eb7f1c5da52d6b9"
+  url "https://github.com/google/flatbuffers/archive/v1.3.0.tar.gz"
+  sha256 "b81e11aa101927d464a231d6d3b18ab0e8ea4e959b72f415bb385bae0d74df53"
+  head "https://github.com/google/flatbuffers.git"
 
   bottle do
-    cellar :any
-    sha1 "2a82aec99c3b5ab9cd643dc7c6d2f88cfe953cce" => :yosemite
-    sha1 "a7222fe66033ca2749241e4d253534b3540b1e7c" => :mavericks
-    sha1 "d0de7bdea3b5fd43fddcfe20b857e4ec803a73f2" => :mountain_lion
+    cellar :any_skip_relocation
+    sha256 "4f481604a3ce126a4b59cb4961d6b6174d734440256c38ccfd2fa8777fdbdd93" => :el_capitan
+    sha256 "97abe13a2bbcf541bbf425e59af53c87ddbf38e13b377fbed51ada82fe8d694d" => :yosemite
+    sha256 "efa9eb25cc97208767a814ef3b4ec0fc5f118791c43844a69af3e8562e3b624e" => :mavericks
   end
 
   depends_on "cmake" => :build

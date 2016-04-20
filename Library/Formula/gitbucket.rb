@@ -1,12 +1,17 @@
 class Gitbucket < Formula
-  homepage "https://github.com/takezoe/gitbucket"
-  url "https://github.com/takezoe/gitbucket/releases/download/2.7/gitbucket.war"
-  sha256 "23ce9310232129c5c48c0d5c269ce869e24c5d30ff4c59f0682f1b39f8712e80"
+  desc "Git platform powered by Scala offering"
+  homepage "https://github.com/gitbucket/gitbucket"
+  url "https://github.com/gitbucket/gitbucket/releases/download/3.13/gitbucket.war"
+  sha256 "4f8fcaabe7278380cf574d57e9f49862a4f86c98ee03bad68801f50846f80c57"
 
   head do
-    url "https://github.com/takezoe/gitbucket.git"
+    url "https://github.com/gitbucket/gitbucket.git"
     depends_on :ant => :build
   end
+
+  bottle :unneeded
+
+  depends_on :java => "1.8+"
 
   def install
     if build.head?

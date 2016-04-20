@@ -1,9 +1,8 @@
-require 'formula'
-
 class Cdparanoia < Formula
-  homepage 'http://www.xiph.org/paranoia/'
-  url 'http://downloads.xiph.org/releases/cdparanoia/cdparanoia-III-10.2.src.tgz'
-  sha1 '1901e20d3a370ca6afa4c76a9ef30d3f03044320'
+  desc "Audio extraction tool for sampling CDs"
+  homepage "https://www.xiph.org/paranoia/"
+  url "http://downloads.xiph.org/releases/cdparanoia/cdparanoia-III-10.2.src.tgz"
+  sha256 "005db45ef4ee017f5c32ec124f913a0546e77014266c6a1c50df902a55fe64df"
 
   depends_on "autoconf" => :build
 
@@ -12,15 +11,21 @@ class Cdparanoia < Formula
     cause '"File too small" error while linking'
   end
 
+  # Patches via MacPorts
   patch do
-    url "https://trac.macports.org/export/70964/trunk/dports/audio/cdparanoia/files/osx_interface.patch"
-    sha1 "c86e573f51e6d58d5f349b22802a7a7eeece9fcd"
+    url "https://raw.githubusercontent.com/Homebrew/patches/2a22152/cdparanoia/osx_interface.patch"
+    sha256 "3eca8ff34d2617c460056f97457b5ac62db1983517525e5c73886a2dea9f06d9"
+  end if OS.mac?
+
+  patch do
+    url "https://raw.githubusercontent.com/Homebrew/patches/2a22152/cdparanoia/patch-paranoia_paranoia.c.10.4.diff"
+    sha256 "4d6d51909d1b29a3c8ac349f5132a8acd96628355117efb3f192408d2cc4829e"
   end
 
   patch do
-    url "https://trac.macports.org/export/70964/trunk/dports/audio/cdparanoia/files/patch-paranoia_paranoia.c.10.4.diff"
-    sha1 "d7dc121374df3b82e82adf544df7bf1eec377bdb"
-  end
+    url "https://raw.githubusercontent.com/drewc/guix/master/gnu/packages/patches/cdparanoia-fpic.patch"
+    sha256 "496f53d21dde7e23f4c9cf1cc28219efcbb5464fe2abbd5a073635279281c9c4"
+  end if OS.linux?
 
   def install
     system "autoconf"
@@ -29,7 +34,7 @@ class Cdparanoia < Formula
     system "./configure", "--prefix=#{prefix}",
                           "--mandir=#{man}",
                           "--libdir=#{libexec}"
-    system "make all"
-    system "make install"
+    system "make", "all"
+    system "make", "install"
   end
 end

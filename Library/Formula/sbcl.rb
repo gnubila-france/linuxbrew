@@ -1,16 +1,15 @@
-require "formula"
-
 class Sbcl < Formula
+  desc "Steel Bank Common Lisp system"
   homepage "http://www.sbcl.org/"
-  url "https://downloads.sourceforge.net/project/sbcl/sbcl/1.2.2/sbcl-1.2.2-source.tar.bz2"
-  sha1 "23449d376ac0b6112ad468adc11a5e521667d8fd"
+  url "https://downloads.sourceforge.net/project/sbcl/sbcl/1.3.4/sbcl-1.3.4-source.tar.bz2"
+  sha256 "91e2fd975bbf729229a056882869e72468fc7896778d56b659815bd707f9a67f"
 
   head "git://sbcl.git.sourceforge.net/gitroot/sbcl/sbcl.git"
 
   bottle do
-    sha1 "aedcdd2e3e4ec477cb140c58ba461102fd548bfb" => :mavericks
-    sha1 "aaeb881100107fb03813cf41dc65de04e2aa50f4" => :mountain_lion
-    sha1 "ca2d16c6e5b7af262d69b63415784fd4c6a9b288" => :lion
+    sha256 "3afb1019961e846cadc4f75c2bac7e56653c1d1e957b29d4e65f0401eba7ceb2" => :el_capitan
+    sha256 "899581d4e7b9031f68f0e8b7e4b605369c756d27e96d61a18f66c3d0b0cbbddf" => :yosemite
+    sha256 "4c499f34f49dfcc006bc794cab552b942ffe85a28437052d70539919e0a3b6cb" => :mavericks
   end
 
   fails_with :llvm do
@@ -25,35 +24,44 @@ class Sbcl < Formula
   option "with-internal-xref", "Include XREF information for SBCL internals (increases core size by 5-6MB)"
 
   # Current binary versions are listed at http://sbcl.sourceforge.net/platform-table.html
-
   resource "bootstrap64" do
-    url "https://downloads.sourceforge.net/project/sbcl/sbcl/1.1.8/sbcl-1.1.8-x86-64-darwin-binary.tar.bz2"
-    sha1 "cffd8c568588f48bd0c69295a385b662d27983cf"
+    if OS.mac?
+      url "https://downloads.sourceforge.net/project/sbcl/sbcl/1.1.8/sbcl-1.1.8-x86-64-darwin-binary.tar.bz2"
+      sha256 "729054dc27d6b53bd734eac4dffeaa9e231e97bdbe4927d7a68c8f0210cad700"
+    elsif OS.linux?
+      url "https://downloads.sourceforge.net/project/sbcl/sbcl/1.3.3/sbcl-1.3.3-x86-64-linux-binary.tar.bz2"
+      sha256 "e8b1730c42e4a702f9b4437d9842e91cb680b7246f88118c7443d7753e61da65"
+    end
   end
 
   resource "bootstrap32" do
-    url "https://downloads.sourceforge.net/project/sbcl/sbcl/1.1.6/sbcl-1.1.6-x86-darwin-binary.tar.bz2"
-    sha1 "35a76b93f8714bc34ba127df4aaf69aacfc08164"
+    if OS.mac?
+      url "https://downloads.sourceforge.net/project/sbcl/sbcl/1.1.6/sbcl-1.1.6-x86-darwin-binary.tar.bz2"
+      sha256 "5801c60e2a875d263fccde446308b613c0253a84a61ab63569be62eb086718b3"
+    elsif OS.linux?
+      url "https://downloads.sourceforge.net/project/sbcl/sbcl/1.2.7/sbcl-1.2.7-x86-linux-binary.tar.bz2"
+      sha256 "724425fe0d28747c7d31c6655e39fa8c27f9ef4608c482ecc60089bcc85fc31d"
+    end
   end
 
   patch :p0 do
-    url "https://trac.macports.org/export/88830/trunk/dports/lang/sbcl/files/patch-base-target-features.diff"
-    sha1 "49cf79e8d687e0a90db0fdc022a5f73181629d6e"
+    url "https://raw.githubusercontent.com/Homebrew/patches/c5ffdb11/sbcl/patch-base-target-features.diff"
+    sha256 "e101d7dc015ea71c15a58a5c54777283c89070bf7801a13cd3b3a1969a6d8b75"
+  end if OS.mac?
+
+  patch :p0 do
+    url "https://raw.githubusercontent.com/Homebrew/patches/c5ffdb11/sbcl/patch-make-doc.diff"
+    sha256 "7c21c89fd6ec022d4f17670c3253bd33a4ac2784744e4c899c32fbe27203d87e"
   end
 
   patch :p0 do
-    url "https://trac.macports.org/export/88830/trunk/dports/lang/sbcl/files/patch-make-doc.diff"
-    sha1 "65d0beec43707ff5bf3262b8f12ca4514e58ce15"
+    url "https://raw.githubusercontent.com/Homebrew/patches/c5ffdb11/sbcl/patch-posix-tests.diff"
+    sha256 "06908aaa94ba82447d64cf15eb8e011ac4c2ae4c3050b19b36316f64992ee21d"
   end
 
   patch :p0 do
-    url "https://trac.macports.org/export/88830/trunk/dports/lang/sbcl/files/patch-posix-tests.diff"
-    sha1 "cde8db247d153c6272cc96a6716721fd623010cb"
-  end
-
-  patch :p0 do
-    url "https://trac.macports.org/export/88830/trunk/dports/lang/sbcl/files/patch-use-mach-exception-handler.diff"
-    sha1 "4d08e56e7e261db47ffdfef044149b001e6cd7c1"
+    url "https://raw.githubusercontent.com/Homebrew/patches/c5ffdb11/sbcl/patch-use-mach-exception-handler.diff"
+    sha256 "089b8fdc576a9a32da0b2cdf2b7b2d8bfebf3d542ac567f1cb06f19c03eaf57d"
   end
 
   def write_features
@@ -77,8 +85,10 @@ class Sbcl < Formula
 
     # Remove non-ASCII values from environment as they cause build failures
     # More information: http://bugs.gentoo.org/show_bug.cgi?id=174702
-    ENV.delete_if do |key, value|
-      value =~ /[\x80-\xff]/n
+    ENV.delete_if do |_, value|
+      ascii_val = value.dup
+      ascii_val.force_encoding("ASCII-8BIT") if ascii_val.respond_to? :force_encoding
+      ascii_val =~ /[\x80-\xff]/n
     end
 
     bootstrap = (build.build_32_bit? || !MacOS.prefer_64_bit?) ? "bootstrap32" : "bootstrap64"
@@ -96,15 +106,14 @@ class Sbcl < Formula
     end
 
     ENV["INSTALL_ROOT"] = prefix
-    system "sh install.sh"
+    system "sh", "install.sh"
   end
 
   test do
-    (testpath/'simple.sbcl').write <<-EOS.undent
+    (testpath/"simple.sbcl").write <<-EOS.undent
       (write-line (write-to-string (+ 2 2)))
     EOS
-    output = `'#{bin}/sbcl' --script #{testpath}/simple.sbcl`
-    assert_equal '4', output.strip
-    assert_equal 0, $?.exitstatus
+    output = shell_output("#{bin}/sbcl --script #{testpath}/simple.sbcl")
+    assert_equal "4", output.strip
   end
 end

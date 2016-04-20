@@ -1,17 +1,17 @@
-require "formula"
-
 class Rocksdb < Formula
+  desc "Persistent key-value store for fast storage environments"
   homepage "http://rocksdb.org"
-  url "https://github.com/facebook/rocksdb/archive/rocksdb-3.6.1.tar.gz"
-  sha1 "5913cfe18a16487d6b3957fe104354c0ec15b9c7"
-  revision 1
+  url "https://github.com/facebook/rocksdb/archive/rocksdb-4.4.tar.gz"
+  sha256 "ff79856613e628c2181c4e2e0bc98763e05a4536e0662e5d84f4d237bf40cdb8"
 
   bottle do
     cellar :any
-    sha1 "d073fd02dc41f54cb226e3ae58483e4e77341656" => :yosemite
-    sha1 "82f908bd82a241543b4326763e2991ee5cd8b1e7" => :mavericks
-    sha1 "c6cdd565ffb3069db9fc756e9546c4d9c2e367aa" => :mountain_lion
+    sha256 "b14163ab3b6b274bf856a7286406bd1bfd66dcf353deb34d562bf380d33d2a06" => :el_capitan
+    sha256 "97abd3d4c4d275e7ce766d60d27ce7464e441f3dd88b85cd4d1c11f846847336" => :yosemite
+    sha256 "d604d2a1d462ab484d029724a308c5d9da75729b1f6447425c17b07e593059f1" => :mavericks
   end
+
+  option "with-lite", "Build mobile/non-flash optimized lite version"
 
   needs :cxx11
   depends_on "snappy"
@@ -19,6 +19,8 @@ class Rocksdb < Formula
 
   def install
     ENV.cxx11
+    ENV["PORTABLE"] = "1" if build.bottle?
+    ENV.append_to_cflags "-DROCKSDB_LITE=1" if build.with? "lite"
     system "make", "clean"
     system "make", "static_lib"
     system "make", "shared_lib"

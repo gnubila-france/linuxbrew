@@ -1,38 +1,36 @@
-require 'formula'
-
 class Librsync < Formula
-  homepage 'http://librsync.sourceforge.net/'
-  url 'https://downloads.sourceforge.net/project/librsync/librsync/0.9.7/librsync-0.9.7.tar.gz'
-  sha1 'd575eb5cae7a815798220c3afeff5649d3e8b4ab'
+  desc "Library that implements the rsync remote-delta algorithm"
+  homepage "http://librsync.sourcefrog.net/"
+  url "https://github.com/librsync/librsync/archive/v2.0.0.tar.gz"
+  sha256 "b5c4dd114289832039397789e42d4ff0d1108ada89ce74f1999398593fae2169"
+  revision 1
 
   bottle do
-    cellar :any
-    revision 1
-    sha1 "754e34fcd1236debb7152e61204364deaa108855" => :yosemite
-    sha1 "3e79aad6623c2332eaa5c650bc9b28e4caf56b9e" => :mavericks
-    sha1 "a0a54b67a85e2e626a4eb9e11b9222afe44351a0" => :mountain_lion
+    sha256 "f9b52eb45dd0cc166e5d31e3a90cd02bd99c619a5893dd3c8129757528e410cb" => :el_capitan
+    sha256 "31709e2fe6f0480a825209e7aa13602f768db43be57477738e2f7f7150213869" => :yosemite
+    sha256 "bc7ada34fb6aae7fcb9a303a3daeda5861ab11e0a966425aaed2e549fd88e6b9" => :mavericks
   end
 
   option :universal
 
-  depends_on 'popt'
+  depends_on "cmake" => :build
+  depends_on "popt"
 
   def install
     ENV.universal_binary if build.universal?
 
-    ENV.append 'CFLAGS', '-std=gnu89'
+    # https://github.com/librsync/librsync/commit/1765ad0d416
+    # https://github.com/librsync/librsync/issues/50
+    # Safe to remove when the next stable release is cut.
+    inreplace "src/search.c", "if (l == r) {", "if ((l == r) && (l <= bucket->r)) {"
 
-    system "./configure", "--disable-debug",
-                          "--disable-dependency-tracking",
-                          "--prefix=#{prefix}",
-                          "--mandir=#{man}",
-                          "--enable-shared"
+    system "cmake", ".", *std_cmake_args
+    system "make", "install"
+    man1.install "doc/rdiff.1"
+    man3.install "doc/librsync.3"
+  end
 
-    inreplace 'libtool' do |s|
-      s.gsub! /compiler_flags=$/, "compiler_flags=' #{ENV.cflags}'"
-      s.gsub! /linker_flags=$/, "linker_flags=' #{ENV.ldflags}'"
-    end
-
-    system "make install"
+  test do
+    assert_match version.to_s, shell_output("#{bin}/rdiff -V")
   end
 end

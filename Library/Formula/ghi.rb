@@ -1,10 +1,13 @@
-require 'formula'
-
 class Ghi < Formula
-  homepage 'https://github.com/stephencelis/ghi'
-  url 'https://github.com/stephencelis/ghi/archive/0.9.3.tar.gz'
-  head 'https://github.com/stephencelis/ghi.git'
-  sha1 '59512443c778cacc8c0488e6ab64965f18b3a279'
+  desc "Work on GitHub issues on the command-line"
+  homepage "https://github.com/stephencelis/ghi"
+  url "https://github.com/stephencelis/ghi/archive/1.1.1.tar.gz"
+  sha256 "a19fd947f1268d9f087d2a342964dfc1cb3aa96de970e82b8daf22461e07e49b"
+  head "https://github.com/stephencelis/ghi.git"
+
+  bottle :unneeded
+
+  depends_on "pygments.rb" => :ruby
 
   def install
     bin.install "ghi"

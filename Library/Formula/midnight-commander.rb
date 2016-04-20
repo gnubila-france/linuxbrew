@@ -1,31 +1,48 @@
-require 'formula'
-
 class MidnightCommander < Formula
-  homepage 'http://www.midnight-commander.org/'
-  url 'http://ftp.midnight-commander.org/mc-4.8.13.tar.xz'
-  mirror 'ftp://ftp.osuosl.org/pub/midnightcommander/mc-4.8.13.tar.xz'
-  sha256 '36d6191a47ec5d89d3788e48846fb620c481816441ff25264add8898d277b657'
+  desc "Terminal-based visual file manager"
+  homepage "https://www.midnight-commander.org/"
+  url "https://www.midnight-commander.org/downloads/mc-4.8.15.tar.xz"
+  mirror "https://mirrors.ocf.berkeley.edu/debian/pool/main/m/mc/mc_4.8.15.orig.tar.xz"
+  sha256 "cf4e8f5dfe419830d56ca7e5f2495898e37ebcd05da1e47ff7041446c87fba16"
+
+  head "https://github.com/MidnightCommander/mc.git"
 
   bottle do
-    sha1 "b9b1e2281c7eac14d6cecdc82835915062b7e761" => :mavericks
-    sha1 "2eb8feba7033341e66122caa13dc83f3c83dcbe2" => :mountain_lion
-    sha1 "b7bc3c51eb90f5d97b79c3139b086683523f9f7b" => :lion
+    revision 1
+    sha256 "04b0873fa4f085de596d84120d4fa212d37186d53b9da0a7c3837b142647d840" => :el_capitan
+    sha256 "3506e4a2c6c10b4f2f498957181fce72d5420ce198c381d64df320060cda1da9" => :yosemite
+    sha256 "fd4cd670dc22f75edb9a492542619427f0201fe1872c343ff8e42ba4f0b9e68a" => :mavericks
   end
 
-  depends_on 'pkg-config' => :build
-  depends_on 'glib'
-  depends_on 'openssl' if MacOS.version <= :leopard
-  depends_on 's-lang'
-  depends_on 'libssh2'
+  option "without-nls", "Build without Native Language Support"
+
+  depends_on "pkg-config" => :build
+  depends_on "glib"
+  depends_on "openssl"
+  depends_on "s-lang"
+  depends_on "libssh2"
 
   def install
-    system "./configure", "--disable-debug",
-                          "--disable-dependency-tracking",
-                          "--disable-silent-rules",
-                          "--prefix=#{prefix}",
-                          "--without-x",
-                          "--with-screen=slang",
-                          "--enable-vfs-sftp"
-    system "make install"
+    args = %W[
+      --disable-debug
+      --disable-dependency-tracking
+      --disable-silent-rules
+      --prefix=#{prefix}
+      --without-x
+      --with-screen=slang
+      --enable-vfs-sftp
+    ]
+
+    args << "--disable-nls" if build.without? "nls"
+
+    system "./configure", *args
+    system "make", "install"
+
+    # https://www.midnight-commander.org/ticket/3509
+    inreplace libexec/"mc/ext.d/text.sh", "man -P cat -l ", "man -P cat "
+  end
+
+  test do
+    assert_match "GNU Midnight Commander", shell_output("#{bin}/mc --version")
   end
 end

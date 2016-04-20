@@ -1,33 +1,29 @@
-require "formula"
-
 class AndroidNdk < Formula
-  homepage "http://developer.android.com/sdk/ndk/index.html"
-
-  if MacOS.prefer_64_bit?
-    url "http://dl.google.com/android/ndk/android-ndk-r10d-darwin-x86_64.bin"
-    sha1 "6b89cb0c84e2d2bd802a5b78540327c1b3c2d7b8"
-  else
-    url "http://dl.google.com/android/ndk/android-ndk-r10d-darwin-x86.bin"
-    sha1 "fc1f9593eb9669076c25381322a1386869ac02f0"
+  desc "Android native-code language toolset"
+  homepage "https://developer.android.com/sdk/ndk/index.html"
+  version "r10e"
+  if OS.mac?
+    url "https://dl.google.com/android/repository/android-ndk-r11b-darwin-x86_64.zip"
+    sha256 "3a2743fb357dc0948d17dc0696e4ab5cd724dc4bc1c36a40e797068fbfc9d976"
+  elsif OS.linux?
+    url "https://dl.google.com/android/ndk/android-ndk-#{version}-linux-x86_64.bin"
+    sha256 "102d6723f67ff1384330d12c45854315d6452d6510286f4e5891e00a5a8f1d5a"
   end
 
-  version "r10d"
+  bottle :unneeded
 
+  # As of r10e, only a 64-bit version is provided
+  depends_on :arch => :x86_64
   depends_on "android-sdk" => :recommended
+
+  conflicts_with "crystax-ndk",
+    :because => "both install `ndk-build`, `ndk-gdb` and `ndk-stack` binaries"
 
   def install
     bin.mkpath
 
-    if MacOS.prefer_64_bit?
-      system "chmod", "a+x", "./android-ndk-#{version}-darwin-x86_64.bin"
-      system "./android-ndk-#{version}-darwin-x86_64.bin"
-    else
-      system "chmod", "a+x", "./android-ndk-#{version}-darwin-x86.bin"
-      system "./android-ndk-#{version}-darwin-x86.bin"
-    end
-
     # Now we can install both 64-bit and 32-bit targeting toolchains
-    prefix.install Dir["android-ndk-#{version}/*"]
+    prefix.install Dir["*"]
 
     # Create a dummy script to launch the ndk apps
     ndk_exec = prefix+"ndk-exec.sh"
@@ -38,7 +34,7 @@ class AndroidNdk < Formula
       test -f "$EXEC" && exec "$EXEC" "$@"
     EOS
     ndk_exec.chmod 0755
-    %w[ndk-build ndk-gdb ndk-stack].each { |app| bin.install_symlink ndk_exec => app }
+    %w[ndk-build ndk-depends ndk-gdb ndk-stack ndk-which].each { |app| bin.install_symlink ndk_exec => app }
   end
 
   def caveats; <<-EOS.undent
@@ -46,10 +42,10 @@ class AndroidNdk < Formula
     If this is unacceptable you should uninstall.
 
     License information at:
-    http://developer.android.com/sdk/terms.html
+    https://developer.android.com/sdk/terms.html
 
     Software and System requirements at:
-    http://developer.android.com/sdk/ndk/index.html#requirements
+    https://developer.android.com/sdk/ndk/index.html#requirements
 
     For more documentation on Android NDK, please check:
       #{prefix}/docs

@@ -1,14 +1,14 @@
 class Libmaxminddb < Formula
+  desc "C library for the MaxMind DB file format"
   homepage "https://github.com/maxmind/libmaxminddb"
-  url "https://github.com/maxmind/libmaxminddb/releases/download/0.5.3/libmaxminddb-0.5.3.tar.gz"
-  sha1 "ce6dd4fecb1a4c97cfede70e6fc6af863ffeddab"
+  url "https://github.com/maxmind/libmaxminddb/releases/download/1.2.0/libmaxminddb-1.2.0.tar.gz"
+  sha256 "1fe859ed714f94fc902a145453f7e1b5cd928718179ba4c4fcb7f6ae0df7ad37"
 
   bottle do
     cellar :any
-    revision 1
-    sha1 "9ef726ff11d9933e9aa1df2ce8adc21493714259" => :yosemite
-    sha1 "0e3a37a3ad55d27220ec49ee653016ecc649d952" => :mavericks
-    sha1 "3888352b39e903d2f30d6947db0c041ecaa3540a" => :mountain_lion
+    sha256 "626d41d5b47374ce9bdd046e1b958ab68536efd772ebd0ad0949e453589ced39" => :el_capitan
+    sha256 "345c405bbdcfa1fad247e838f594b522b935e41ddbf7b7760e7404121a3475f3" => :yosemite
+    sha256 "9046beb8d9abb5002e367594b39ca4fd5e121ca9977cc37e07437c5b8a684a80" => :mavericks
   end
 
   head do
@@ -34,12 +34,11 @@ class Libmaxminddb < Formula
                           "--prefix=#{prefix}"
     system "make", "check"
     system "make", "install"
+    (share/"examples").install buildpath/"t/maxmind-db/test-data/GeoIP2-City-Test.mmdb"
   end
 
   test do
-    system "curl", "-O", "http://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.mmdb.gz"
-    system "gunzip", "GeoLite2-Country.mmdb.gz"
-    system "#{bin}/mmdblookup", "-f", "GeoLite2-Country.mmdb",
-                                "-i", "8.8.8.8"
+    system "#{bin}/mmdblookup", "-f", "#{share}/examples/GeoIP2-City-Test.mmdb",
+                                "-i", "175.16.199.0"
   end
 end

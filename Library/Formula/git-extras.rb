@@ -1,21 +1,58 @@
-require "formula"
-
 class GitExtras < Formula
+  desc "Small git utilities"
   homepage "https://github.com/tj/git-extras"
-  url "https://github.com/tj/git-extras/archive/2.2.0.tar.gz"
-  sha1 "cb3df2bc8953fdae7b73c3d309e79ee5316bb90d"
-
   head "https://github.com/tj/git-extras.git"
 
-  bottle do
-    cellar :any
-    sha1 "43d178ce9c98a28a6ce7cc337119bb500c0fddec" => :yosemite
-    sha1 "85b967c0c3b2b7eae0af37d18b9b90bad08f79cc" => :mavericks
-    sha1 "54df32fa640c8cd05616c8ebb5cbf1ec8cc95565" => :mountain_lion
+  stable do
+    url "https://github.com/tj/git-extras/archive/4.1.0.tar.gz"
+    sha256 "d4c028e2fe78abde8f3e640b70f431318fb28d82894dde22772efe8ba3563f85"
+    # Disable "git extras update", which will produce a broken install under Homebrew
+    # https://github.com/Homebrew/homebrew/issues/44520
+    # https://github.com/tj/git-extras/pull/491
+    patch :DATA
   end
 
+  bottle do
+    cellar :any_skip_relocation
+    sha256 "f820c2530817015aa26f4fd8879e67847496b4c958a232adfde962dcd7b5a488" => :el_capitan
+    sha256 "6a9555f8c96d1b2bc146eaf1778dee50787f44ee4d98b21a862b50a17556dc47" => :yosemite
+    sha256 "1b0d3064c639782265ed8180c3136e86cfc65e8fa607a3b347113320888e85fe" => :mavericks
+  end
+
+  conflicts_with "git-town", :because => "git-extras also ships a git-sync binary"
+
   def install
-    inreplace "Makefile", %r|\$\(DESTDIR\)(?=/etc/bash_completion\.d)|, "$(DESTDIR)$(PREFIX)"
     system "make", "PREFIX=#{prefix}", "install"
   end
+
+  test do
+    system "git", "init"
+    assert_match /#{testpath}/, shell_output("#{bin}/git-root")
+  end
 end
+
+__END__
+diff --git a/bin/git-extras b/bin/git-extras
+index 3856179..e2ac72c 100755
+--- a/bin/git-extras
++++ b/bin/git-extras
+@@ -4,13 +4,12 @@ VERSION="4.0.0"
+ INSTALL_SCRIPT="https://raw.githubusercontent.com/tj/git-extras/master/install.sh"
+
+ update() {
+-  local bin=$(which git-extras)
+-  local prefix=${bin%/*/*}
+-  local orig=$PWD
+-
+-  curl -s $INSTALL_SCRIPT | PREFIX="$prefix" bash /dev/stdin \
+-    && cd "$orig" \
+-    && echo "... updated git-extras $VERSION -> $(git extras --version)"
++  echo "This git-extras installation is managed by Homebrew."
++  echo "If you'd like to update git-extras, run the following:"
++  echo
++  echo "  brew upgrade git-extras"
++  echo
++  return 1
+ }
+
+ updateForWindows() {

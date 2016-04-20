@@ -1,29 +1,33 @@
-require 'formula'
-
 class Gd < Formula
-  homepage 'http://libgd.bitbucket.org/'
-  url 'https://bitbucket.org/libgd/gd-libgd/downloads/libgd-2.1.0.tar.gz'
-  sha1 'a0f3053724403aef9e126f4aa5c662573e5836cd'
+  desc "Graphics library to dynamically manipulate images"
+  homepage "https://libgd.github.io/"
+  url "https://bitbucket.org/libgd/gd-libgd/downloads/libgd-2.1.1.tar.xz"
+  sha256 "9ada1ed45594abc998ebc942cef12b032fbad672e73efc22bc9ff54f5df2b285"
   revision 2
 
   bottle do
     cellar :any
-    revision 1
-    sha1 "370029d382be7ea5c8d5975f20b7668eced29f9c" => :yosemite
-    sha1 "e183bfd8da0354da3e0b046f2d092b099f4c6356" => :mavericks
-    sha1 "8fee5a15e1ed1331c52d9a286431fdd1b56c126e" => :mountain_lion
+    sha256 "07dcaf06b6f4b55fa209f1ad8a03ef549abfc789b820c7fc77762037337557df" => :el_capitan
+    sha256 "acb0d79ec9ae9cbe1c114d0a772821036926dc8b2d5d09a9945037a49db21719" => :yosemite
+    sha256 "7f96680ac98c529395492865f7a7ffe056e130a99c1006978682620dfa0da365" => :mavericks
   end
 
-  head 'https://bitbucket.org/libgd/gd-libgd', :using => :hg
+  head do
+    url "https://bitbucket.org/libgd/gd-libgd.git"
+
+    depends_on "autoconf" => :build
+    depends_on "automake" => :build
+    depends_on "libtool" => :build
+  end
 
   option :universal
 
-  depends_on 'libpng' => :recommended
-  depends_on 'jpeg' => :recommended
-  depends_on 'fontconfig' => :recommended
-  depends_on 'freetype' => :recommended
-  depends_on 'libtiff' => :recommended
-  depends_on 'libvpx' => :optional
+  depends_on "fontconfig" => :recommended
+  depends_on "freetype" => :recommended
+  depends_on "jpeg" => :recommended
+  depends_on "libpng" => :recommended
+  depends_on "libtiff" => :recommended
+  depends_on "libvpx" => :optional
 
   fails_with :llvm do
     build 2326
@@ -32,7 +36,8 @@ class Gd < Formula
 
   def install
     ENV.universal_binary if build.universal?
-    args = %W{--disable-dependency-tracking --prefix=#{prefix}}
+
+    args = %W[--disable-dependency-tracking --prefix=#{prefix}]
 
     if build.with? "libpng"
       args << "--with-png=#{Formula["libpng"].opt_prefix}"
@@ -70,8 +75,9 @@ class Gd < Formula
       args << "--without-vpx"
     end
 
+    system "./bootstrap.sh" if build.head?
     system "./configure", *args
-    system "make install"
+    system "make", "install"
   end
 
   test do

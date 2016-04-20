@@ -1,9 +1,14 @@
-require "formula"
-
 class Transmission < Formula
+  desc "Lightweight BitTorrent client"
   homepage "http://www.transmissionbt.com/"
-  url "https://transmission.cachefly.net/transmission-2.84.tar.xz"
-  sha1 "455359bc1fa34aeecc1bac9255ad0c884b94419c"
+  url "https://download.transmissionbt.com/files/transmission-2.92.tar.xz"
+  sha256 "3a8d045c306ad9acb7bf81126939b9594553a388482efa0ec1bfb67b22acd35f"
+
+  bottle do
+    sha256 "68af47554f408d92d04cbf86239a3d973cf7b4e9f0d254e127f5ead36074987a" => :el_capitan
+    sha256 "2071f4bb87d9d5e7cf6885caa8cf8605d81b108a097259113ba295a3c1f90bb7" => :yosemite
+    sha256 "9fb74d440426bbdf82d06dcd01e53db625cabfce0c4c85b15aec298007df6fd3" => :mavericks
+  end
 
   option "with-nls", "Build with native language support"
 
@@ -17,8 +22,8 @@ class Transmission < Formula
   end
 
   def install
-    ENV.append "LDFLAGS", "-framework Foundation -prebind"
-    ENV.append "LDFLAGS", "-liconv"
+    ENV.append "LDFLAGS", "-framework Foundation -prebind" if OS.mac?
+    ENV.append "LDFLAGS", "-liconv" if OS.mac?
 
     args = %W[--disable-dependency-tracking
               --prefix=#{prefix}
@@ -27,14 +32,8 @@ class Transmission < Formula
 
     args << "--disable-nls" if build.without? "nls"
 
-    #fixes issue w/ webui files not being found #21151
-    #submitted upstream: https://trac.transmissionbt.com/ticket/5304
-    inreplace "libtransmission/platform.c", "SYS_DARWIN", "BUILD_MAC_CLIENT"
-    inreplace "libtransmission/utils.c", "SYS_DARWIN", "BUILD_MAC_CLIENT"
-
     system "./configure", *args
-    system "make" # Make and install in one step fails
-    system "make install"
+    system "make", "install"
 
     (var/"transmission").mkpath
   end
@@ -46,7 +45,7 @@ class Transmission < Formula
     EOS
   end
 
-  plist_options :manual => 'transmission-daemon --foreground'
+  plist_options :manual => "transmission-daemon --foreground"
 
   def plist; <<-EOS.undent
     <?xml version="1.0" encoding="UTF-8"?>
@@ -70,8 +69,15 @@ class Transmission < Formula
           <key>NetworkState</key>
           <true/>
         </dict>
+        <key>RunAtLoad</key>
+        <true/>
       </dict>
     </plist>
     EOS
+  end
+
+  test do
+    system "#{bin}/transmission-create", "-o", "#{testpath}/test.mp3.torrent", test_fixtures("test.mp3")
+    assert_match /^magnet:/, shell_output("#{bin}/transmission-show -m #{testpath}/test.mp3.torrent")
   end
 end

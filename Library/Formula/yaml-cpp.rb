@@ -1,27 +1,26 @@
-require 'formula'
-
 class YamlCpp < Formula
-  homepage 'http://code.google.com/p/yaml-cpp/'
-  url 'https://yaml-cpp.googlecode.com/files/yaml-cpp-0.5.1.tar.gz'
-  sha1 '9c5414b4090491e96d1b808fe8628b31e625fdaa'
+  desc "C++ YAML parser and emitter for YAML 1.2 spec"
+  homepage "https://github.com/jbeder/yaml-cpp"
+  url "https://github.com/jbeder/yaml-cpp/archive/release-0.5.3.tar.gz"
+  sha256 "ac50a27a201d16dc69a881b80ad39a7be66c4d755eda1f76c3a68781b922af8f"
 
   bottle do
     cellar :any
-    sha1 "84e9938ac85d1830acb4c15b6eb3b4a33ec33a33" => :yosemite
-    sha1 "c085fa37570254c346b16e7c62f962775f992389" => :mavericks
-    sha1 "bcd0894e3abc4db1ddc9d1df0a3c24117f189f74" => :mountain_lion
+    sha256 "20b38c2f7c47550b458cb5b6f054795d90f4955d2525656e6d713cdbe7d451b1" => :el_capitan
+    sha256 "e0a51ff0b33568695412fe43cdc51b26642ae46dfb6dac56b813295057c91bb6" => :yosemite
+    sha256 "c779f86632b38472e022ad91f0f5ddb0f399fd547d36cbc5494a76c0f6becd48" => :mavericks
   end
 
   option :cxx11
   option :universal
   option "with-static-lib", "Build a static library"
 
-  depends_on 'cmake' => :build
+  depends_on "cmake" => :build
 
-  if build.cxx11?
-    depends_on 'boost' => 'c++11'
+  if build.cxx11? && MacOS.version < :mavericks
+    depends_on "boost" => "c++11"
   else
-    depends_on 'boost'
+    depends_on "boost"
   end
 
   def install
@@ -35,6 +34,19 @@ class YamlCpp < Formula
     end
 
     system "cmake", ".", *args
-    system "make install"
+    system "make", "install"
+  end
+
+  test do
+    (testpath/"test.cpp").write <<-EOS.undent
+      #include <yaml-cpp/yaml.h>
+      int main() {
+        YAML::Node node  = YAML::Load("[0, 0, 0]");
+        node[0] = 1;
+        return 0;
+      }
+    EOS
+    system ENV.cxx, "test.cpp", "-L#{lib}", "-lyaml-cpp", "-o", "test"
+    system "./test"
   end
 end

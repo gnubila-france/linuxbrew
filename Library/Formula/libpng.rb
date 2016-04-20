@@ -1,18 +1,31 @@
 class Libpng < Formula
+  desc "Library for manipulating PNG images"
   homepage "http://www.libpng.org/pub/png/libpng.html"
-  url "https://downloads.sf.net/project/libpng/libpng16/1.6.16/libpng-1.6.16.tar.xz"
-  sha1 "31855a8438ae795d249574b0da15b34eb0922e13"
+  url "ftp://ftp.simplesystems.org/pub/libpng/png/src/libpng16/libpng-1.6.21.tar.xz"
+  mirror "https://dl.bintray.com/homebrew/mirror/libpng-1.6.21.tar.xz"
+  sha256 "6c8f1849eb9264219bf5d703601e5abe92a58651ecae927a03d1a1aa15ee2083"
 
   bottle do
     cellar :any
-    sha1 "f7b47fcf9d4111075745b04b6fbdb63062982bca" => :yosemite
-    sha1 "b67793bae0a5d109be5ad19d27bbeb4509f4ecee" => :mavericks
-    sha1 "a2fb283d2f96161ecee5d504adb92b26376b7d9e" => :mountain_lion
+    sha256 "5eef2e0b08d11bac515455e9f2addcff5ed77419c3fd98844158894b5bf4f794" => :el_capitan
+    sha256 "9a2b6e64ff89535d0d63a0fde6248a05df3397205d0c24ae0175580b723c1385" => :yosemite
+    sha256 "22b421d6d8034884fb0b697001b0965cb19f3b3a32c0c619ead86250e6f2a40d" => :mavericks
+    sha256 "078d095b17f40e21e3fe070fc6926b48fef7dc1ced7ede1372681e8af480daa4" => :x86_64_linux
+  end
+
+  head do
+    url "https://github.com/glennrp/libpng.git"
+
+    depends_on "autoconf" => :build
+    depends_on "automake" => :build
+    depends_on "libtool" => :build
   end
 
   keg_only :provided_pre_mountain_lion
 
   option :universal
+
+  depends_on "zlib" unless OS.mac?
 
   def install
     ENV.universal_binary if build.universal?

@@ -1,32 +1,24 @@
-require "formula"
-
 class Ffmpeg2theora < Formula
-  homepage "http://v2v.cc/~j/ffmpeg2theora/"
+  desc "Convert video files to Ogg Theora format"
+  homepage "https://v2v.cc/~j/ffmpeg2theora/"
   revision 1
 
   stable do
-    url "http://v2v.cc/~j/ffmpeg2theora/downloads/ffmpeg2theora-0.29.tar.bz2"
-    sha1 "7e78c5ddb8740b33a6ae4c9da76047bd8e662791"
-
-    # Fixes build with ffmpeg 2.x by removing use of deprecated constant
-    patch do
-      url "http://git.xiph.org/?p=ffmpeg2theora.git;a=patch;h=d3435a6a83dc656379de9e6523ecf8d565da6ca6"
-      sha1 "5a3e48c386ac077ab58afa6c49631c88f8f85929"
-    end
+    url "https://v2v.cc/~j/ffmpeg2theora/downloads/ffmpeg2theora-0.30.tar.bz2"
+    sha256 "4f6464b444acab5d778e0a3359d836e0867a3dcec4ad8f1cdcf87cb711ccc6df"
 
     depends_on "libkate" => :optional
   end
 
   bottle do
     cellar :any
-    revision 1
-    sha1 "94fc80f71d14abe75e467c8d631e67ee51dbd685" => :yosemite
-    sha1 "acf1a399ee26ae9b9303b649b1e405881da1664c" => :mavericks
-    sha1 "7c215c1078da702b774e8f99787f9bd87975aedc" => :mountain_lion
+    sha256 "a5083a14925664a830e8af88404e4668e5e48546c8ca283f5494fe26dca76f86" => :el_capitan
+    sha256 "1d40350a4a67d4ac2da6c55c67d45adee2ca537e1ecd1ccbb59d0c22968fca79" => :yosemite
+    sha256 "8e750ddb6435e83d99f6b77ed4736743f361ade2a89efd11868e67b18c114ece" => :mavericks
   end
 
   head do
-    url "git://git.xiph.org/ffmpeg2theora.git"
+    url "https://git.xiph.org/ffmpeg2theora.git"
 
     depends_on "libkate" => :recommended
   end
@@ -39,7 +31,11 @@ class Ffmpeg2theora < Formula
   depends_on "theora"
 
   def install
-    args = ["prefix=#{prefix}", "mandir=PREFIX/share/man"]
+    args = [
+      "prefix=#{prefix}",
+      "mandir=PREFIX/share/man",
+      "APPEND_LINKFLAGS=-headerpad_max_install_names",
+    ]
     scons "install", *args
   end
 

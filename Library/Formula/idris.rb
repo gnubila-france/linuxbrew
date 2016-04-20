@@ -3,15 +3,16 @@ require "language/haskell"
 class Idris < Formula
   include Language::Haskell::Cabal
 
+  desc "Pure functional programming language with dependent types"
   homepage "http://www.idris-lang.org"
-  url "https://github.com/idris-lang/Idris-dev/archive/v0.9.16.tar.gz"
-  sha1 "01f794c4e516454b8352266c26c92549e90c708f"
+  url "https://github.com/idris-lang/Idris-dev/archive/v0.11.tar.gz"
+  sha256 "759eafb5f5cb01ce891e611be49da55f56878e7ce4549c0339ae9b901eb90b5d"
   head "https://github.com/idris-lang/Idris-dev.git"
 
   bottle do
-    sha1 "c25ba4b91264c187485111c5b8c18670c7f0441b" => :yosemite
-    sha1 "df1773cb1800d6c629db9ba194666faf0019de31" => :mavericks
-    sha1 "bbbe93cbd829bb02a9cdbb680805470f29702bbb" => :mountain_lion
+    sha256 "26ad3069842ab7f5cec28374b1871c5c632d0a8e937fa06f29edaca4b08d8273" => :el_capitan
+    sha256 "157bbd32de94ee929dc86819d47847dff77c1504ed4946a08a234095af9f6c77" => :yosemite
+    sha256 "5dc7e9ea4fd50fef6d95144a239c848022af3ae6a6b2bde29340ec2070e37879" => :mavericks
   end
 
   depends_on "ghc" => :build
@@ -22,10 +23,10 @@ class Idris < Formula
   depends_on "pkg-config" => :build if build.with? "libffi"
 
   def install
-    flags = []
-    flags << "-f FFI" if build.with? "libffi"
-    flags << "-f release" if build.stable?
-    install_cabal_package flags
+    args = []
+    args << "-f FFI" if build.with? "libffi"
+    args << "-f release" if build.stable?
+    install_cabal_package *args
   end
 
   test do
@@ -34,13 +35,22 @@ class Idris < Formula
       main : IO ()
       main = putStrLn "Hello, Homebrew!"
     EOS
+
+    (testpath/"ffi.idr").write <<-EOS.undent
+      module Main
+      puts: String -> IO ()
+      puts x = foreign FFI_C "puts" (String -> IO ()) x
+
+      main : IO ()
+      main = puts "Hello, interpreter!"
+    EOS
     shell_output "#{bin}/idris #{testpath}/hello.idr -o #{testpath}/hello"
     result = shell_output "#{testpath}/hello"
     assert_match /Hello, Homebrew!/, result
 
     if build.with? "libffi"
-      cmd = "#{bin}/idris --exec 'putStrLn \"Hello, interpreter!\"'"
-      result = shell_output cmd
+      shell_output "#{bin}/idris #{testpath}/ffi.idr -o #{testpath}/ffi"
+      result = shell_output "#{testpath}/ffi"
       assert_match /Hello, interpreter!/, result
     end
   end
