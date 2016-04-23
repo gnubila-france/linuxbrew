@@ -13,6 +13,8 @@ class Texlive < Formula
   option "with-basic", "install plain and latex"
   option "with-minimal", "install plain only"
 
+  depends_on "wget" => :build
+
   def install
     scheme = %w[full medium small basic minimal].find do |x|
       build.with? x
