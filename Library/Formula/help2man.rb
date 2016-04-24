@@ -12,6 +12,8 @@ class Help2man < Formula
     sha256 "2e14f7b80487ebac1c91c87684a0a4ae027208e115ad024bd3a2326dc8ddcd48" => :mavericks
   end
 
+  depends_on "perl"
+
   def install
     # install is not parallel safe
     # see https://github.com/Homebrew/homebrew/issues/12609
