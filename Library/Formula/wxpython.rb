@@ -27,7 +27,7 @@ class Wxpython < Formula
 
   if MacOS.version <= :snow_leopard
     depends_on :python
-    depends_on FrameworkPythonRequirement
+    depends_on FrameworkPythonRequirement if OS.mac?
   end
   depends_on "wxmac"
 
@@ -49,7 +49,6 @@ class Wxpython < Formula
       "WXPREFIX +", "'#{prefix.to_s}' +"
 
     args = [
-      "WXPORT=osx_cocoa",
       # Reference our wx-config
       "WX_CONFIG=#{Formula["wxmac"].opt_bin}/wx-config",
       # At this time Wxmac is installed Unicode only
@@ -62,6 +61,8 @@ class Wxpython < Formula
       "BUILD_GIZMOS=1",
       "BUILD_STC=1"
     ]
+
+    args << "WXPORT=osx_cocoa" if OS.mac?
 
     cd "wxPython" do
       system "python", "setup.py", "install", "--prefix=#{prefix}", *args
