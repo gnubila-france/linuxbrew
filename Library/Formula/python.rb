@@ -148,6 +148,8 @@ class Python < Formula
               "do_readline = '#{Formula["readline"].opt_lib}/libhistory.so'"
       s.gsub! "/usr/local/ssl", Formula["openssl"].opt_prefix
       s.gsub! "/usr/include/db4", Formula["berkeley-db4"].opt_include
+      s.gsub! "'/usr/include',", "'#{HOMEBREW_PREFIX}/include','/usr/include',"
+      s.gsub! "'/lib64',", "'#{HOMEBREW_PREFIX}/lib','/lib64',"
     end
 
     if build.universal?
