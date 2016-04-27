@@ -78,9 +78,9 @@ class Gtkglext < Formula
       --prefix=#{prefix}
     ]
 
-    args << "--without-x" if Os.mac ?
+    args << "--without-x" if OS.mac?
 
-    system "./configure", args*
+    system "./configure", *args
     system "make", "install"
   end
 
