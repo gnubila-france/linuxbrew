@@ -96,6 +96,20 @@ class Tap
     end
   end
 
+  # The default remote path to this {Tap}.
+  def default_remote
+    if OS.mac?
+      "https://github.com/#{user}/homebrew-#{repo}"
+    else
+      case "#{user}/#{repo}"
+      when "Homebrew/dupes"
+        "https://github.com/Linuxbrew/homebrew-#{repo}"
+      else
+        "https://github.com/#{user}/homebrew-#{repo}"
+      end
+    end
+  end
+
   # True if this {Tap} is a git repository.
   def git?
     (path/".git").exist?
@@ -182,7 +196,7 @@ class Tap
     # ensure git is installed
     Utils.ensure_git_installed!
     ohai "Tapping #{name}" unless quiet
-    remote = options[:clone_target] || "https://github.com/#{user}/homebrew-#{repo}"
+    remote = options[:clone_target] || default_remote
     args = %W[clone #{remote} #{path} --config core.autocrlf=false]
     args << "--depth=1" unless options.fetch(:full_clone, false)
     args << "-q" if quiet
@@ -266,7 +280,7 @@ class Tap
   # True if the {#remote} of {Tap} is customized.
   def custom_remote?
     return true unless remote
-    remote.casecmp("https://github.com/#{user}/homebrew-#{repo}") != 0
+    remote.casecmp(default_remote) != 0
   end
 
   # path to the directory of all {Formula} files for this {Tap}.
